@@ -1,0 +1,60 @@
+{
+    "namespace": "server_form",
+
+    "long_form": {
+        "size": [320, 275],
+        "$title_size": ["100% - 15px", 10],
+        "$title_max_size": ["100% - 15px", 10]
+    },
+
+    "dynamic_button": {
+        "size": ["100%", 26]
+    },
+
+    "dynamic_button/panel_name": {
+        "size": [30, "100%c"]
+    },
+
+    "dynamic_button/panel_name/image": {
+        "size": [24, 24],
+        "offset": [2, 1]
+    },
+
+    "dynamic_button/form_button": {
+        "size": ["fill", 26],
+        "$button_text_max_size": ["100%", 24]
+    },
+
+    "custom_form": {
+        "size": [320, 275],
+        "$title_size": ["100% - 15px", 10],
+        "$title_max_size": ["100% - 15px", 10]
+    },
+
+    "custom_form_scrolling_content/submit_button": {
+        "size": ["100%", 26],
+        "$button_text_max_size": ["100%", 24]
+    },
+
+    "custom_label": {
+        "$text": "#custom_text"
+    },
+
+    "custom_header": {
+        "$text": "#custom_text"
+    },
+
+    "custom_slider": {
+        "$option_label": "#custom_slider_text",
+        "$option_max_size": ["100%", "default"]
+    },
+
+    "custom_step_slider": {
+        "$option_label": "#custom_slider_step_text",
+        "$option_max_size": ["100%", "default"]
+    },
+
+    "custom_input": {
+        "$option_label": "#custom_text"
+    }
+}

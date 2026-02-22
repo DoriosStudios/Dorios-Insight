@@ -1,0 +1,124 @@
+ui.dorios.insight.state.active=Activo
+ui.dorios.insight.state.disabled=Desactivado
+ui.dorios.insight.state.enabled=Habilitado
+
+ui.dorios.insight.policy.show=Mostrar
+ui.dorios.insight.policy.sneak=Mostrar al Agacharse
+ui.dorios.insight.policy.creative=Solo Creativo
+ui.dorios.insight.policy.hide=Ocultar
+
+ui.dorios.insight.style.icon=Icono
+ui.dorios.insight.style.text=Texto
+
+ui.dorios.insight.effect_mode.emoji=Emoji
+ui.dorios.insight.effect_mode.text=Texto
+
+ui.dorios.insight.mode.essential=Esencial
+ui.dorios.insight.mode.detailed=Detallado
+ui.dorios.insight.mode.debug=Depuración
+
+ui.dorios.insight.menu.title=Dorios' Insight
+ui.dorios.insight.menu.body=Modo: %1\nAlcance: %2\nIntervalo: %3 ticks\nRefresco de Objetivo Fijo: %4 ticks\nGlobal: %5\nLocal: %6
+ui.dorios.insight.menu.mode_button=Modo\n§3Current: %1
+ui.dorios.insight.menu.local_toggle_button=Activación Local\n§3Current: %1
+ui.dorios.insight.menu.global_toggle_button=Activación Global\n§3Current: %1
+ui.dorios.insight.menu.components_general_button=Componentes (General)
+ui.dorios.insight.menu.components_custom_button=Componentes (Campos Personalizados)
+ui.dorios.insight.menu.style_button=Estilo\n§3Current: %1
+ui.dorios.insight.menu.runtime_button=Configuración de Runtime
+ui.dorios.insight.menu.reset_button=Restablecer Mis Ajustes
+ui.dorios.insight.menu.close_button=Cerrar
+
+ui.dorios.insight.mode_menu.title=Insight - Modo
+ui.dorios.insight.mode_menu.body=Selecciona un ajuste predefinido de modo.\n§3Current: %1
+ui.dorios.insight.mode_menu.option=%1\nAlcance: %2\nIntervalo: %3 ticks\nEstados: %4\nEtiquetas: %5
+
+ui.dorios.insight.components.general.title=Insight - Componentes (General)
+ui.dorios.insight.components.custom.title=Insight - Componentes (Campos Personalizados)
+ui.dorios.insight.components.dropdown=%1\n§7%2\n§3Current: %3
+ui.dorios.insight.components.current=§3Current: %1
+
+ui.dorios.insight.style_menu.title=Insight - Estilo
+ui.dorios.insight.style_menu.display_style=Estilo de Visualización\n§3Current: %1
+ui.dorios.insight.style_menu.effect_mode=Modo de Visualización de Efectos\n§3Current: %1
+
+ui.dorios.insight.runtime_menu.title=Insight - Runtime
+ui.dorios.insight.runtime.range=Alcance\n§3Current: %1
+ui.dorios.insight.runtime.update_interval=§8------------------------------§r\nIntervalo de Actualización (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.target_hold_ticks=§8------------------------------§r\nRefresco con Objetivo Fijo (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.clear_no_target=§8------------------------------§r\nLimpiar sin Objetivo (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.visible_block_states=§8------------------------------§r\nEstados de Bloque Visibles\n§3Current: %1
+ui.dorios.insight.runtime.visible_block_tags=§8------------------------------§r\nEtiquetas de Bloque Visibles\n§3Current: %1
+ui.dorios.insight.runtime.visible_entity_tags=§8------------------------------§r\nEtiquetas de Entidad Visibles\n§3Current: %1
+ui.dorios.insight.runtime.visible_entity_families=§8------------------------------§r\nFamilias de Entidad Visibles\n§3Current: %1
+ui.dorios.insight.runtime.visible_effects=§8------------------------------§r\nEfectos Visibles\n§3Current: %1
+ui.dorios.insight.runtime.health_threshold=§8------------------------------§r\nUmbral de Vida Numérica\n§3Current: %1
+ui.dorios.insight.runtime.include_invisible=§8------------------------------§r\nIncluir Entidades Invisibles\n§3Current: %1
+ui.dorios.insight.runtime.include_liquids=§8------------------------------§r\nIncluir Bloques Líquidos\n§3Current: %1
+ui.dorios.insight.runtime.custom_hint=§7Valor personalizado (opcional)
+
+ui.dorios.insight.feedback.mode_set=§aModo de Dorios' Insight establecido en %1.
+ui.dorios.insight.feedback.components_updated=§aSe actualizó la visibilidad de componentes de Dorios' Insight.
+ui.dorios.insight.feedback.style_updated=§aSe actualizó la configuración de estilo de Dorios' Insight.
+ui.dorios.insight.feedback.runtime_updated=§aSe actualizó la configuración de runtime de Dorios' Insight.
+ui.dorios.insight.feedback.local_enabled=§aDorios' Insight activado para tu jugador.
+ui.dorios.insight.feedback.local_disabled=§eDorios' Insight desactivado para tu jugador.
+ui.dorios.insight.feedback.global_enabled=§aDorios' Insight habilitado globalmente.
+ui.dorios.insight.feedback.global_disabled=§eDorios' Insight deshabilitado globalmente.
+ui.dorios.insight.feedback.reset_done=§aSe restablecieron los ajustes de Dorios' Insight para tu jugador.
+
+ui.dorios.insight.component.namespace.label= Etiqueta de Namespace
+ui.dorios.insight.component.namespace.description=Muestra el sufijo de namespace junto al objetivo inspeccionado.
+ui.dorios.insight.component.custom_fields.label=Campos Personalizados
+ui.dorios.insight.component.custom_fields.description=Activa todas las líneas de datos personalizados registradas por máquinas y entidades.
+ui.dorios.insight.component.custom_energy_info.label=Custom: Energía
+ui.dorios.insight.component.custom_energy_info.description=Muestra detalles de almacenamiento y transferencia de energía desde inyectores personalizados.
+ui.dorios.insight.component.custom_rotation_info.label=Custom: Rotación
+ui.dorios.insight.component.custom_rotation_info.description=Muestra metadatos de rotación y orientación desde inyectores personalizados.
+ui.dorios.insight.component.custom_machine_progress.label=Custom: Progreso de Máquina
+ui.dorios.insight.component.custom_machine_progress.description=Muestra el progreso de procesamiento de la máquina cuando esté disponible.
+ui.dorios.insight.component.custom_variant_preview.label=Custom: Vista Previa de Variante
+ui.dorios.insight.component.custom_variant_preview.description=Muestra datos de vista previa de variante para objetivos compatibles.
+ui.dorios.insight.component.block_states.label= Estados de Bloque
+ui.dorios.insight.component.block_states.description=Muestra estados de permutación para bloques inspeccionados.
+ui.dorios.insight.component.block_tags.label= Etiquetas de Bloque
+ui.dorios.insight.component.block_tags.description=Muestra etiquetas del bloque inspeccionado.
+ui.dorios.insight.component.health.label= Vida de Entidad
+ui.dorios.insight.component.health.description=Muestra la vida actual y máxima de entidades.
+ui.dorios.insight.component.absorption.label= Corazones de Absorción
+ui.dorios.insight.component.absorption.description=Muestra corazones de absorción para jugadores objetivo.
+ui.dorios.insight.component.armor.label=Armadura del Jugador
+ui.dorios.insight.component.armor.description=Muestra el nivel de armadura de los jugadores objetivo.
+ui.dorios.insight.component.hunger.label= Hambre del Jugador
+ui.dorios.insight.component.hunger.description=Muestra información de hambre y saturación para jugadores objetivo.
+ui.dorios.insight.component.hunger_effect.label=Iconos de Efecto de Hambre
+ui.dorios.insight.component.hunger_effect.description=Usa glifos de efecto cuando el hambre está activo.
+ui.dorios.insight.component.air_bubbles.label=Burbujas de Aire
+ui.dorios.insight.component.air_bubbles.description=Muestra burbujas de respiración al estar bajo el agua.
+ui.dorios.insight.component.effects.label= Efectos de Estado
+ui.dorios.insight.component.effects.description=Muestra efectos activos con nivel y duración.
+ui.dorios.insight.component.effect_hearts.label=Efectos de Corazón
+ui.dorios.insight.component.effect_hearts.description=Recolorea corazones para efectos como veneno y wither.
+ui.dorios.insight.component.frozen_hearts.label=Corazones Congelados
+ui.dorios.insight.component.frozen_hearts.description=Estilo congelado al congelarse (deprecado).
+ui.dorios.insight.component.animal_hearts.label=Corazones de Montura
+ui.dorios.insight.component.animal_hearts.description=Usa corazones de animal para entidades montables.
+ui.dorios.insight.component.tameable.label= Estado Domesticable
+ui.dorios.insight.component.tameable.description=Muestra si una entidad es domesticable y si está domesticada.
+ui.dorios.insight.component.tame_foods.label= Comidas de Domesticación
+ui.dorios.insight.component.tame_foods.description=Muestra comidas válidas para domesticar entidades domesticables.
+ui.dorios.insight.component.technical.label= Resumen Técnico
+ui.dorios.insight.component.technical.description=Muestra totales y métricas de depuración para el objetivo actual.
+ui.dorios.insight.component.coordinates.label= Coordenadas
+ui.dorios.insight.component.coordinates.description=Muestra coordenadas de bloque o entidad.
+ui.dorios.insight.component.type_id.label=Identificador de Tipo
+ui.dorios.insight.component.type_id.description=Muestra el identificador de tipo completo del objetivo.
+ui.dorios.insight.component.entity_tags.label=Etiquetas de Entidad
+ui.dorios.insight.component.entity_tags.description=Muestra etiquetas de la entidad objetivo.
+ui.dorios.insight.component.entity_families.label=Familias de Entidad
+ui.dorios.insight.component.entity_families.description=Muestra familias de tipo de la entidad objetivo.
+ui.dorios.insight.component.velocity.label=Velocidad de Entidad
+ui.dorios.insight.component.velocity.description=Muestra el vector de velocidad para entidades en movimiento.
+ui.dorios.insight.component.namespace_resolution.label=Depuración de Resolución de Namespace
+ui.dorios.insight.component.namespace_resolution.description=Muestra el origen del mapeo de namespace y los detalles de resolución.
+ui.dorios.insight.component.deprecated_suffix= §8[Deprecated/No funcional]§r

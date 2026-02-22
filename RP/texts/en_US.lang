@@ -1,0 +1,124 @@
+ui.dorios.insight.state.active=Active
+ui.dorios.insight.state.disabled=Disabled
+ui.dorios.insight.state.enabled=Enabled
+
+ui.dorios.insight.policy.show=Show
+ui.dorios.insight.policy.sneak=Show When Sneaking
+ui.dorios.insight.policy.creative=Creative Only
+ui.dorios.insight.policy.hide=Hide
+
+ui.dorios.insight.style.icon=Icon
+ui.dorios.insight.style.text=Text
+
+ui.dorios.insight.effect_mode.emoji=Emoji
+ui.dorios.insight.effect_mode.text=Text
+
+ui.dorios.insight.mode.essential=Essential
+ui.dorios.insight.mode.detailed=Detailed
+ui.dorios.insight.mode.debug=Debug
+
+ui.dorios.insight.menu.title=Dorios' Insight
+ui.dorios.insight.menu.body=Mode: %1\nRange: %2\nInterval: %3 ticks\nTarget Hold Refresh: %4 ticks\nGlobal: %5\nLocal: %6
+ui.dorios.insight.menu.mode_button=Mode\n§3Current: %1
+ui.dorios.insight.menu.local_toggle_button=Local Activation\n§3Current: %1
+ui.dorios.insight.menu.global_toggle_button=Global Activation\n§3Current: %1
+ui.dorios.insight.menu.components_general_button=Components (General)
+ui.dorios.insight.menu.components_custom_button=Components (Custom Fields)
+ui.dorios.insight.menu.style_button=Style\n§3Current: %1
+ui.dorios.insight.menu.runtime_button=Runtime Settings
+ui.dorios.insight.menu.reset_button=Reset My Overrides
+ui.dorios.insight.menu.close_button=Close
+
+ui.dorios.insight.mode_menu.title=Insight - Mode
+ui.dorios.insight.mode_menu.body=Select a mode preset.\n§3Current: %1
+ui.dorios.insight.mode_menu.option=%1\nRange: %2\nInterval: %3 ticks\nStates: %4\nTags: %5
+
+ui.dorios.insight.components.general.title=Insight - Components (General)
+ui.dorios.insight.components.custom.title=Insight - Components (Custom Fields)
+ui.dorios.insight.components.dropdown=%1\n§7%2\n§3Current: %3
+ui.dorios.insight.components.current=§3Current: %1
+
+ui.dorios.insight.style_menu.title=Insight - Style
+ui.dorios.insight.style_menu.display_style=Display Style\n§3Current: %1
+ui.dorios.insight.style_menu.effect_mode=Effects Display Mode\n§3Current: %1
+
+ui.dorios.insight.runtime_menu.title=Insight - Runtime
+ui.dorios.insight.runtime.range=Range\n§3Current: %1
+ui.dorios.insight.runtime.update_interval=§8------------------------------§r\nUpdate Interval (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.target_hold_ticks=§8------------------------------§r\nTarget Hold Refresh (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.clear_no_target=§8------------------------------§r\nClear After No Target (ticks)\n§3Current: %1
+ui.dorios.insight.runtime.visible_block_states=§8------------------------------§r\nVisible Block States\n§3Current: %1
+ui.dorios.insight.runtime.visible_block_tags=§8------------------------------§r\nVisible Block Tags\n§3Current: %1
+ui.dorios.insight.runtime.visible_entity_tags=§8------------------------------§r\nVisible Entity Tags\n§3Current: %1
+ui.dorios.insight.runtime.visible_entity_families=§8------------------------------§r\nVisible Entity Families\n§3Current: %1
+ui.dorios.insight.runtime.visible_effects=§8------------------------------§r\nVisible Effects\n§3Current: %1
+ui.dorios.insight.runtime.health_threshold=§8------------------------------§r\nNumeric Health Threshold\n§3Current: %1
+ui.dorios.insight.runtime.include_invisible=§8------------------------------§r\nInclude Invisible Entities\n§3Current: %1
+ui.dorios.insight.runtime.include_liquids=§8------------------------------§r\nInclude Liquid Blocks\n§3Current: %1
+ui.dorios.insight.runtime.custom_hint=§7Optional custom value
+
+ui.dorios.insight.feedback.mode_set=§aDorios' Insight mode set to %1.
+ui.dorios.insight.feedback.components_updated=§aDorios' Insight component visibility updated.
+ui.dorios.insight.feedback.style_updated=§aDorios' Insight style settings updated.
+ui.dorios.insight.feedback.runtime_updated=§aDorios' Insight runtime settings updated.
+ui.dorios.insight.feedback.local_enabled=§aDorios' Insight activated for your player.
+ui.dorios.insight.feedback.local_disabled=§eDorios' Insight deactivated for your player.
+ui.dorios.insight.feedback.global_enabled=§aDorios' Insight enabled globally.
+ui.dorios.insight.feedback.global_disabled=§eDorios' Insight disabled globally.
+ui.dorios.insight.feedback.reset_done=§aDorios' Insight overrides reset for your player.
+
+ui.dorios.insight.component.namespace.label= Namespace Label
+ui.dorios.insight.component.namespace.description=Shows the namespace suffix next to the inspected target.
+ui.dorios.insight.component.custom_fields.label=Custom Fields
+ui.dorios.insight.component.custom_fields.description=Enables all custom data lines registered by machines and entities.
+ui.dorios.insight.component.custom_energy_info.label=Custom: Energy Info
+ui.dorios.insight.component.custom_energy_info.description=Shows energy storage and transfer details from custom injectors.
+ui.dorios.insight.component.custom_rotation_info.label=Custom: Rotation Info
+ui.dorios.insight.component.custom_rotation_info.description=Shows rotation and facing metadata from custom injectors.
+ui.dorios.insight.component.custom_machine_progress.label=Custom: Machine Progress
+ui.dorios.insight.component.custom_machine_progress.description=Shows machine processing progress when available.
+ui.dorios.insight.component.custom_variant_preview.label=Custom: Variant Preview
+ui.dorios.insight.component.custom_variant_preview.description=Shows variant preview data for supported targets.
+ui.dorios.insight.component.block_states.label= Block States
+ui.dorios.insight.component.block_states.description=Displays permutation states for inspected blocks.
+ui.dorios.insight.component.block_tags.label= Block Tags
+ui.dorios.insight.component.block_tags.description=Displays block tags from the inspected block.
+ui.dorios.insight.component.health.label= Entity Health
+ui.dorios.insight.component.health.description=Shows current and max health for entities.
+ui.dorios.insight.component.absorption.label= Absorption Hearts
+ui.dorios.insight.component.absorption.description=Shows absorption hearts for player targets.
+ui.dorios.insight.component.armor.label=Player Armor
+ui.dorios.insight.component.armor.description=Shows armor level for player targets.
+ui.dorios.insight.component.hunger.label= Player Hunger
+ui.dorios.insight.component.hunger.description=Shows hunger and saturation info for player targets.
+ui.dorios.insight.component.hunger_effect.label=Hunger Effect Icons
+ui.dorios.insight.component.hunger_effect.description=Uses hunger effect glyphs when hunger is active.
+ui.dorios.insight.component.air_bubbles.label=Air Bubbles
+ui.dorios.insight.component.air_bubbles.description=Shows air supply bubbles when underwater.
+ui.dorios.insight.component.effects.label= Status Effects
+ui.dorios.insight.component.effects.description=Shows active effects with level and duration.
+ui.dorios.insight.component.effect_hearts.label=Status Heart Effects
+ui.dorios.insight.component.effect_hearts.description=Recolors hearts for poison/wither effects.
+ui.dorios.insight.component.frozen_hearts.label=Frozen Hearts
+ui.dorios.insight.component.frozen_hearts.description=Frozen heart styling when freezing (deprecated).
+ui.dorios.insight.component.animal_hearts.label=Rideable Hearts
+ui.dorios.insight.component.animal_hearts.description=Uses animal hearts for rideable entities.
+ui.dorios.insight.component.tameable.label= Tameable Status
+ui.dorios.insight.component.tameable.description=Shows whether an entity is tameable and currently tamed.
+ui.dorios.insight.component.tame_foods.label= Tame Foods
+ui.dorios.insight.component.tame_foods.description=Shows valid tame foods for tameable entities.
+ui.dorios.insight.component.technical.label= Technical Summary
+ui.dorios.insight.component.technical.description=Shows debug totals and metrics for the current target.
+ui.dorios.insight.component.coordinates.label= Coordinates
+ui.dorios.insight.component.coordinates.description=Shows block or entity coordinates.
+ui.dorios.insight.component.type_id.label=Type Identifier
+ui.dorios.insight.component.type_id.description=Shows full type identifier of the target.
+ui.dorios.insight.component.entity_tags.label=Entity Tags
+ui.dorios.insight.component.entity_tags.description=Shows tags from the target entity.
+ui.dorios.insight.component.entity_families.label=Entity Families
+ui.dorios.insight.component.entity_families.description=Shows type families from the target entity.
+ui.dorios.insight.component.velocity.label=Entity Velocity
+ui.dorios.insight.component.velocity.description=Shows velocity vector for moving entities.
+ui.dorios.insight.component.namespace_resolution.label=Namespace Resolution Debug
+ui.dorios.insight.component.namespace_resolution.description=Shows namespace mapping debug source and resolution details.
+ui.dorios.insight.component.deprecated_suffix= §8[Deprecated/Non-functional]§r

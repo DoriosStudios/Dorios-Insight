@@ -1,0 +1,62 @@
+{
+	"format_version": 2,
+	"metadata": {
+		"authors": [
+			"Dorios Studios"
+		],
+		"product_type": "addon"
+	},
+	"header": {
+		"name": "Dorios' Insight",
+		"description": "Action bar information overlay for Bedrock Edition.",
+		"min_engine_version": [
+			1,
+			21,
+			120
+		],
+		"uuid": "411955f3-73f5-424a-b23d-01d040de6340",
+		"version": [
+			1,
+			0,
+			0
+		]
+	},
+	"modules": [
+		{
+			"type": "resources",
+			"uuid": "748dfa7a-c778-4ff6-85d0-2134cb94f2da",
+			"version": [
+				1,
+				0,
+				0
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"uuid": "9cae2113-07c4-4433-ad8f-eb687d290e26",
+			"version": [
+				1,
+				0,
+				0
+			]
+		}
+	],
+	"subpacks": [
+		{
+			"folder_name": "dark",
+			"memory_tier": 0,
+			"name": "§8Dark"
+		},
+		{
+			"folder_name": "copper",
+			"memory_tier": 1,
+			"name": "§6Copper"
+		},
+		{
+			"folder_name": "default",
+			"memory_tier": 2,
+			"name": "§9Default"
+		}
+	]
+}

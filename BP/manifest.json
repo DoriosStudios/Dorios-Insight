@@ -1,0 +1,64 @@
+{
+	"format_version": 2,
+	"metadata": {
+		"authors": [
+			"Dorios Studios"
+		],
+		"product_type": "addon"
+	},
+	"header": {
+		"name": "Dorios' Insight",
+		"description": "Action bar information overlay for Bedrock Edition.",
+		"min_engine_version": [
+			1,
+			21,
+			120
+		],
+		"uuid": "9cae2113-07c4-4433-ad8f-eb687d290e26",
+		"version": [
+			1,
+			0,
+			0
+		]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "ca6ab00c-28d2-4d1a-958c-831eee877ec4",
+			"version": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"type": "script",
+			"language": "javascript",
+			"uuid": "83f3651a-b519-42b6-b200-cf7561110508",
+			"version": [
+				1,
+				0,
+				0
+			],
+			"entry": "scripts/main.js"
+		}
+	],
+	"dependencies": [
+		{
+			"uuid": "411955f3-73f5-424a-b23d-01d040de6340",
+			"version": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"module_name": "@minecraft/server",
+			"version": "2.4.0"
+		},
+		{
+			"module_name": "@minecraft/server-ui",
+			"version": "2.0.0"
+		}
+	]
+}
