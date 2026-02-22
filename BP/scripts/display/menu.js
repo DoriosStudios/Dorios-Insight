@@ -20,6 +20,7 @@ import {
     setPlayerActivation,
     updatePlayerOverrides
 } from "./config.js";
+import { registerNamespaceAlias } from "./namespaceInjection.js";
 
 const modeSequence = [InsightModes.Essential, InsightModes.Detailed, InsightModes.Debug];
 
@@ -495,6 +496,43 @@ async function showRuntimeMenu(player) {
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.runtime_updated"));
 }
 
+async function showNamespaceMenu(player) {
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.namespace_menu.title"))
+        .textField(
+            tr("ui.dorios.insight.namespace_menu.namespace_label"),
+            tr("ui.dorios.insight.namespace_menu.namespace_hint")
+        )
+        .textField(
+            tr("ui.dorios.insight.namespace_menu.display_label"),
+            tr("ui.dorios.insight.namespace_menu.display_hint")
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    const namespaceInput = String(result.formValues[0] ?? "").trim();
+    const displayName = String(result.formValues[1] ?? "").trim();
+
+    if (!namespaceInput || !displayName) {
+        sendPlayerMessage(player, tr("ui.dorios.insight.namespace_menu.error_required"));
+        return;
+    }
+
+    const registration = registerNamespaceAlias(namespaceInput, displayName, true);
+    if (!registration?.ok) {
+        sendPlayerMessage(player, tr("ui.dorios.insight.namespace_menu.error_invalid"));
+        return;
+    }
+
+    sendPlayerMessage(
+        player,
+        tr("ui.dorios.insight.namespace_menu.success", [registration.namespace, registration.name])
+    );
+}
+
 function getComponentGroups() {
     const generalComponents = InsightComponentDefinitions.filter((component) => !customComponentKeySet.has(component.key));
     const customComponents = InsightComponentDefinitions.filter((component) => customComponentKeySet.has(component.key));
@@ -557,6 +595,7 @@ export async function openInsightMenu(player) {
         .button(tr("ui.dorios.insight.menu.global_toggle_button", [globalStateLabel]))
         .button(tr("ui.dorios.insight.menu.components_general_button"))
         .button(tr("ui.dorios.insight.menu.components_custom_button"))
+        .button(tr("ui.dorios.insight.menu.namespace_button"))
         .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
         .button(tr("ui.dorios.insight.menu.runtime_button"))
         .button(tr("ui.dorios.insight.menu.reset_button"))
@@ -584,12 +623,15 @@ export async function openInsightMenu(player) {
             await showComponentGroupMenu(player, componentGroups.custom);
             break;
         case 5:
-            await showStyleMenu(player);
+            await showNamespaceMenu(player);
             break;
         case 6:
-            await showRuntimeMenu(player);
+            await showStyleMenu(player);
             break;
         case 7:
+            await showRuntimeMenu(player);
+            break;
+        case 8:
             resetPlayerOverrides(player);
             sendPlayerMessage(player, tr("ui.dorios.insight.feedback.reset_done"));
             break;

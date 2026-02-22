@@ -13,10 +13,11 @@ import {
     setPlayerActivation,
     updatePlayerOverrides
 } from "./config.js";
+import { registerNamespaceAlias } from "./namespaceInjection.js";
 import { openInsightMenu } from "./menu.js";
 
 const modeSet = new Set([InsightModes.Essential, InsightModes.Detailed, InsightModes.Debug]);
-const commandActionSet = new Set(["menu", "mode", "activate", "global"]);
+const commandActionSet = new Set(["menu", "mode", "activate", "global", "namespace"]);
 let commandsRegistered = false;
 
 const componentAliases = Object.freeze({
@@ -81,7 +82,8 @@ function getUsage() {
         "§e/utilitycraft:insight mode <essential|detailed|debug> §7- Set global mode",
         "§e/utilitycraft:insight activate <on|off|toggle> §7- Toggle your local activation",
         "§e/utilitycraft:insight activate <component> <show|sneak|creative|hide> §7- Set component visibility",
-        "§e/utilitycraft:insight global <on|off|toggle|status> §7- Toggle Insight globally"
+        "§e/utilitycraft:insight global <on|off|toggle|status> §7- Toggle Insight globally",
+        "§e/utilitycraft:insight namespace add <namespace> <displayName> §7- Map a namespace to an addon name"
     ].join("\n");
 }
 
@@ -192,7 +194,43 @@ function handleGlobalCommand(player, primaryValue) {
     sendMessage(player, "§cUsage: /utilitycraft:insight global <on|off|toggle|status>");
 }
 
-function handleRootInsightCommand(player, action, value, value2) {
+function handleNamespaceCommand(player, primaryValue, secondaryValue, tertiaryValue) {
+    const action = String(primaryValue || "").trim().toLowerCase();
+
+    if (!action) {
+        sendMessage(player, "§cUsage: /utilitycraft:insight namespace add <namespace> <displayName>");
+        return;
+    }
+
+    let namespaceArg;
+    let displayNameArg;
+
+    if (action === "add" || action === "set") {
+        namespaceArg = secondaryValue;
+        displayNameArg = tertiaryValue;
+    } else {
+        namespaceArg = primaryValue;
+        displayNameArg = secondaryValue;
+    }
+
+    const namespaceValue = typeof namespaceArg === "string" ? namespaceArg.trim() : "";
+    const displayNameValue = typeof displayNameArg === "string" ? displayNameArg.trim() : "";
+
+    if (!namespaceValue || !displayNameValue) {
+        sendMessage(player, "§cUsage: /utilitycraft:insight namespace add <namespace> <displayName>");
+        return;
+    }
+
+    const result = registerNamespaceAlias(namespaceValue, displayNameValue, true);
+    if (!result?.ok) {
+        sendMessage(player, "§cInvalid namespace or display name.");
+        return;
+    }
+
+    sendMessage(player, `§aNamespace ${result.namespace} mapped to ${result.name}.`);
+}
+
+function handleRootInsightCommand(player, action, value, value2, value3) {
     const normalizedAction = String(action || "").trim().toLowerCase();
 
     if (!commandActionSet.has(normalizedAction)) {
@@ -222,6 +260,11 @@ function handleRootInsightCommand(player, action, value, value2) {
         return;
     }
 
+    if (normalizedAction === "namespace") {
+        handleNamespaceCommand(player, value, value2, value3);
+        return;
+    }
+
     sendMessage(player, getUsage());
 }
 
@@ -240,7 +283,7 @@ export function initializeInsightCommands() {
             {
                 name: "action",
                 type: "enum",
-                enum: ["menu", "mode", "activate", "global"]
+                enum: ["menu", "mode", "activate", "global", "namespace"]
             },
             {
                 name: "value",
@@ -251,16 +294,21 @@ export function initializeInsightCommands() {
                 name: "value2",
                 type: "string",
                 optional: true
+            },
+            {
+                name: "value3",
+                type: "string",
+                optional: true
             }
         ],
-        callback(origin, action, value, value2) {
+        callback(origin, action, value, value2, value3) {
             const player = origin?.sourceEntity;
             if (player?.typeId !== "minecraft:player") {
                 console.warn("[Dorios' Insight] utilitycraft:insight can only be used by players.");
                 return;
             }
 
-            handleRootInsightCommand(player, action, value, value2);
+            handleRootInsightCommand(player, action, value, value2, value3);
         }
     });
 }

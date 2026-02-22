@@ -33,7 +33,8 @@ const RegistryState = {
     initialized: false,
     mergedByKey: new Map(),
     dynamicByKey: new Map(),
-    contentToAddonKey: new Map()
+    contentToAddonKey: new Map(),
+    namespaceToAddonKey: new Map()
 };
 
 function normalizeAddonKey(value) {
@@ -42,6 +43,32 @@ function normalizeAddonKey(value) {
         .toLowerCase()
         .replace(/\s+/g, "_")
         .replace(/[^a-z0-9_.-]/g, "");
+}
+
+function normalizeNamespaceInput(value) {
+    if (typeof value !== "string") {
+        return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return undefined;
+    }
+
+    const namespaceCandidate = trimmed.includes(":")
+        ? trimmed.split(":")[0]
+        : trimmed;
+
+    const normalized = namespaceCandidate.trim().toLowerCase();
+    if (!normalized) {
+        return undefined;
+    }
+
+    if (!/^[a-z0-9_.-]+$/.test(normalized)) {
+        return undefined;
+    }
+
+    return normalized;
 }
 
 function decodeTagPayload(value) {
@@ -133,6 +160,7 @@ function mergeAddonDefinitions(baseAddon, overrideAddon) {
 function rebuildMergedRegistry() {
     RegistryState.mergedByKey = new Map();
     RegistryState.contentToAddonKey = new Map();
+    RegistryState.namespaceToAddonKey = new Map();
 
     for (const addon of DEFAULT_ADDON_LIBRARY) {
         RegistryState.mergedByKey.set(addon.key, {
@@ -150,6 +178,11 @@ function rebuildMergedRegistry() {
     }
 
     for (const addon of RegistryState.mergedByKey.values()) {
+        const namespaceKey = normalizeNamespaceInput(addon.namespace);
+        if (namespaceKey) {
+            RegistryState.namespaceToAddonKey.set(namespaceKey, addon.key);
+        }
+
         for (const typeId of addon.content) {
             RegistryState.contentToAddonKey.set(typeId, addon.key);
         }
@@ -269,6 +302,22 @@ function getAddonByTypeId(typeId) {
     return RegistryState.mergedByKey.get(addonKey);
 }
 
+function getAddonByNamespace(namespace) {
+    ensureRegistryInitialized();
+
+    const normalizedNamespace = normalizeNamespaceInput(namespace);
+    if (!normalizedNamespace) {
+        return undefined;
+    }
+
+    const addonKey = RegistryState.namespaceToAddonKey.get(normalizedNamespace);
+    if (!addonKey) {
+        return undefined;
+    }
+
+    return RegistryState.mergedByKey.get(addonKey);
+}
+
 function registerAddonContentInternal(addonContent, persist = true) {
     ensureRegistryInitialized();
 
@@ -289,6 +338,34 @@ function registerAddonContentInternal(addonContent, persist = true) {
     return true;
 }
 
+function registerNamespaceAliasInternal(namespaceInput, displayName, persist = true) {
+    const namespace = normalizeNamespaceInput(namespaceInput);
+    const name = typeof displayName === "string" ? displayName.trim() : "";
+
+    if (!namespace || !name) {
+        return {
+            ok: false,
+            reason: "invalid_input"
+        };
+    }
+
+    const key = normalizeAddonKey(`namespace_${namespace}`);
+    const didRegister = registerAddonContentInternal({
+        key,
+        name,
+        type: "namespace",
+        namespace,
+        content: []
+    }, persist);
+
+    return {
+        ok: didRegister,
+        key,
+        namespace,
+        name
+    };
+}
+
 function exposeNamespaceRegistryApi() {
     if (globalThis.InsightNamespaceRegistry) {
         return;
@@ -297,6 +374,9 @@ function exposeNamespaceRegistryApi() {
     globalThis.InsightNamespaceRegistry = {
         registerAddonContent(addonContent, persist = true) {
             return registerAddonContentInternal(addonContent, persist);
+        },
+        registerNamespaceAlias(namespaceInput, displayName, persist = true) {
+            return registerNamespaceAliasInternal(namespaceInput, displayName, persist);
         },
         registerAddonContents(addons, persist = true) {
             if (!Array.isArray(addons)) {
@@ -324,6 +404,17 @@ function exposeNamespaceRegistryApi() {
                 namespace: addon.namespace,
                 content: [...addon.content]
             }));
+        },
+        getNamespaceAliases() {
+            ensureRegistryInitialized();
+            return [...RegistryState.namespaceToAddonKey.entries()].map(([namespace, addonKey]) => {
+                const addon = RegistryState.mergedByKey.get(addonKey);
+                return {
+                    namespace,
+                    name: addon?.name ?? toTitleWords(namespace.split("_")),
+                    key: addonKey
+                };
+            });
         },
         refreshFromDynamicProperties() {
             RegistryState.initialized = false;
@@ -382,7 +473,8 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
 
     const addonFromTag = addonKeyFromTag ? getAddonByKey(addonKeyFromTag) : undefined;
     const addonFromTypeId = getAddonByTypeId(typeId);
-    const mappedAddon = addonFromTag || addonFromTypeId;
+    const addonFromNamespace = getAddonByNamespace(namespaceOverride || namespace);
+    const mappedAddon = addonFromTag || addonFromTypeId || addonFromNamespace;
 
     let source = "default";
     let resolvedNamespace = namespace;
@@ -403,7 +495,11 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
         addonType = mappedAddon.type;
         resolvedNamespace = mappedAddon.namespace || resolvedNamespace;
         displayNamespace = mappedAddon.name;
-        source = addonFromTag ? "tag:addon" : "registry:content";
+        source = addonFromTag
+            ? "tag:addon"
+            : addonFromTypeId
+                ? "registry:content"
+                : "registry:namespace";
     }
 
     if (aliasOverride) {
@@ -421,4 +517,9 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
         resolvedNamespace,
         displayNamespace
     };
+}
+
+export function registerNamespaceAlias(namespaceInput, displayName, persist = true) {
+    ensureRegistryInitialized();
+    return registerNamespaceAliasInternal(namespaceInput, displayName, persist);
 }

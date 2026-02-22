@@ -7,8 +7,8 @@
 		"product_type": "addon"
 	},
 	"header": {
-		"name": "Dorios' Insight",
-		"description": "Action bar information overlay for Bedrock Edition.",
+		"name": "§eDorios' Insight",
+		"description": "1.0.0 §6Dorios Studios",
 		"min_engine_version": [
 			1,
 			21,
@@ -18,7 +18,7 @@
 		"version": [
 			1,
 			0,
-			0
+			1
 		]
 	},
 	"modules": [
@@ -49,7 +49,7 @@
 			"version": [
 				1,
 				0,
-				0
+				1
 			]
 		},
 		{
