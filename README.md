@@ -4,7 +4,11 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 
 ## What's planned
 
-### - [ ] Main Objetive: Improve the insight menu and command.
+### - Main Objetive: Improve the insight menu and command.
+- Split `/insight` to `insightmenu`, `insightactivate`, etc.
+- Clarify the menu buttons, categories and names.
+  - Specifically: Add a new settings screen for "Conditions", as well as other for "System Settings". The menu should be completely organized.
+
 ### - Secondary Objectives:
 - [ ] Add the mob's name below the nickname (given by a nametag)
   - Should be configurable. Recommended options: 
