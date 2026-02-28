@@ -30,7 +30,7 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 - [ ] Add a compatibility module for custom states and their definitions
 - [ ] Add more styles of display for every "icon-based" field.
   - Should be configurable. Recommended options:
-    - **Icons (Emojis)** *(Default),
+    - **Icons (Emojis)** *(Default)*,
     - **Text Type 1 ( Health: x/y )**,
     - **Text Type 2 ( Health: x% )**,
     - **Hybrid Type 1 ( ❤️ x/y )**,
