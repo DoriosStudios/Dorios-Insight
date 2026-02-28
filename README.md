@@ -28,19 +28,16 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
     - **Below Name** *(Default)*, 
     - **Hidden**.
 - [ ] Add a compatibility module for custom states and their definitions
-- [ ] Add "tool tier" indicator. 
-> (if it needs to be iron or diamond tier, for example.)
+- [ ] Add "tool tier" indicator. *(if it needs to be iron or diamond tier, for example.)*
   - Can be configurable. Recommended options:
     - **Boolean Indicator (Yes/No)** *(Default)*,
     - **Tier Indicator (Color)**,
     - **Tier Indicator (Ore)**
     - **Text Indicator ("Diamond")**
 - [ ] Add a "Rox × Column" setting for tags, states and components
-- [ ] Finish the compatibility with UtilityCraft, Atelier and similar. 
-> (For custom fields, such as Energy, Fluid or Next Variant)
+- [ ] Finish the compatibility with UtilityCraft, Atelier and similar. *(For custom fields, such as Energy, Fluid or Next Variant)*
 - [ ] Rename pretty much every vanilla state, permutation, trait and component to better match an user friendly usage
-- [ ] Add missing icons for effects 
-> (Health Boost, Regeneration, Fatal Poison...)
+- [ ] Add missing icons for effects *(Health Boost, Regeneration, Fatal Poison...)*
 - [ ] Expand customization of Style.
   - Additionally but not confirmed: Add a custom type of display with params for advanced users.
 - [ ] Fix entity translation (method of display).
