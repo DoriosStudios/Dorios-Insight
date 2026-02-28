@@ -28,6 +28,14 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
     - **Below Name** *(Default)*, 
     - **Hidden**.
 - [ ] Add a compatibility module for custom states and their definitions
+- [ ] Add more styles of display for every "icon-based" field.
+  - Should be configurable. Recommended options:
+    - **Icons (Emojis)** *(Default),
+    - **Text Type 1 ( Health: x/y )**,
+    - **Text Type 2 ( Health: x% )**,
+    - **Hybrid Type 1 ( ❤️ x/y )**,
+    - **Hybrid Type 2 ( ❤️ x% )**,
+    - *feel free to suggest more.*
 - [ ] Add "tool tier" indicator. *(if it needs to be iron or diamond tier, for example.)*
   - Can be configurable. Recommended options:
     - **Boolean Indicator (Yes/No)** *(Default)*,
