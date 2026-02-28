@@ -3,7 +3,7 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 
 
 ## Simple To-Do
-- [] Add the mob's name below the nickname (given by a nametag)
+- [ ] Add the mob's name below the nickname (given by a nametag)
   - Should be configurable. Recommended options: **Nickname First** (Default), **Mob Name First**, **Nickname After Mob Name**, **Mob Name After Nickname**, **Nickname Only**, **Mob Name Only**.
 - [] Add Villager Professions fields
   - Should be configurable. Recommended options: **After Name**, **Below Name (Default)**, **Hidden**.
