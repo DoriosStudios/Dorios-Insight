@@ -275,38 +275,38 @@ const BlockToolTagGlyphs = Object.freeze([
         tags: ["minecraft:is_pickaxe_item_destructible", "minecraft:pickaxe_item_destructible"],
         type: "pickaxe",
         glyph: ToolGlyphs.pickaxe,
-        label: "Pickaxe"
-    }, // label: ui.insight.breakableBy.pickaxe
+        labelKey: "ui.dorios.insight.tool.pickaxe"
+    },
     {
         tags: ["minecraft:is_axe_item_destructible", "minecraft:axe_item_destructible"],
         type: "axe",
         glyph: ToolGlyphs.axe,
-        label: "Axe"
-    }, // label: ui.insight.breakableBy.axe
+        labelKey: "ui.dorios.insight.tool.axe"
+    },
     {
         tags: ["minecraft:is_shovel_item_destructible", "minecraft:shovel_item_destructible"],
         type: "shovel",
         glyph: ToolGlyphs.shovel,
-        label: "Shovel"
-    }, // label: ui.insight.breakableBy.shovel
+        labelKey: "ui.dorios.insight.tool.shovel"
+    },
     {
         tags: ["minecraft:is_hoe_item_destructible", "minecraft:hoe_item_destructible"],
         type: "hoe",
         glyph: ToolGlyphs.hoe,
-        label: "Hoe"
-    }, // label: ui.insight.breakableBy.hoe
+        labelKey: "ui.dorios.insight.tool.hoe"
+    },
     {
         tags: ["minecraft:is_shears_item_destructible", "minecraft:shears_item_destructible"],
         type: "shears",
         glyph: ToolGlyphs.shears,
-        label: "Shears"
-    }, // label: ui.insight.breakableBy.shears
+        labelKey: "ui.dorios.insight.tool.shears"
+    },
     {
         tags: ["minecraft:is_sword_item_destructible", "minecraft:sword_item_destructible"],
         type: "sword",
         glyph: ToolGlyphs.sword,
-        label: "Sword"
-    } // label: ui.insight.breakableBy.sword
+        labelKey: "ui.dorios.insight.tool.sword"
+    }
 ]);
 
 const BlockTierTags = Object.freeze({
@@ -379,24 +379,24 @@ const VillagerEntityTypeIds = new Set([
     "minecraft:zombie_villager_v2"
 ]);
 
-const VillagerProfessionTokenLabels = Object.freeze({
-    unskilled: "Unemployed",
-    unemployed: "Unemployed",
-    farmer: "Farmer",
-    fisherman: "Fisherman",
-    shepherd: "Shepherd",
-    fletcher: "Fletcher",
-    librarian: "Librarian",
-    cartographer: "Cartographer",
-    cleric: "Cleric",
-    armorer: "Armorer",
-    weaponsmith: "Weaponsmith",
-    toolsmith: "Toolsmith",
-    butcher: "Butcher",
-    leatherworker: "Leatherworker",
-    mason: "Mason",
-    stone_mason: "Mason",
-    nitwit: "Nitwit"
+const VillagerProfessionTokenLocalizationKeys = Object.freeze({
+    unskilled: "entity.villager.unskilled",
+    unemployed: "entity.villager.unskilled",
+    farmer: "entity.villager.farmer",
+    fisherman: "entity.villager.fisherman",
+    shepherd: "entity.villager.shepherd",
+    fletcher: "entity.villager.fletcher",
+    librarian: "entity.villager.librarian",
+    cartographer: "entity.villager.cartographer",
+    cleric: "entity.villager.cleric",
+    armorer: "entity.villager.armor",
+    weaponsmith: "entity.villager.weapon",
+    toolsmith: "entity.villager.tool",
+    butcher: "entity.villager.butcher",
+    leatherworker: "entity.villager.leather",
+    mason: "entity.villager.mason",
+    stone_mason: "entity.villager.mason",
+    nitwit: "entity.villager.unskilled"
 });
 
 // -----------------------------------------------------------------------------
@@ -433,6 +433,14 @@ function tr(key, withArgs = []) {
     return entry;
 }
 
+function readLocalizationKey(target) {
+    const localizationKey = typeof target?.localizationKey === "string"
+        ? target.localizationKey.trim()
+        : "";
+
+    return localizationKey.length ? localizationKey : undefined;
+}
+
 /**
  * Appends a display result on a new line. Handles both plain strings and rawtext objects.
  */
@@ -452,16 +460,28 @@ function appendDisplayLine(rawtext, displayResult) {
     }
 }
 
+function pushRawtextParts(rawtext, parts) {
+    if (!Array.isArray(parts) || !parts.length) {
+        return;
+    }
+
+    for (const part of parts) {
+        if (!part) {
+            continue;
+        }
+
+        rawtext.push(part);
+    }
+}
+
 // -----------------------------------------------------------------------------
 // Translation helpers
 // -----------------------------------------------------------------------------
 
 function buildBlockTranslationRawtext(block) {
-    const localizationKey = typeof block?.localizationKey === "string"
-        ? block.localizationKey.trim()
-        : "";
+    const localizationKey = readLocalizationKey(block);
 
-    if (localizationKey.length) {
+    if (localizationKey) {
         return {
             translate: localizationKey
         };
@@ -469,7 +489,7 @@ function buildBlockTranslationRawtext(block) {
 
     const blockTypeId = String(block?.typeId || "");
     if (!blockTypeId.length) {
-        return { text: "Block" };
+        return tr("ui.dorios.insight.display.unknown_block");
     }
 
     const { id } = splitTypeId(blockTypeId);
@@ -786,12 +806,25 @@ function isBreakableWithHeldTool(toolDescriptors, requiredTier, heldItemStack) {
 function buildToolTierIndicator(requiredTier, playerSettings, context = {}) {
     const mode = String(playerSettings?.toolTierIndicatorMode || ToolTierIndicatorModes.BooleanIndicator);
     if (mode === ToolTierIndicatorModes.Hidden) {
-        return "";
+        return [];
     }
 
     const colorCode = getToolIndicatorTextColor(playerSettings);
 
     const requiresTool = requiredTier !== "any";
+    const tierLocalizationKeys = {
+        any: "ui.dorios.insight.tier.any",
+        wood: "ui.dorios.insight.tier.wood",
+        stone: "ui.dorios.insight.tier.stone",
+        iron: "ui.dorios.insight.tier.iron",
+        gold: "ui.dorios.insight.tier.gold",
+        diamond: "ui.dorios.insight.tier.diamond",
+        netherite: "ui.dorios.insight.tier.netherite"
+    };
+    const tierLocalizationKey = tierLocalizationKeys[requiredTier];
+    const tierRawtext = tierLocalizationKey
+        ? tr(tierLocalizationKey)
+        : { text: toTitleWords([requiredTier]) };
 
     if (mode === ToolTierIndicatorModes.BooleanIndicator) {
         const canBreakWithHeldTool = isBreakableWithHeldTool(
@@ -799,28 +832,46 @@ function buildToolTierIndicator(requiredTier, playerSettings, context = {}) {
             requiredTier,
             context.heldItemStack
         );
-        return `${colorCode}Breakable: ${canBreakWithHeldTool ? "Yes" : "No"}§r`;
+        return [
+            { text: colorCode },
+            tr("ui.dorios.insight.display.breakable_label"),
+            { text: " " },
+            tr(canBreakWithHeldTool ? "ui.dorios.insight.value.yes" : "ui.dorios.insight.value.no"),
+            { text: "§r" }
+        ];
     }
 
     if (!requiresTool) {
-        return `${colorCode}Tier: Any§r`;
+        return [
+            { text: colorCode },
+            tr("ui.dorios.insight.display.tier_label"),
+            { text: " " },
+            tr("ui.dorios.insight.tier.any"),
+            { text: "§r" }
+        ];
     }
 
     if (mode === ToolTierIndicatorModes.TierIndicatorColor) {
         const color = ToolTierColors[requiredTier] || "§7";
-        return `${color}■§r`;
+        return [{ text: `${color}■§r` }];
     }
 
     if (mode === ToolTierIndicatorModes.TierIndicatorOre) {
         const oreGlyph = ToolTierOreGlyphs[requiredTier] || ToolTierOreGlyphs.any;
-        return `${oreGlyph}`;
+        return [{ text: `${oreGlyph}` }];
     }
 
     if (mode === ToolTierIndicatorModes.TextIndicator) {
-        return `${colorCode}Tier: ${toTitleWords([requiredTier])}§r`;
+        return [
+            { text: colorCode },
+            tr("ui.dorios.insight.display.tier_label"),
+            { text: " " },
+            tierRawtext,
+            { text: "§r" }
+        ];
     }
 
-    return "";
+    return [];
 }
 
 function buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, context = {}) {
@@ -835,18 +886,39 @@ function buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, con
     }
 
     if (isTextOnlyDisplayStyle(playerSettings)) {
-        const toolLabels = toolDescriptors.map((entry) => entry.label);
-        const breakableText = `${colorCode}Breakable: ${toolLabels.join(", ")}§r`;
-        return toolTierIndicator
-            ? `${breakableText} ${toolTierIndicator}`
+        const breakableText = [
+            { text: colorCode },
+            tr("ui.dorios.insight.display.breakable_label"),
+            { text: " " }
+        ];
+
+        for (let index = 0; index < toolDescriptors.length; index++) {
+            if (index > 0) {
+                breakableText.push({ text: ", " });
+            }
+
+            const descriptor = toolDescriptors[index];
+            if (descriptor?.labelKey) {
+                breakableText.push(tr(descriptor.labelKey));
+            } else if (descriptor?.type) {
+                breakableText.push({ text: toTitleWords([descriptor.type]) });
+            }
+        }
+
+        breakableText.push({ text: "§r" });
+
+        return toolTierIndicator.length
+            ? [...breakableText, { text: " " }, ...toolTierIndicator]
             : breakableText;
     }
 
     const toolGlyphs = toolDescriptors.map((entry) => entry.glyph);
     const glyphText = toolGlyphs.join(EmojiLayout.toolGlyphSpacing);
-    return toolTierIndicator
-        ? `${glyphText} ${toolTierIndicator}`
-        : glyphText;
+    const glyphParts = [{ text: glyphText }];
+
+    return toolTierIndicator.length
+        ? [...glyphParts, { text: " " }, ...toolTierIndicator]
+        : glyphParts;
 }
 
 function getToolIndicatorPlacement(playerSettings) {
@@ -863,12 +935,12 @@ function getToolIndicatorPlacement(playerSettings) {
 }
 
 function buildBreakableToolsPlacement(toolDescriptors, blockTags, playerSettings, context = {}) {
-    const toolText = buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, context);
-    if (!toolText) {
+    const toolParts = buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, context);
+    if (!Array.isArray(toolParts) || !toolParts.length) {
         return {
-            prefixText: "",
-            suffixText: "",
-            belowLineText: ""
+            prefixParts: [],
+            suffixParts: [],
+            belowLineParts: []
         };
     }
 
@@ -876,24 +948,24 @@ function buildBreakableToolsPlacement(toolDescriptors, blockTags, playerSettings
 
     if (placement === ToolIndicatorPlacementModes.BelowName) {
         return {
-            prefixText: "",
-            suffixText: "",
-            belowLineText: `\n${toolText}`
+            prefixParts: [],
+            suffixParts: [],
+            belowLineParts: [{ text: "\n" }, ...toolParts]
         };
     }
 
     if (placement === ToolIndicatorPlacementModes.AfterName) {
         return {
-            prefixText: "",
-            suffixText: `${EmojiLayout.blockNameToolSpacing}${toolText}`,
-            belowLineText: ""
+            prefixParts: [],
+            suffixParts: [{ text: EmojiLayout.blockNameToolSpacing }, ...toolParts],
+            belowLineParts: []
         };
     }
 
     return {
-        prefixText: `${toolText}${EmojiLayout.blockNameToolSpacing}`,
-        suffixText: "",
-        belowLineText: ""
+        prefixParts: [...toolParts, { text: EmojiLayout.blockNameToolSpacing }],
+        suffixParts: [],
+        belowLineParts: []
     };
 }
 
@@ -970,9 +1042,14 @@ function buildVanillaBlockTranslationKey(blockId) {
 }
 
 function buildItemTranslationRawtext(itemStack) {
+    const localizationKey = readLocalizationKey(itemStack);
+    if (localizationKey) {
+        return { translate: localizationKey };
+    }
+
     const itemTypeId = itemStack?.typeId;
     if (!itemTypeId) {
-        return { text: "Item" };
+        return tr("ui.dorios.insight.display.unknown_item");
     }
 
     const { namespace, id } = splitTypeId(itemTypeId);
@@ -1004,16 +1081,14 @@ function buildItemTranslationRawtext(itemStack) {
     }
 
     return {
-        translate: `item.${id}`
+        translate: `item.${id}.name`
     };
 }
 
 function buildEntityTranslationRawtext(entity, typeIdForDisplay) {
-    const localizationKey = typeof entity?.localizationKey === "string"
-        ? entity.localizationKey.trim()
-        : "";
+    const localizationKey = readLocalizationKey(entity);
 
-    if (localizationKey.length) {
+    if (localizationKey) {
         return { translate: localizationKey };
     }
 
@@ -1131,21 +1206,21 @@ function normalizeVillagerProfessionName(rawValue) {
 
     if (Number.isFinite(rawValue)) {
         const professionByIndex = [
-            "Unemployed",
-            "Farmer",
-            "Fisherman",
-            "Shepherd",
-            "Fletcher",
-            "Librarian",
-            "Cartographer",
-            "Cleric",
-            "Armorer",
-            "Weaponsmith",
-            "Toolsmith",
-            "Butcher",
-            "Leatherworker",
-            "Mason",
-            "Nitwit"
+            "entity.villager.unskilled",
+            "entity.villager.farmer",
+            "entity.villager.fisherman",
+            "entity.villager.shepherd",
+            "entity.villager.fletcher",
+            "entity.villager.librarian",
+            "entity.villager.cartographer",
+            "entity.villager.cleric",
+            "entity.villager.armor",
+            "entity.villager.weapon",
+            "entity.villager.tool",
+            "entity.villager.butcher",
+            "entity.villager.leather",
+            "entity.villager.mason",
+            "entity.villager.unskilled"
         ];
 
         const index = Math.max(0, Math.floor(rawValue));
@@ -1188,13 +1263,28 @@ function normalizeVillagerProfessionToken(rawValue) {
     }
 
     for (const candidate of candidates) {
-        const label = VillagerProfessionTokenLabels[candidate];
-        if (label) {
-            return label;
+        const localizationKey = VillagerProfessionTokenLocalizationKeys[candidate];
+        if (localizationKey) {
+            return localizationKey;
         }
     }
 
     return undefined;
+}
+
+function buildVillagerProfessionNameRawtext(value) {
+    if (typeof value !== "string") {
+        return undefined;
+    }
+
+    const normalized = value.trim();
+    if (!normalized.length) {
+        return undefined;
+    }
+
+    return normalized.startsWith("entity.villager.")
+        ? { translate: normalized }
+        : { text: normalized };
 }
 
 function getVillagerProfessionLabelFromList(values) {
@@ -1724,19 +1814,28 @@ function buildEffectTextEntry(effect) {
         return undefined;
     }
 
+    const { namespace } = splitTypeId(typeId);
     const normalizedTypeId = normalizeEffectTypeId(typeId);
-    const effectName = formatTypeIdToText(typeId);
+    const effectNameRawtext = namespace === "minecraft"
+        ? { translate: `potion.${normalizedTypeId}.name` }
+        : { text: formatTypeIdToText(typeId) };
     const effectLevel = toRomanNumeral(getEffectLevel(effect));
     const effectPolarity = getEffectPolarity(normalizedTypeId);
     const colorCode = EffectTextColors[effectPolarity] || EffectTextColors.neutral;
     const effectDuration = formatEffectDuration(effect);
 
-    let entryText = `${colorCode}${effectName} ${effectLevel}`;
+    const entry = [
+        { text: colorCode },
+        effectNameRawtext,
+        { text: ` ${effectLevel}` }
+    ];
+
     if (effectDuration) {
-        entryText += ` §7(${effectDuration})`;
+        entry.push({ text: ` §7(${effectDuration})` });
     }
 
-    return `${entryText}§r`;
+    entry.push({ text: "§r" });
+    return entry;
 }
 
 function buildEffectEmojiEntry(effect) {
@@ -1786,12 +1885,29 @@ function buildEffectsDisplay(effects, playerSettings) {
         return undefined;
     }
 
-    let body = useTextMode
-        ? entries.join("§7, §r")
-        : entries.join(" ");
-
     const hiddenEffects = effects.length - visibleEffects.length;
 
+    if (useTextMode) {
+        const result = [tr("ui.dorios.insight.display.effects_label"), { text: " " }];
+
+        for (let index = 0; index < entries.length; index++) {
+            if (index > 0) {
+                result.push({ text: "§7, §r" });
+            }
+
+            pushRawtextParts(result, entries[index]);
+        }
+
+        if (hiddenEffects > 0) {
+            result.push({ text: "§7, §8" });
+            result.push(tr("ui.dorios.insight.display.more_items", [`${hiddenEffects}`]));
+        }
+
+        result.push({ text: "§r" });
+        return result;
+    }
+
+    const body = entries.join(" ");
     const result = [tr("ui.dorios.insight.display.effects", [body])];
 
     if (hiddenEffects > 0) {
@@ -1823,8 +1939,46 @@ function buildWrappedCommaList(values, entriesPerLine) {
 }
 
 function buildTameFoodsDisplay(foodTypeIds) {
-    const foodLabels = foodTypeIds.map((typeId) => formatTypeIdToText(typeId));
-    return buildWrappedCommaList(foodLabels, TameableDisplay.foodsPerLine);
+    if (!Array.isArray(foodTypeIds) || !foodTypeIds.length) {
+        return [];
+    }
+
+    const foodsPerLine = Math.max(1, Math.floor(TameableDisplay.foodsPerLine));
+    const rawtext = [];
+    let renderedFoods = 0;
+
+    for (let index = 0; index < foodTypeIds.length; index++) {
+        const typeId = String(foodTypeIds[index] || "").trim();
+        if (!typeId.length) {
+            continue;
+        }
+
+        if (renderedFoods > 0) {
+            rawtext.push({
+                text: renderedFoods % foodsPerLine === 0 ? ",\n" : ", "
+            });
+        }
+
+        const { namespace, id } = splitTypeId(typeId);
+        const mappedKey = ItemTranslationKeys[id];
+
+        if (mappedKey) {
+            rawtext.push({ translate: mappedKey });
+            renderedFoods += 1;
+            continue;
+        }
+
+        if (namespace === "minecraft") {
+            rawtext.push({ translate: `item.${id}.name` });
+            renderedFoods += 1;
+            continue;
+        }
+
+        rawtext.push({ translate: `item.${typeId}` });
+        renderedFoods += 1;
+    }
+
+    return rawtext;
 }
 
 function appendCustomFieldLines(rawtext, lines) {
@@ -2339,25 +2493,13 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
     const toolDescriptors = getBlockToolDescriptors(block, blockTags);
     const breakableToolsPlacement = buildBreakableToolsPlacement(toolDescriptors, blockTags, playerSettings, context);
 
-    if (breakableToolsPlacement.prefixText) {
-        rawtext.push({
-            text: breakableToolsPlacement.prefixText
-        });
-    }
+    pushRawtextParts(rawtext, breakableToolsPlacement.prefixParts);
 
     rawtext.push(buildBlockTranslationRawtext(block));
 
-    if (breakableToolsPlacement.suffixText) {
-        rawtext.push({
-            text: breakableToolsPlacement.suffixText
-        });
-    }
+    pushRawtextParts(rawtext, breakableToolsPlacement.suffixParts);
 
-    if (breakableToolsPlacement.belowLineText) {
-        rawtext.push({
-            text: breakableToolsPlacement.belowLineText
-        });
-    }
+    pushRawtextParts(rawtext, breakableToolsPlacement.belowLineParts);
 
     if (playerSettings.showNamespace) {
         rawtext.push({
@@ -2487,6 +2629,7 @@ function buildEntityActionbarPayload(entity, playerSettings) {
     const namespaceInfo = resolveInjectedNamespace(typeIdForDisplay, entityTags);
     const entityFamilies = getEntityFamilies(entity);
     const villagerProfessionLabel = getVillagerProfessionLabel(entity, entityTags, entityFamilies);
+    const villagerProfessionNameRawtext = buildVillagerProfessionNameRawtext(villagerProfessionLabel);
     const isRideable = !isTargetPlayer && playerSettings.showAnimalHearts
         ? isEntityRideable(entity, entityFamilies)
         : false;
@@ -2513,13 +2656,15 @@ function buildEntityActionbarPayload(entity, playerSettings) {
         itemStack
     });
 
-    if (villagerProfessionLabel && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.AfterName) {
-        rawtext.push({ text: ` §7(${villagerProfessionLabel})§r` });
+    if (villagerProfessionNameRawtext && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.AfterName) {
+        rawtext.push({ text: " §7(" });
+        rawtext.push(villagerProfessionNameRawtext);
+        rawtext.push({ text: ")§r" });
     }
 
-    if (villagerProfessionLabel && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.BelowName) {
+    if (villagerProfessionNameRawtext && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.BelowName) {
         rawtext.push({ text: "\n" });
-        rawtext.push(tr("ui.dorios.insight.display.profession", [villagerProfessionLabel]));
+        rawtext.push(tr("ui.dorios.insight.display.profession", [villagerProfessionNameRawtext]));
     }
 
     if (playerSettings.showNamespace) {
@@ -2594,7 +2739,15 @@ function buildEntityActionbarPayload(entity, playerSettings) {
     }
 
     if (playerSettings.showTameFoods && tameableData.isTameable) {
-        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.foods", [buildTameFoodsDisplay(tameableData.foodTypeIds)]));
+        const foodsRawtext = buildTameFoodsDisplay(tameableData.foodTypeIds);
+        if (foodsRawtext.length) {
+            appendDisplayLine(rawtext, [
+                tr("ui.dorios.insight.display.foods_label"),
+                { text: " " },
+                ...foodsRawtext,
+                { text: "§r" }
+            ]);
+        }
     }
 
     // Step 4: append optional metadata blocks.

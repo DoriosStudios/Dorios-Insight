@@ -206,3 +206,26 @@ ui.dorios.insight.menu.components_button=Componentes
 ui.dorios.insight.feedback.conditions_updated=§aCondições de exibição de entidade atualizadas.
 ui.dorios.insight.feedback.system_updated=§aConfigurações de exibição de bloco atualizadas.
 ui.dorios.insight.feedback.deprecated_ignored=§8Itens deprecados ignorados: %1§r
+
+ui.dorios.insight.display.effects_label=§7Efeitos:§r
+ui.dorios.insight.display.foods_label=§7Comidas:§r
+ui.dorios.insight.display.breakable_label=Quebrável:
+ui.dorios.insight.display.tier_label=Nível:
+ui.dorios.insight.value.yes=Sim
+ui.dorios.insight.value.no=Não
+ui.dorios.insight.tier.any=Qualquer
+ui.dorios.insight.tier.wood=Madeira
+ui.dorios.insight.tier.stone=Pedra
+ui.dorios.insight.tier.iron=Ferro
+ui.dorios.insight.tier.gold=Ouro
+ui.dorios.insight.tier.diamond=Diamante
+ui.dorios.insight.tier.netherite=Netherita
+ui.dorios.insight.tool.pickaxe=Picareta
+ui.dorios.insight.tool.axe=Machado
+ui.dorios.insight.tool.shovel=Pá
+ui.dorios.insight.tool.hoe=Enxada
+ui.dorios.insight.tool.shears=Tesoura
+ui.dorios.insight.tool.sword=Espada
+
+ui.dorios.insight.display.unknown_block=Bloco
+ui.dorios.insight.display.unknown_item=Item
