@@ -79,12 +79,34 @@ function getUsage() {
     return [
         "§6Dorios' Insight Commands",
         "§e/utilitycraft:insight menu §7- Open the configuration menu",
+        "§e/utilitycraft:insightmenu §7- Open the configuration menu",
         "§e/utilitycraft:insight mode <essential|detailed|debug> §7- Set global mode",
+        "§e/utilitycraft:insightmode <essential|detailed|debug> §7- Set global mode",
         "§e/utilitycraft:insight activate <on|off|toggle> §7- Toggle your local activation",
+        "§e/utilitycraft:insightactivate <on|off|toggle> §7- Toggle your local activation",
         "§e/utilitycraft:insight activate <component> <show|sneak|creative|hide> §7- Set component visibility",
         "§e/utilitycraft:insight global <on|off|toggle|status> §7- Toggle Insight globally",
+        "§e/utilitycraft:insightglobal <on|off|toggle|status> §7- Toggle Insight globally",
         "§e/utilitycraft:insight namespace add <namespace> <displayName> §7- Map a namespace to an addon name"
     ].join("\n");
+}
+
+function getPlayerFromOrigin(origin) {
+    const player = origin?.sourceEntity;
+    if (player?.typeId !== "minecraft:player") {
+        console.warn("[Dorios' Insight] utilitycraft:insight command can only be used by players.");
+        return undefined;
+    }
+
+    return player;
+}
+
+function registerInsightCommand(definition) {
+    try {
+        DoriosAPI.register.command(definition);
+    } catch (error) {
+        console.warn(`[Dorios' Insight] Failed to register command ${definition?.name}: ${error}`);
+    }
 }
 
 function handleModeCommand(player, modeValue) {
@@ -224,7 +246,7 @@ function handleNamespaceCommand(player, primaryValue, secondaryValue, tertiaryVa
     const result = registerNamespaceAlias(namespaceValue, displayNameValue, true);
     if (!result?.ok) {
         sendMessage(player, "§cInvalid namespace or display name.");
-        return;
+            return; // Stop execution after invalid input
     }
 
     sendMessage(player, `§aNamespace ${result.namespace} mapped to ${result.name}.`);
@@ -275,7 +297,7 @@ export function initializeInsightCommands() {
 
     commandsRegistered = true;
 
-    DoriosAPI.register.command({
+    registerInsightCommand({
         name: "insight",
         description: "Dorios Insight runtime controls",
         permissionLevel: "any",
@@ -302,13 +324,126 @@ export function initializeInsightCommands() {
             }
         ],
         callback(origin, action, value, value2, value3) {
-            const player = origin?.sourceEntity;
-            if (player?.typeId !== "minecraft:player") {
-                console.warn("[Dorios' Insight] utilitycraft:insight can only be used by players.");
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
                 return;
             }
 
             handleRootInsightCommand(player, action, value, value2, value3);
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightmenu",
+        description: "Open Dorios Insight menu",
+        permissionLevel: "any",
+        parameters: [],
+        callback(origin) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleRootInsightCommand(player, "menu");
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightmode",
+        description: "Set Dorios Insight mode",
+        permissionLevel: "any",
+        parameters: [
+            {
+                name: "mode",
+                type: "string",
+                optional: true
+            }
+        ],
+        callback(origin, mode) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleRootInsightCommand(player, "mode", mode);
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightactivate",
+        description: "Activate Dorios Insight or set component policy",
+        permissionLevel: "any",
+        parameters: [
+            {
+                name: "value",
+                type: "string",
+                optional: true
+            },
+            {
+                name: "value2",
+                type: "string",
+                optional: true
+            }
+        ],
+        callback(origin, value, value2) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleRootInsightCommand(player, "activate", value, value2);
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightglobal",
+        description: "Set Dorios Insight global status",
+        permissionLevel: "any",
+        parameters: [
+            {
+                name: "value",
+                type: "string",
+                optional: true
+            }
+        ],
+        callback(origin, value) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleRootInsightCommand(player, "global", value);
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightnamespace",
+        description: "Register namespace alias for Dorios Insight",
+        permissionLevel: "any",
+        parameters: [
+            {
+                name: "action",
+                type: "string",
+                optional: true
+            },
+            {
+                name: "namespace",
+                type: "string",
+                optional: true
+            },
+            {
+                name: "displayName",
+                type: "string",
+                optional: true
+            }
+        ],
+        callback(origin, action, namespaceValue, displayNameValue) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleRootInsightCommand(player, "namespace", action, namespaceValue, displayNameValue);
         }
     });
 }

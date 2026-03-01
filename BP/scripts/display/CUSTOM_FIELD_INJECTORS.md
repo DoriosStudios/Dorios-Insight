@@ -85,3 +85,8 @@ globalThis.InsightCustomFields?.registerBlockFieldInjector((ctx) => {
 > Notes:
 > - Property/state names depend on how each addon stores its runtime values.
 > - If values are stored in entities, scoreboards, or dynamic properties, read from those sources inside the injector.
+
+## Related
+
+For state/trait transformations (rename/hide/merge/replace display values), see:
+- `STATE_TRAIT_INJECTORS.md`
