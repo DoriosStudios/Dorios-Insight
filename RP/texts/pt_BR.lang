@@ -130,4 +130,79 @@ ui.dorios.insight.component.velocity.label=Velocidade da Entidade
 ui.dorios.insight.component.velocity.description=Mostra o vetor de velocidade para entidades em movimento.
 ui.dorios.insight.component.namespace_resolution.label=Depuração de Resolução de Namespace
 ui.dorios.insight.component.namespace_resolution.description=Mostra origem do mapeamento de namespace e detalhes de resolução.
+ui.dorios.insight.component.entity_scoreboards.label=Scoreboards de Entidade
+ui.dorios.insight.component.entity_scoreboards.description=Mostra valores baseados em scoreboards (energia, capacidade) para entidades.
 ui.dorios.insight.component.deprecated_suffix= §8[Deprecado/Não funcional]§r
+
+## Strings de exibição
+ui.dorios.insight.display.health_full=§cVida: %1§f/§c%2§r
+ui.dorios.insight.display.health_percent=§cVida: %1%%§r
+ui.dorios.insight.display.health_hybrid_full=%1 §c%2§f/§c%3§r
+ui.dorios.insight.display.health_hybrid_percent=%1 §c%2%%§r
+ui.dorios.insight.display.hunger_full=§6Fome: %1§f/§6%2§r
+ui.dorios.insight.display.hunger_percent=§6Fome: %1%%§r
+ui.dorios.insight.display.hunger_hybrid_full=%1 §6%2§f/§6%3§r
+ui.dorios.insight.display.hunger_hybrid_percent=%1 §6%2%%§r
+ui.dorios.insight.display.absorption_text=§6Absorção: %1§r
+ui.dorios.insight.display.armor_full=§9Armadura: %1§f/§9%2§r
+ui.dorios.insight.display.armor_percent=§9Armadura: %1%%§r
+ui.dorios.insight.display.armor_hybrid_full=%1 §9%2§f/§9%3§r
+ui.dorios.insight.display.armor_hybrid_percent=%1 §9%2%%§r
+ui.dorios.insight.display.air_full=§bAr: %1§f/§b%2§r
+ui.dorios.insight.display.air_percent=§bAr: %1%%§r
+ui.dorios.insight.display.air_hybrid_full=%1 §b%2§f/§b%3§r
+ui.dorios.insight.display.air_hybrid_percent=%1 §b%2%%§r
+ui.dorios.insight.display.effects=§7Efeitos: %1
+ui.dorios.insight.display.more_items=+%1 a mais...
+ui.dorios.insight.display.tameable_yes=§7Domesticável: Sim§r
+ui.dorios.insight.display.tameable_no=§7Domesticável: Não§r
+ui.dorios.insight.display.tamed_yes=§7Domesticado: Sim§r
+ui.dorios.insight.display.tamed_no=§7Domesticado: Não§r
+ui.dorios.insight.display.foods=§7Comidas: %1§r
+ui.dorios.insight.display.tags=§8Tags: %1
+ui.dorios.insight.display.families=§8Famílias: %1
+ui.dorios.insight.display.type_id=§7ID: %1§r
+ui.dorios.insight.display.position=§7Pos: %1, %2, %3§r
+ui.dorios.insight.display.velocity=§7Vel: %1, %2, %3§r
+ui.dorios.insight.display.profession=§7Profissão: %1§r
+ui.dorios.insight.display.technical_block=§7Estados: %1 | Exibidos: %2 | Tags: %3§r
+ui.dorios.insight.display.technical_entity=§7Tags: %1 | Famílias: %2§r
+ui.dorios.insight.display.namespace_debug=§7Namespace: %1 -> %2§r
+ui.dorios.insight.display.namespace_mapped_by=§7Mapeado por: %1§r
+ui.dorios.insight.display.technical_hp=§7HP: %1/%2 (%3%%)§r
+ui.dorios.insight.display.technical_hunger=§7Fome: %1/%2§r
+ui.dorios.insight.display.technical_saturation=§7Saturação: %1§r
+ui.dorios.insight.display.technical_absorption=§7Absorção: %1§r
+ui.dorios.insight.display.technical_effects=§7Efeitos: %1§r
+ui.dorios.insight.display.scoreboard_energy=§eEnergia: %1§f/§e%2§r
+ui.dorios.insight.display.scoreboard_capacity=§dCapacidade: %1§f/§d%2§r
+
+## Menu - Condições
+ui.dorios.insight.conditions_menu.title=Insight - Exibição de Entidade
+ui.dorios.insight.conditions_menu.name_order=Ordem do Nome da Entidade\n§3Atual: %1
+ui.dorios.insight.conditions_menu.name_method=Método do Nome da Entidade\n§3Atual: %1
+ui.dorios.insight.conditions_menu.villager_profession=Profissão do Aldeão\n§3Atual: %1
+
+## Menu - Config. do Sistema
+ui.dorios.insight.system_menu.title=Insight - Exibição de Bloco
+ui.dorios.insight.system_menu.tier_indicator=Indicador de Nível da Ferramenta\n§3Atual: %1
+ui.dorios.insight.system_menu.tool_position=Posição da Ferramenta/Nível\n§3Atual: %1
+ui.dorios.insight.system_menu.tool_color=Cor da Ferramenta/Nível\n§3Atual: %1
+ui.dorios.insight.system_menu.state_columns=Colunas de Estado\n§3Atual: %1
+ui.dorios.insight.system_menu.tag_columns=Colunas de Tag\n§3Atual: %1
+ui.dorios.insight.system_menu.family_columns=Colunas de Família\n§3Atual: %1
+
+## Menu - Sub-menus
+ui.dorios.insight.activation_menu.title=Insight - Ativação
+ui.dorios.insight.display_menu.title=Insight - Config. de Exibição
+ui.dorios.insight.display_menu.entity_display_button=Exibição de Entidade
+ui.dorios.insight.display_menu.block_display_button=Exibição de Bloco
+ui.dorios.insight.components_menu.title=Insight - Componentes
+ui.dorios.insight.menu.activation_button=Ativação
+ui.dorios.insight.menu.display_button=Config. de Exibição
+ui.dorios.insight.menu.components_button=Componentes
+
+## Feedback
+ui.dorios.insight.feedback.conditions_updated=§aCondições de exibição de entidade atualizadas.
+ui.dorios.insight.feedback.system_updated=§aConfigurações de exibição de bloco atualizadas.
+ui.dorios.insight.feedback.deprecated_ignored=§8Itens deprecados ignorados: %1§r

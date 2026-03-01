@@ -12,6 +12,31 @@ function getPlayerCacheKey(player) {
     return player.id || player.name;
 }
 
+function getPlayerMainhandItem(player) {
+    try {
+        const equippable = player.getComponent?.("minecraft:equippable");
+        if (equippable && typeof equippable.getEquipment === "function") {
+            return equippable.getEquipment("Mainhand")
+                ?? equippable.getEquipment("mainhand")
+                ?? equippable.getEquipment("slot.weapon.mainhand");
+        }
+    } catch {
+        // Fallback below.
+    }
+
+    try {
+        const inventory = player.getComponent?.("minecraft:inventory")?.container;
+        const selectedSlot = Number(player.selectedSlotIndex ?? player.selectedSlot ?? 0);
+        if (inventory && Number.isFinite(selectedSlot)) {
+            return inventory.getItem(Math.max(0, selectedSlot));
+        }
+    } catch {
+        // Ignore inventory fallback failures.
+    }
+
+    return undefined;
+}
+
 function setActionbarIfChanged(player, rawMessage, settings) {
     const cacheKey = getPlayerCacheKey(player);
     const serialized = JSON.stringify(rawMessage);
@@ -162,7 +187,9 @@ function processPlayerRaycast(player, settings) {
     const targetEntity = selectEntityFromRaycast(entityRaycast, settings.includeInvisibleEntities);
 
     if (targetEntity) {
-        const rawMessage = createEntityActionbar(targetEntity, settings);
+        const rawMessage = createEntityActionbar(targetEntity, settings, {
+            heldItemStack: getPlayerMainhandItem(player)
+        });
         setActionbarIfChanged(player, rawMessage, settings);
         return;
     }
@@ -173,7 +200,9 @@ function processPlayerRaycast(player, settings) {
     });
 
     if (blockRaycast) {
-        const rawMessage = createBlockActionbar(blockRaycast.block, settings);
+        const rawMessage = createBlockActionbar(blockRaycast.block, settings, {
+            heldItemStack: getPlayerMainhandItem(player)
+        });
         setActionbarIfChanged(player, rawMessage, settings);
         return;
     }
@@ -210,7 +239,9 @@ function processEntityHit(data) {
         return;
     }
 
-    const rawMessage = createEntityActionbar(data.hitEntity, settings);
+    const rawMessage = createEntityActionbar(data.hitEntity, settings, {
+        heldItemStack: getPlayerMainhandItem(player)
+    });
     setActionbarIfChanged(player, rawMessage, settings);
 }
 

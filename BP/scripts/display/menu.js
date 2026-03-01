@@ -1,17 +1,29 @@
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import {
     DisplayStyleLabels,
+    EntityNameDisplayModeLabels,
+    EntityNameResolveModeLabels,
     EffectDisplayModeLabels,
     InsightComponentDefinitions,
     InsightConfig,
     InsightModes,
+    ToolIndicatorColorOptions,
+    ToolIndicatorPlacementModeLabels,
+    ToolTierIndicatorModeLabels,
     VisibilityPolicyLabels,
+    VillagerProfessionDisplayModeLabels,
     getCurrentMode,
     getDisplayStyleIndex,
+    getEntityNameDisplayModeIndex,
+    getEntityNameResolveModeIndex,
     getEffectDisplayModeIndex,
     getModePreset,
     getPlayerDisplaySettings,
+    getToolIndicatorColorIndex,
+    getToolIndicatorPlacementModeIndex,
+    getToolTierIndicatorModeIndex,
     getVisibilityPolicyIndex,
+    getVillagerProfessionDisplayModeIndex,
     isInsightComponentDeprecated,
     normalizeVisibilityPolicy,
     resetPlayerOverrides,
@@ -85,6 +97,42 @@ function getEffectModeLabel(mode) {
     const normalized = String(mode || "").toLowerCase();
     const option = EffectDisplayModeLabels.find((entry) => entry.key === normalized);
     return option?.label || EffectDisplayModeLabels[0].label;
+}
+
+function getEntityNameDisplayModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = EntityNameDisplayModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || EntityNameDisplayModeLabels[0].label;
+}
+
+function getEntityNameResolveModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = EntityNameResolveModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || EntityNameResolveModeLabels[0].label;
+}
+
+function getVillagerProfessionDisplayModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = VillagerProfessionDisplayModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || VillagerProfessionDisplayModeLabels[0].label;
+}
+
+function getToolTierIndicatorModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = ToolTierIndicatorModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || ToolTierIndicatorModeLabels[0].label;
+}
+
+function getToolIndicatorPlacementModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = ToolIndicatorPlacementModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || ToolIndicatorPlacementModeLabels[0].label;
+}
+
+function getToolIndicatorColorLabel(colorCode) {
+    const normalized = String(colorCode || "").toLowerCase();
+    const option = ToolIndicatorColorOptions.find((entry) => entry.key.toLowerCase() === normalized);
+    return option?.label || ToolIndicatorColorOptions[0].label;
 }
 
 function getStateLabel(isEnabled, enabledLabel = "Enabled", disabledLabel = "Disabled") {
@@ -287,7 +335,7 @@ async function showComponentGroupMenu(player, componentGroup) {
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.components_updated"));
 
     if (ignoredDeprecated.length) {
-        sendPlayerMessage(player, `§8Itens deprecados ignorados: ${ignoredDeprecated.join(", ")}§r`);
+        sendPlayerMessage(player, tr("ui.dorios.insight.feedback.deprecated_ignored", [ignoredDeprecated.join(", ")]));
     }
 }
 
@@ -328,6 +376,146 @@ async function showStyleMenu(player) {
     });
 
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.style_updated"));
+}
+
+async function showConditionsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+
+    const displayModeOptions = EntityNameDisplayModeLabels.map((option) => option.label);
+    const resolveModeOptions = EntityNameResolveModeLabels.map((option) => option.label);
+    const villagerProfessionOptions = VillagerProfessionDisplayModeLabels.map((option) => option.label);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.conditions_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.conditions_menu.name_order", [getEntityNameDisplayModeLabel(runtime.nameDisplayMode)]),
+            displayModeOptions,
+            {
+                defaultValueIndex: getEntityNameDisplayModeIndex(runtime.nameDisplayMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.conditions_menu.name_method", [getEntityNameResolveModeLabel(runtime.nameResolveMode)]),
+            resolveModeOptions,
+            {
+                defaultValueIndex: getEntityNameResolveModeIndex(runtime.nameResolveMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.conditions_menu.villager_profession", [getVillagerProfessionDisplayModeLabel(runtime.villagerProfessionDisplay)]),
+            villagerProfessionOptions,
+            {
+                defaultValueIndex: getVillagerProfessionDisplayModeIndex(runtime.villagerProfessionDisplay)
+            }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            nameDisplayMode: EntityNameDisplayModeLabels[Number(result.formValues[0] ?? 0)]?.key ?? runtime.nameDisplayMode,
+            nameResolveMode: EntityNameResolveModeLabels[Number(result.formValues[1] ?? 0)]?.key ?? runtime.nameResolveMode,
+            villagerProfessionDisplay: VillagerProfessionDisplayModeLabels[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.villagerProfessionDisplay
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.conditions_updated"));
+}
+
+async function showSystemSettingsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+
+    const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
+    const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
+    const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
+    const customValueHint = tr("ui.dorios.insight.runtime.custom_hint");
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.system_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
+            tierIndicatorOptions,
+            {
+                defaultValueIndex: getToolTierIndicatorModeIndex(runtime.toolTierIndicatorMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_position", [getToolIndicatorPlacementModeLabel(runtime.toolIndicatorPlacement)]),
+            toolIndicatorPlacementOptions,
+            {
+                defaultValueIndex: getToolIndicatorPlacementModeIndex(runtime.toolIndicatorPlacement)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_color", [getToolIndicatorColorLabel(runtime.toolIndicatorColor)]),
+            toolIndicatorColorOptions,
+            {
+                defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
+            }
+        )
+        .slider(
+            tr("ui.dorios.insight.system_menu.state_columns", [`${runtime.stateColumns}`]),
+            1,
+            InsightConfig.system.maxLayoutColumns,
+            { defaultValue: runtime.stateColumns }
+        )
+        .textField("", customValueHint)
+        .slider(
+            tr("ui.dorios.insight.system_menu.tag_columns", [`${runtime.tagColumns}`]),
+            1,
+            InsightConfig.system.maxLayoutColumns,
+            { defaultValue: runtime.tagColumns }
+        )
+        .textField("", customValueHint)
+        .slider(
+            tr("ui.dorios.insight.system_menu.family_columns", [`${runtime.familyColumns}`]),
+            1,
+            InsightConfig.system.maxLayoutColumns,
+            { defaultValue: runtime.familyColumns }
+        )
+        .textField("", customValueHint);
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.toolTierIndicatorMode,
+            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.toolIndicatorPlacement,
+            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.toolIndicatorColor,
+            stateColumns: resolveCustomNumberInput(
+                result.formValues[4],
+                Number(result.formValues[3] ?? runtime.stateColumns),
+                1,
+                InsightConfig.system.maxLayoutColumns
+            ),
+            tagColumns: resolveCustomNumberInput(
+                result.formValues[6],
+                Number(result.formValues[5] ?? runtime.tagColumns),
+                1,
+                InsightConfig.system.maxLayoutColumns
+            ),
+            familyColumns: resolveCustomNumberInput(
+                result.formValues[8],
+                Number(result.formValues[7] ?? runtime.familyColumns),
+                1,
+                InsightConfig.system.maxLayoutColumns
+            )
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.system_updated"));
 }
 
 async function showRuntimeMenu(player) {
@@ -572,9 +760,85 @@ function toggleGlobalActivation(player, settings) {
     );
 }
 
+// ---- Sub-menus for grouped sections ----
+
+async function showActivationMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const localStateLabel = getStateLabel(!settings.disabled, "Active", "Disabled");
+    const globalStateLabel = getStateLabel(settings.globalEnabled, "Enabled", "Disabled");
+
+    const form = new ActionFormData()
+        .title(tr("ui.dorios.insight.activation_menu.title"))
+        .button(tr("ui.dorios.insight.menu.local_toggle_button", [localStateLabel]))
+        .button(tr("ui.dorios.insight.menu.global_toggle_button", [globalStateLabel]));
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    switch (result.selection) {
+        case 0:
+            toggleLocalActivation(player, settings);
+            break;
+        case 1:
+            toggleGlobalActivation(player, settings);
+            break;
+    }
+}
+
+async function showDisplayMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+
+    const form = new ActionFormData()
+        .title(tr("ui.dorios.insight.display_menu.title"))
+        .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
+        .button(tr("ui.dorios.insight.display_menu.entity_display_button"))
+        .button(tr("ui.dorios.insight.display_menu.block_display_button"));
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    switch (result.selection) {
+        case 0:
+            await showStyleMenu(player);
+            break;
+        case 1:
+            await showConditionsMenu(player);
+            break;
+        case 2:
+            await showSystemSettingsMenu(player);
+            break;
+    }
+}
+
+async function showComponentsMenu(player) {
+    const componentGroups = getComponentGroups();
+
+    const form = new ActionFormData()
+        .title(tr("ui.dorios.insight.components_menu.title"))
+        .button(tr("ui.dorios.insight.menu.components_general_button"))
+        .button(tr("ui.dorios.insight.menu.components_custom_button"));
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    switch (result.selection) {
+        case 0:
+            await showComponentGroupMenu(player, componentGroups.general);
+            break;
+        case 1:
+            await showComponentGroupMenu(player, componentGroups.custom);
+            break;
+    }
+}
+
 export async function openInsightMenu(player) {
     const settings = getPlayerDisplaySettings(player);
-    const componentGroups = getComponentGroups();
 
     const modeLabel = getModeLabel(settings.mode);
     const localStateLabel = getStateLabel(!settings.disabled, "Active", "Disabled");
@@ -591,12 +855,10 @@ export async function openInsightMenu(player) {
             localStateLabel
         ]))
         .button(tr("ui.dorios.insight.menu.mode_button", [modeLabel]))
-        .button(tr("ui.dorios.insight.menu.local_toggle_button", [localStateLabel]))
-        .button(tr("ui.dorios.insight.menu.global_toggle_button", [globalStateLabel]))
-        .button(tr("ui.dorios.insight.menu.components_general_button"))
-        .button(tr("ui.dorios.insight.menu.components_custom_button"))
+        .button(tr("ui.dorios.insight.menu.activation_button"))
+        .button(tr("ui.dorios.insight.menu.display_button"))
+        .button(tr("ui.dorios.insight.menu.components_button"))
         .button(tr("ui.dorios.insight.menu.namespace_button"))
-        .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
         .button(tr("ui.dorios.insight.menu.runtime_button"))
         .button(tr("ui.dorios.insight.menu.reset_button"))
         .button(tr("ui.dorios.insight.menu.close_button"));
@@ -611,27 +873,21 @@ export async function openInsightMenu(player) {
             await showModeMenu(player);
             break;
         case 1:
-            toggleLocalActivation(player, settings);
+            await showActivationMenu(player);
             break;
         case 2:
-            toggleGlobalActivation(player, settings);
+            await showDisplayMenu(player);
             break;
         case 3:
-            await showComponentGroupMenu(player, componentGroups.general);
+            await showComponentsMenu(player);
             break;
         case 4:
-            await showComponentGroupMenu(player, componentGroups.custom);
-            break;
-        case 5:
             await showNamespaceMenu(player);
             break;
-        case 6:
-            await showStyleMenu(player);
-            break;
-        case 7:
+        case 5:
             await showRuntimeMenu(player);
             break;
-        case 8:
+        case 6:
             resetPlayerOverrides(player);
             sendPlayerMessage(player, tr("ui.dorios.insight.feedback.reset_done"));
             break;

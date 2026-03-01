@@ -1,11 +1,21 @@
-import { EntityHealthComponent } from "@minecraft/server";
+import { EntityHealthComponent, world } from "@minecraft/server";
 import { BlockNames, BlockPrefixes, ItemTranslationKeys } from "../const.js";
-import { DisplayStyles, EffectDisplayModes, InsightConfig } from "./config.js";
+import {
+    DisplayStyles,
+    EffectDisplayModes,
+    EntityNameDisplayModes,
+    EntityNameResolveModes,
+    InsightConfig,
+    ToolIndicatorPlacementModes,
+    ToolTierIndicatorModes,
+    VillagerProfessionDisplayModes
+} from "./config.js";
 import {
     formatNamespaceLabel,
     formatStateName,
     formatTypeIdToText,
     splitTypeId,
+    toTitleWords,
     toMessageText
 } from "./formatters.js";
 import {
@@ -17,6 +27,7 @@ import {
     resolveInjectedNamespace,
     sortBlockTagsForDisplay
 } from "./namespaceInjection.js";
+import { transformBlockStateEntries } from "./stateTraitInjection.js";
 
 // -----------------------------------------------------------------------------
 // Actionbar message composer
@@ -117,6 +128,22 @@ const BubbleDisplay = Object.freeze({
     maxUnits: InsightConfig.system.maxHeartsPerLine * 2
 });
 
+const ToolTierColors = Object.freeze({
+    any: "§e",
+    stone: "§7",
+    iron: "§i",
+    diamond: "§q",
+    netherite: "§n"
+});
+
+const ToolTierOreGlyphs = Object.freeze({
+    any: "◇",
+    stone: "🪨",
+    iron: "⛓",
+    diamond: "💎",
+    netherite: "🧱"
+});
+
 const ToolGlyphs = Object.freeze({
     // Updated glyphs from glyph_F5 page.
     shears: "",
@@ -155,15 +182,10 @@ const EntityComponentIds = Object.freeze({
 });
 
 const TameableDisplay = Object.freeze({
-    foodsPerLine: 3,
-    yesLabel: "Yes", // ui.insight.tamable.yes
-    noLabel: "No", // ui.insight.tamable.no
-    noneLabel: "None" // ui.insight.tamable.none
+    foodsPerLine: 3
 });
 
 const EffectDisplay = Object.freeze({
-    label: "Effects", // ui.insight.effects.label
-    moreSuffix: "more...", // ui.insight.effects.more
     unknownGlyph: "•", 
     infiniteDurationLabel: "∞", 
     iconAmplifierSpacing: " "
@@ -179,6 +201,7 @@ const EffectGlyphByTypeId = Object.freeze({
     darkness: "\uF51F",
     fire_resistance: "\uF529",
     absorption: "\uF52A",
+    health_boost: "\uF52A",
     hunger: "\uF52B",
     invisibility: "\uF52C",
     jump_boost: "\uF52D",
@@ -190,13 +213,13 @@ const EffectGlyphByTypeId = Object.freeze({
     slowness: "\uF53C",
     strength: "\uF53D",
     weakness: "\uF53E",
-    hero_of_the_village: "\uF53F",
+    village_hero: "\uF53F",
     night_vision: "\uF549",
     water_breathing: "\uF54A",
     wither: "\uF54B",
     decay: "\uF54B",
     poison: "\uF54C",
-    regeneration: "\uE110",
+    regeneration: "\uF516",
     dolphins_grace: "\uE119",
     fatal_poison: "\uF54C \uF531",
 });
@@ -218,7 +241,7 @@ const PositiveEffectTypeIds = new Set([
     "conduit",
     "conduit_power",
     "dolphins_grace",
-    "hero_of_the_village",
+    "village_hero",
     "saturation",
     "luck"
 ]);
@@ -248,30 +271,209 @@ const EffectTextColors = Object.freeze({
 });
 
 const BlockToolTagGlyphs = Object.freeze([
-    { tag: "minecraft:is_pickaxe_item_destructible", glyph: ToolGlyphs.pickaxe, label: "Pickaxe" }, // label: ui.insight.breakableBy.pickaxe
-    { tag: "minecraft:is_axe_item_destructible", glyph: ToolGlyphs.axe, label: "Axe" }, // label: ui.insight.breakableBy.axe
-    { tag: "minecraft:is_shovel_item_destructible", glyph: ToolGlyphs.shovel, label: "Shovel" }, // label: ui.insight.breakableBy.shovel
-    { tag: "minecraft:is_hoe_item_destructible", glyph: ToolGlyphs.hoe, label: "Hoe" }, // label: ui.insight.breakableBy.hoe
-    { tag: "minecraft:is_shears_item_destructible", glyph: ToolGlyphs.shears, label: "Shears" }, // label: ui.insight.breakableBy.shears
-    { tag: "minecraft:is_sword_item_destructible", glyph: ToolGlyphs.sword, label: "Sword" } // label: ui.insight.breakableBy.sword
+    {
+        tags: ["minecraft:is_pickaxe_item_destructible", "minecraft:pickaxe_item_destructible"],
+        type: "pickaxe",
+        glyph: ToolGlyphs.pickaxe,
+        label: "Pickaxe"
+    }, // label: ui.insight.breakableBy.pickaxe
+    {
+        tags: ["minecraft:is_axe_item_destructible", "minecraft:axe_item_destructible"],
+        type: "axe",
+        glyph: ToolGlyphs.axe,
+        label: "Axe"
+    }, // label: ui.insight.breakableBy.axe
+    {
+        tags: ["minecraft:is_shovel_item_destructible", "minecraft:shovel_item_destructible"],
+        type: "shovel",
+        glyph: ToolGlyphs.shovel,
+        label: "Shovel"
+    }, // label: ui.insight.breakableBy.shovel
+    {
+        tags: ["minecraft:is_hoe_item_destructible", "minecraft:hoe_item_destructible"],
+        type: "hoe",
+        glyph: ToolGlyphs.hoe,
+        label: "Hoe"
+    }, // label: ui.insight.breakableBy.hoe
+    {
+        tags: ["minecraft:is_shears_item_destructible", "minecraft:shears_item_destructible"],
+        type: "shears",
+        glyph: ToolGlyphs.shears,
+        label: "Shears"
+    }, // label: ui.insight.breakableBy.shears
+    {
+        tags: ["minecraft:is_sword_item_destructible", "minecraft:sword_item_destructible"],
+        type: "sword",
+        glyph: ToolGlyphs.sword,
+        label: "Sword"
+    } // label: ui.insight.breakableBy.sword
 ]);
+
+const BlockTierTags = Object.freeze({
+    netherite: Object.freeze([
+        "minecraft:requires_netherite_tool",
+        "minecraft:netherite_tier_destructible",
+        "minecraft:is_netherite_tier_destructible"
+    ]),
+    diamond: Object.freeze([
+        "minecraft:requires_diamond_tool",
+        "minecraft:diamond_tier_destructible",
+        "minecraft:is_diamond_tier_destructible"
+    ]),
+    iron: Object.freeze([
+        "minecraft:requires_iron_tool",
+        "minecraft:iron_tier_destructible",
+        "minecraft:is_iron_tier_destructible"
+    ]),
+    stone: Object.freeze([
+        "minecraft:requires_stone_tool",
+        "minecraft:stone_tier_destructible",
+        "minecraft:is_stone_tier_destructible"
+    ])
+});
+
+const ToolTierStrength = Object.freeze({
+    any: 0,
+    wood: 0,
+    wooden: 0,
+    gold: 0,
+    golden: 0,
+    stone: 1,
+    copper: 1,
+    iron: 2,
+    diamond: 3,
+    netherite: 4
+});
+
+const ItemToolTypeSuffixes = Object.freeze([
+    Object.freeze({ suffix: "_pickaxe", type: "pickaxe" }),
+    Object.freeze({ suffix: "_axe", type: "axe" }),
+    Object.freeze({ suffix: "_shovel", type: "shovel" }),
+    Object.freeze({ suffix: "_hoe", type: "hoe" }),
+    Object.freeze({ suffix: "_sword", type: "sword" })
+]);
+
+const ItemToolTypeTagAliases = Object.freeze({
+    pickaxe: Object.freeze(["pickaxe", "is_pickaxe"]),
+    axe: Object.freeze(["axe", "is_axe"]),
+    shovel: Object.freeze(["shovel", "is_shovel"]),
+    hoe: Object.freeze(["hoe", "is_hoe"]),
+    shears: Object.freeze(["shears", "is_shears"]),
+    sword: Object.freeze(["sword", "is_sword"])
+});
+
+const ItemTierTagAliases = Object.freeze({
+    netherite: Object.freeze(["netherite_tier", "is_netherite_tier"]),
+    diamond: Object.freeze(["diamond_tier", "is_diamond_tier"]),
+    iron: Object.freeze(["iron_tier", "is_iron_tier"]),
+    stone: Object.freeze(["stone_tier", "is_stone_tier"]),
+    copper: Object.freeze(["copper_tier", "is_copper_tier"]),
+    golden: Object.freeze(["gold_tier", "golden_tier", "is_gold_tier", "is_golden_tier"]),
+    wooden: Object.freeze(["wood_tier", "wooden_tier", "is_wood_tier", "is_wooden_tier"])
+});
+
+const VillagerEntityTypeIds = new Set([
+    "minecraft:villager",
+    "minecraft:villager_v2",
+    "minecraft:zombie_villager",
+    "minecraft:zombie_villager_v2"
+]);
+
+const VillagerProfessionTokenLabels = Object.freeze({
+    unskilled: "Unemployed",
+    unemployed: "Unemployed",
+    farmer: "Farmer",
+    fisherman: "Fisherman",
+    shepherd: "Shepherd",
+    fletcher: "Fletcher",
+    librarian: "Librarian",
+    cartographer: "Cartographer",
+    cleric: "Cleric",
+    armorer: "Armorer",
+    weaponsmith: "Weaponsmith",
+    toolsmith: "Toolsmith",
+    butcher: "Butcher",
+    leatherworker: "Leatherworker",
+    mason: "Mason",
+    stone_mason: "Mason",
+    nitwit: "Nitwit"
+});
 
 // -----------------------------------------------------------------------------
 // Main flow (entry points)
 // -----------------------------------------------------------------------------
-export function createBlockActionbar(block, playerSettings) {
-    return buildBlockActionbarPayload(block, playerSettings);
+export function createBlockActionbar(block, playerSettings, context) {
+    return buildBlockActionbarPayload(block, playerSettings, context);
 }
 
-export function createEntityActionbar(entity, playerSettings) {
-    return buildEntityActionbarPayload(entity, playerSettings);
+export function createEntityActionbar(entity, playerSettings, context) {
+    return buildEntityActionbarPayload(entity, playerSettings, context);
+}
+
+// -----------------------------------------------------------------------------
+// Rawtext / localization helpers
+// -----------------------------------------------------------------------------
+
+/**
+ * Builds a translate rawtext element.
+ * @param {string} key - Localization key.
+ * @param {Array} [withArgs] - Substitution args (strings or rawtext objects).
+ */
+function tr(key, withArgs = []) {
+    const entry = { translate: key };
+    if (withArgs.length) {
+        entry.with = withArgs.map((arg) =>
+            arg === undefined || arg === null
+                ? ""
+                : typeof arg === "object"
+                    ? arg
+                    : String(arg)
+        );
+    }
+    return entry;
+}
+
+/**
+ * Appends a display result on a new line. Handles both plain strings and rawtext objects.
+ */
+function appendDisplayLine(rawtext, displayResult) {
+    if (!displayResult) {
+        return;
+    }
+
+    rawtext.push({ text: "\n" });
+
+    if (typeof displayResult === "string") {
+        rawtext.push({ text: displayResult });
+    } else if (Array.isArray(displayResult)) {
+        rawtext.push(...displayResult);
+    } else if (typeof displayResult === "object") {
+        rawtext.push(displayResult);
+    }
 }
 
 // -----------------------------------------------------------------------------
 // Translation helpers
 // -----------------------------------------------------------------------------
 
-function buildBlockTranslationRawtext(blockTypeId, blockIdentifier) {
+function buildBlockTranslationRawtext(block) {
+    const localizationKey = typeof block?.localizationKey === "string"
+        ? block.localizationKey.trim()
+        : "";
+
+    if (localizationKey.length) {
+        return {
+            translate: localizationKey
+        };
+    }
+
+    const blockTypeId = String(block?.typeId || "");
+    if (!blockTypeId.length) {
+        return { text: "Block" };
+    }
+
+    const { id } = splitTypeId(blockTypeId);
+    const blockIdentifier = id.replace("double_slab", "slab");
     const translationPrefix = BlockPrefixes[blockIdentifier] || "tile";
     const translationName = BlockNames[blockIdentifier] || blockIdentifier;
 
@@ -302,8 +504,46 @@ function hasBlockTag(block, tags, targetTag) {
     return false;
 }
 
+function hasAnyBlockTag(block, tags, targetTags) {
+    if (!Array.isArray(targetTags) || !targetTags.length) {
+        return false;
+    }
+
+    for (const targetTag of targetTags) {
+        if (hasBlockTag(block, tags, targetTag)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function isTextDisplayStyle(playerSettings) {
-    return playerSettings?.displayStyle === DisplayStyles.Text;
+    const style = normalizeDisplayStyleValue(playerSettings?.displayStyle);
+    return style !== DisplayStyles.Icon;
+}
+
+function isTextOnlyDisplayStyle(playerSettings) {
+    const style = normalizeDisplayStyleValue(playerSettings?.displayStyle);
+    return style === DisplayStyles.TextFull || style === DisplayStyles.TextPercent;
+}
+
+function isHybridDisplayStyle(playerSettings) {
+    const style = normalizeDisplayStyleValue(playerSettings?.displayStyle);
+    return style === DisplayStyles.HybridFull || style === DisplayStyles.HybridPercent;
+}
+
+function isPercentDisplayStyle(displayStyle) {
+    const style = normalizeDisplayStyleValue(displayStyle);
+    return style === DisplayStyles.TextPercent || style === DisplayStyles.HybridPercent;
+}
+
+function normalizeDisplayStyleValue(displayStyle) {
+    if (displayStyle === DisplayStyles.Text) {
+        return DisplayStyles.TextFull;
+    }
+
+    return String(displayStyle || DisplayStyles.Icon);
 }
 
 // Collects all matching tool descriptors by known vanilla block-destruction tags.
@@ -311,7 +551,7 @@ function getBlockToolDescriptors(block, blockTags) {
     const descriptors = [];
 
     for (const entry of BlockToolTagGlyphs) {
-        if (hasBlockTag(block, blockTags, entry.tag)) {
+        if (hasAnyBlockTag(block, blockTags, entry.tags)) {
             descriptors.push(entry);
         }
     }
@@ -319,18 +559,357 @@ function getBlockToolDescriptors(block, blockTags) {
     return descriptors;
 }
 
-function buildBreakableToolsSuffix(toolDescriptors, playerSettings) {
-    if (!toolDescriptors.length) {
+function getRequiredToolTier(blockTags) {
+    if (!Array.isArray(blockTags) || !blockTags.length) {
+        return "any";
+    }
+
+    if (hasAnyBlockTag(undefined, blockTags, BlockTierTags.netherite)) {
+        return "netherite";
+    }
+
+    if (hasAnyBlockTag(undefined, blockTags, BlockTierTags.diamond)) {
+        return "diamond";
+    }
+
+    if (hasAnyBlockTag(undefined, blockTags, BlockTierTags.iron)) {
+        return "iron";
+    }
+
+    if (hasAnyBlockTag(undefined, blockTags, BlockTierTags.stone)) {
+        return "stone";
+    }
+
+    return "any";
+}
+
+function getToolIndicatorTextColor(playerSettings) {
+    const configured = String(playerSettings?.toolIndicatorColor || InsightConfig.display.technicalColor).trim();
+    return /^§[0-9a-fr]$/i.test(configured)
+        ? configured
+        : InsightConfig.display.technicalColor;
+}
+
+function normalizeTagToken(rawTag) {
+    const normalized = String(rawTag || "").trim().toLowerCase();
+    if (!normalized.length) {
         return "";
     }
 
-    if (isTextDisplayStyle(playerSettings)) {
+    return normalized.startsWith("minecraft:")
+        ? normalized.slice("minecraft:".length)
+        : normalized;
+}
+
+function getItemTagTokenSet(itemStack) {
+    const tokenSet = new Set();
+    if (!itemStack) {
+        return tokenSet;
+    }
+
+    try {
+        if (typeof itemStack.getTags === "function") {
+            const itemTags = itemStack.getTags();
+            if (Array.isArray(itemTags)) {
+                for (const rawTag of itemTags) {
+                    const normalized = normalizeTagToken(rawTag);
+                    if (!normalized) {
+                        continue;
+                    }
+
+                    tokenSet.add(normalized);
+                }
+            }
+        }
+    } catch {
+        // Ignore tag read failures.
+    }
+
+    return tokenSet;
+}
+
+function hasAnyItemTagToken(itemStack, itemTagTokens, candidateTags) {
+    if (!Array.isArray(candidateTags) || !candidateTags.length) {
+        return false;
+    }
+
+    for (const candidateTag of candidateTags) {
+        const normalizedCandidate = normalizeTagToken(candidateTag);
+        if (!normalizedCandidate) {
+            continue;
+        }
+
+        if (itemTagTokens.has(normalizedCandidate)) {
+            return true;
+        }
+
+        try {
+            if (typeof itemStack?.hasTag === "function") {
+                if (itemStack.hasTag(candidateTag) || itemStack.hasTag(`minecraft:${normalizedCandidate}`) || itemStack.hasTag(normalizedCandidate)) {
+                    return true;
+                }
+            }
+        } catch {
+            // Ignore hasTag failures and continue matching.
+        }
+    }
+
+    return false;
+}
+
+function getToolTypeFromItemTypeId(itemTypeId) {
+    if (!itemTypeId) {
+        return undefined;
+    }
+
+    const { id } = splitTypeId(itemTypeId);
+    const normalizedId = String(id || "").toLowerCase();
+    if (!normalizedId.length) {
+        return undefined;
+    }
+
+    if (normalizedId === "shears") {
+        return "shears";
+    }
+
+    for (const entry of ItemToolTypeSuffixes) {
+        if (normalizedId.endsWith(entry.suffix)) {
+            return entry.type;
+        }
+    }
+
+    return undefined;
+}
+
+function getToolTypeFromItemTags(itemStack, itemTagTokens) {
+    for (const [toolType, tagAliases] of Object.entries(ItemToolTypeTagAliases)) {
+        if (hasAnyItemTagToken(itemStack, itemTagTokens, tagAliases)) {
+            return toolType;
+        }
+    }
+
+    return undefined;
+}
+
+function getToolTierFromItemTypeId(itemTypeId) {
+    if (!itemTypeId) {
+        return "any";
+    }
+
+    const { id } = splitTypeId(itemTypeId);
+    const normalizedId = String(id || "").toLowerCase();
+    if (!normalizedId.length) {
+        return "any";
+    }
+
+    const tierPrefix = normalizedId.split("_")[0];
+    if (ToolTierStrength[tierPrefix] !== undefined) {
+        return tierPrefix;
+    }
+
+    return "any";
+}
+
+function getToolTierFromItemTags(itemStack, itemTagTokens) {
+    const orderedTiers = ["netherite", "diamond", "iron", "stone", "copper", "golden", "wooden"];
+
+    for (const tierName of orderedTiers) {
+        const aliases = ItemTierTagAliases[tierName];
+        if (!Array.isArray(aliases) || !aliases.length) {
+            continue;
+        }
+
+        if (hasAnyItemTagToken(itemStack, itemTagTokens, aliases)) {
+            return tierName;
+        }
+    }
+
+    return undefined;
+}
+
+function getHeldToolInfo(heldItemStack) {
+    if (!heldItemStack) {
+        return undefined;
+    }
+
+    const itemTagTokens = getItemTagTokenSet(heldItemStack);
+    const heldTypeId = heldItemStack?.typeId;
+    const toolType = getToolTypeFromItemTags(heldItemStack, itemTagTokens) || getToolTypeFromItemTypeId(heldTypeId);
+    const toolTier = getToolTierFromItemTags(heldItemStack, itemTagTokens) || getToolTierFromItemTypeId(heldTypeId);
+
+    if (!toolType && toolTier === "any") {
+        return undefined;
+    }
+
+    return {
+        toolType,
+        toolTier
+    };
+}
+
+function isHeldToolTierSufficient(heldTier, requiredTier) {
+    if (requiredTier === "any") {
+        return true;
+    }
+
+    const heldStrength = ToolTierStrength[heldTier] ?? -1;
+    const requiredStrength = ToolTierStrength[requiredTier] ?? 0;
+    return heldStrength >= requiredStrength;
+}
+
+function isBreakableWithHeldTool(toolDescriptors, requiredTier, heldItemStack) {
+    const requiresSpecificToolType = Array.isArray(toolDescriptors) && toolDescriptors.length > 0;
+    const heldToolInfo = getHeldToolInfo(heldItemStack);
+
+    if (!requiresSpecificToolType && requiredTier === "any") {
+        return true;
+    }
+
+    if (!heldToolInfo) {
+        return false;
+    }
+
+    if (requiresSpecificToolType) {
+        if (!heldToolInfo.toolType) {
+            return false;
+        }
+
+        const matchesToolType = toolDescriptors.some((entry) => entry.type === heldToolInfo.toolType);
+        if (!matchesToolType) {
+            return false;
+        }
+    }
+
+    return isHeldToolTierSufficient(heldToolInfo.toolTier, requiredTier);
+}
+
+function buildToolTierIndicator(requiredTier, playerSettings, context = {}) {
+    const mode = String(playerSettings?.toolTierIndicatorMode || ToolTierIndicatorModes.BooleanIndicator);
+    if (mode === ToolTierIndicatorModes.Hidden) {
+        return "";
+    }
+
+    const colorCode = getToolIndicatorTextColor(playerSettings);
+
+    const requiresTool = requiredTier !== "any";
+
+    if (mode === ToolTierIndicatorModes.BooleanIndicator) {
+        const canBreakWithHeldTool = isBreakableWithHeldTool(
+            context.toolDescriptors,
+            requiredTier,
+            context.heldItemStack
+        );
+        return `${colorCode}Breakable: ${canBreakWithHeldTool ? "Yes" : "No"}§r`;
+    }
+
+    if (!requiresTool) {
+        return `${colorCode}Tier: Any§r`;
+    }
+
+    if (mode === ToolTierIndicatorModes.TierIndicatorColor) {
+        const color = ToolTierColors[requiredTier] || "§7";
+        return `${color}■§r`;
+    }
+
+    if (mode === ToolTierIndicatorModes.TierIndicatorOre) {
+        const oreGlyph = ToolTierOreGlyphs[requiredTier] || ToolTierOreGlyphs.any;
+        return `${oreGlyph}`;
+    }
+
+    if (mode === ToolTierIndicatorModes.TextIndicator) {
+        return `${colorCode}Tier: ${toTitleWords([requiredTier])}§r`;
+    }
+
+    return "";
+}
+
+function buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, context = {}) {
+    const toolTierIndicator = buildToolTierIndicator(getRequiredToolTier(blockTags), playerSettings, {
+        ...context,
+        toolDescriptors
+    });
+    const colorCode = getToolIndicatorTextColor(playerSettings);
+
+    if (!toolDescriptors.length) {
+        return toolTierIndicator;
+    }
+
+    if (isTextOnlyDisplayStyle(playerSettings)) {
         const toolLabels = toolDescriptors.map((entry) => entry.label);
-        return `${EmojiLayout.blockNameToolSpacing}${InsightConfig.display.technicalColor}Breakable: ${toolLabels.join(", ")}§r`;
+        const breakableText = `${colorCode}Breakable: ${toolLabels.join(", ")}§r`;
+        return toolTierIndicator
+            ? `${breakableText} ${toolTierIndicator}`
+            : breakableText;
     }
 
     const toolGlyphs = toolDescriptors.map((entry) => entry.glyph);
-    return `${EmojiLayout.blockNameToolSpacing}${toolGlyphs.join(EmojiLayout.toolGlyphSpacing)}`;
+    const glyphText = toolGlyphs.join(EmojiLayout.toolGlyphSpacing);
+    return toolTierIndicator
+        ? `${glyphText} ${toolTierIndicator}`
+        : glyphText;
+}
+
+function getToolIndicatorPlacement(playerSettings) {
+    const rawPlacement = String(playerSettings?.toolIndicatorPlacement || ToolIndicatorPlacementModes.BeforeName);
+    if (rawPlacement === ToolIndicatorPlacementModes.AfterName) {
+        return ToolIndicatorPlacementModes.AfterName;
+    }
+
+    if (rawPlacement === ToolIndicatorPlacementModes.BelowName) {
+        return ToolIndicatorPlacementModes.BelowName;
+    }
+
+    return ToolIndicatorPlacementModes.BeforeName;
+}
+
+function buildBreakableToolsPlacement(toolDescriptors, blockTags, playerSettings, context = {}) {
+    const toolText = buildBreakableToolsText(toolDescriptors, blockTags, playerSettings, context);
+    if (!toolText) {
+        return {
+            prefixText: "",
+            suffixText: "",
+            belowLineText: ""
+        };
+    }
+
+    const placement = getToolIndicatorPlacement(playerSettings);
+
+    if (placement === ToolIndicatorPlacementModes.BelowName) {
+        return {
+            prefixText: "",
+            suffixText: "",
+            belowLineText: `\n${toolText}`
+        };
+    }
+
+    if (placement === ToolIndicatorPlacementModes.AfterName) {
+        return {
+            prefixText: "",
+            suffixText: `${EmojiLayout.blockNameToolSpacing}${toolText}`,
+            belowLineText: ""
+        };
+    }
+
+    return {
+        prefixText: `${toolText}${EmojiLayout.blockNameToolSpacing}`,
+        suffixText: "",
+        belowLineText: ""
+    };
+}
+
+function buildColumnWrappedList(values, columns = 1) {
+    if (!Array.isArray(values) || !values.length) {
+        return "";
+    }
+
+    const normalizedColumns = Math.max(1, Math.floor(columns));
+    const rows = [];
+
+    for (let index = 0; index < values.length; index += normalizedColumns) {
+        rows.push(values.slice(index, index + normalizedColumns).join(", "));
+    }
+
+    return rows.join("\n");
 }
 
 // Tries to resolve a block type ID from an item stack.
@@ -427,6 +1006,251 @@ function buildItemTranslationRawtext(itemStack) {
     return {
         translate: `item.${id}`
     };
+}
+
+function buildEntityTranslationRawtext(entity, typeIdForDisplay) {
+    const localizationKey = typeof entity?.localizationKey === "string"
+        ? entity.localizationKey.trim()
+        : "";
+
+    if (localizationKey.length) {
+        return { translate: localizationKey };
+    }
+
+    const { id } = splitTypeId(typeIdForDisplay);
+
+    if (typeIdForDisplay.startsWith("minecraft:")) {
+        return { translate: `entity.${id}.name` };
+    }
+
+    return { translate: `entity.${typeIdForDisplay}.name` };
+}
+
+function buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings) {
+    if (itemStack?.typeId) {
+        return buildItemTranslationRawtext(itemStack);
+    }
+
+    if (playerSettings?.nameResolveMode === EntityNameResolveModes.TypeIdToText) {
+        return {
+            text: formatTypeIdToText(typeIdForDisplay)
+        };
+    }
+
+    return buildEntityTranslationRawtext(entity, typeIdForDisplay);
+}
+
+function pushRawtextPart(rawtext, part) {
+    if (!part) {
+        return;
+    }
+
+    rawtext.push(part);
+}
+
+function appendEntityTitle(rawtext, context) {
+    const {
+        nickname,
+        resolvedNameRawtext,
+        nameDisplayMode,
+        itemStack
+    } = context;
+
+    const mode = String(nameDisplayMode || EntityNameDisplayModes.NicknameFirst);
+    const hasNickname = typeof nickname === "string" && nickname.trim().length > 0;
+    const nicknameValue = hasNickname ? nickname.trim() : "";
+    const canShowResolvedName = Boolean(resolvedNameRawtext);
+
+    if (!hasNickname) {
+        if (canShowResolvedName) {
+            pushRawtextPart(rawtext, resolvedNameRawtext);
+        }
+
+        if (itemStack?.amount > 1) {
+            rawtext.push({ text: ` §7x${itemStack.amount}§r` });
+        }
+
+        return;
+    }
+
+    if (mode === EntityNameDisplayModes.NicknameOnly) {
+        rawtext.push({ text: nicknameValue });
+        return;
+    }
+
+    if (mode === EntityNameDisplayModes.MobNameOnly) {
+        pushRawtextPart(rawtext, canShowResolvedName ? resolvedNameRawtext : { text: nicknameValue });
+        return;
+    }
+
+    if (!canShowResolvedName) {
+        rawtext.push({ text: nicknameValue });
+        return;
+    }
+
+    if (mode === EntityNameDisplayModes.MobNameAfterNickname) {
+        rawtext.push({ text: nicknameValue });
+        rawtext.push({ text: " §7- §r" });
+        pushRawtextPart(rawtext, resolvedNameRawtext);
+        return;
+    }
+
+    if (mode === EntityNameDisplayModes.NicknameAfterMobName) {
+        pushRawtextPart(rawtext, resolvedNameRawtext);
+        rawtext.push({ text: ` §7- ${nicknameValue}§r` });
+        return;
+    }
+
+    if (mode === EntityNameDisplayModes.MobNameFirst) {
+        pushRawtextPart(rawtext, resolvedNameRawtext);
+        rawtext.push({ text: `\n§7${nicknameValue}§r` });
+        return;
+    }
+
+    rawtext.push({ text: nicknameValue });
+    rawtext.push({ text: "\n§7" });
+    pushRawtextPart(rawtext, resolvedNameRawtext);
+    rawtext.push({ text: "§r" });
+}
+
+function normalizeVillagerProfessionName(rawValue) {
+    if (typeof rawValue === "string") {
+        const normalized = rawValue.trim().toLowerCase();
+        if (!normalized.length || normalized === "none") {
+            return undefined;
+        }
+
+        const label = normalizeVillagerProfessionToken(normalized);
+        if (label) {
+            return label;
+        }
+
+        const sanitized = normalized.includes(":") ? normalized.split(":")[1] : normalized;
+        return toTitleWords(sanitized.split("_"));
+    }
+
+    if (Number.isFinite(rawValue)) {
+        const professionByIndex = [
+            "Unemployed",
+            "Farmer",
+            "Fisherman",
+            "Shepherd",
+            "Fletcher",
+            "Librarian",
+            "Cartographer",
+            "Cleric",
+            "Armorer",
+            "Weaponsmith",
+            "Toolsmith",
+            "Butcher",
+            "Leatherworker",
+            "Mason",
+            "Nitwit"
+        ];
+
+        const index = Math.max(0, Math.floor(rawValue));
+        return professionByIndex[index];
+    }
+
+    return undefined;
+}
+
+function normalizeVillagerProfessionToken(rawValue) {
+    if (typeof rawValue !== "string") {
+        return undefined;
+    }
+
+    const normalized = rawValue.trim().toLowerCase();
+    if (!normalized.length || normalized === "none") {
+        return undefined;
+    }
+
+    const baseToken = normalized.includes(":")
+        ? normalized.split(":").pop()
+        : normalized;
+
+    const candidates = [baseToken];
+
+    if (baseToken.startsWith("villager_profession_")) {
+        candidates.push(baseToken.slice("villager_profession_".length));
+    }
+
+    if (baseToken.startsWith("profession_")) {
+        candidates.push(baseToken.slice("profession_".length));
+    }
+
+    if (baseToken.startsWith("is_")) {
+        candidates.push(baseToken.slice(3));
+    }
+
+    if (baseToken.endsWith("_profession")) {
+        candidates.push(baseToken.slice(0, -"_profession".length));
+    }
+
+    for (const candidate of candidates) {
+        const label = VillagerProfessionTokenLabels[candidate];
+        if (label) {
+            return label;
+        }
+    }
+
+    return undefined;
+}
+
+function getVillagerProfessionLabelFromList(values) {
+    if (!Array.isArray(values) || !values.length) {
+        return undefined;
+    }
+
+    for (const value of values) {
+        const label = normalizeVillagerProfessionToken(String(value || ""));
+        if (label) {
+            return label;
+        }
+    }
+
+    return undefined;
+}
+
+function getVillagerProfessionLabel(entity, entityTags, entityFamilies) {
+    const entityTypeId = String(entity?.typeId || "").toLowerCase();
+    if (!VillagerEntityTypeIds.has(entityTypeId)) {
+        return undefined;
+    }
+
+    const propertyCandidates = [
+        "minecraft:profession",
+        "profession",
+        "minecraft:villager_profession"
+    ];
+
+    for (const propertyName of propertyCandidates) {
+        try {
+            if (typeof entity?.getProperty !== "function") {
+                continue;
+            }
+
+            const rawValue = entity.getProperty(propertyName);
+            const normalizedLabel = normalizeVillagerProfessionName(rawValue);
+            if (normalizedLabel) {
+                return normalizedLabel;
+            }
+        } catch {
+            // Continue trying other property names.
+        }
+    }
+
+    const labelFromTags = getVillagerProfessionLabelFromList(entityTags);
+    if (labelFromTags) {
+        return labelFromTags;
+    }
+
+    const labelFromFamilies = getVillagerProfessionLabelFromList(entityFamilies);
+    if (labelFromFamilies) {
+        return labelFromFamilies;
+    }
+
+    return undefined;
 }
 
 // -----------------------------------------------------------------------------
@@ -967,18 +1791,21 @@ function buildEffectsDisplay(effects, playerSettings) {
         : entries.join(" ");
 
     const hiddenEffects = effects.length - visibleEffects.length;
+
+    const result = [tr("ui.dorios.insight.display.effects", [body])];
+
     if (hiddenEffects > 0) {
-        body += useTextMode
-            ? `§7, §8+${hiddenEffects} ${EffectDisplay.moreSuffix}§r`
-            : ` §8+${hiddenEffects}§r`;
+        result.push(useTextMode ? { text: "§7, §8" } : { text: " §8" });
+        result.push(tr("ui.dorios.insight.display.more_items", [`${hiddenEffects}`]));
     }
 
-    return `\n${InsightConfig.display.technicalColor}${EffectDisplay.label}: ${body}§r`;
+    result.push({ text: "§r" });
+    return result;
 }
 
 function buildWrappedCommaList(values, entriesPerLine) {
     if (!values.length) {
-        return TameableDisplay.noneLabel;
+        return "";
     }
 
     const perLine = Math.max(1, Math.floor(entriesPerLine));
@@ -1093,9 +1920,24 @@ function addLineBreakEvery(input, chunkSize) {
 function buildHealthDisplay(currentValue, maxValue, maxHeartDisplayHealth, displayStyle, glyphs = HeartGlyphSets.normal) {
     const current = Math.max(0, currentValue);
     const max = Math.max(1, maxValue);
+    const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
+    const percentValue = Math.max(0, Math.min(100, (current / max) * 100));
+    const roundedPercentValue = Math.floor(percentValue * 10) / 10;
 
-    if (displayStyle === DisplayStyles.Text) {
-        return `§cHealth: ${current.toFixed(1)}§f/§c${max.toFixed(1)}§r`;
+    if (normalizedDisplayStyle === DisplayStyles.TextFull) {
+        return tr("ui.dorios.insight.display.health_full", [current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.TextPercent) {
+        return tr("ui.dorios.insight.display.health_percent", [`${roundedPercentValue}`]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridFull) {
+        return tr("ui.dorios.insight.display.health_hybrid_full", [glyphs.full, current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridPercent) {
+        return tr("ui.dorios.insight.display.health_hybrid_percent", [glyphs.full, `${roundedPercentValue}`]);
     }
 
     const threshold = Number.isFinite(maxHeartDisplayHealth)
@@ -1103,30 +1945,45 @@ function buildHealthDisplay(currentValue, maxValue, maxHeartDisplayHealth, displ
         : InsightConfig.system.maxHeartDisplayHealth;
 
     if (max > threshold || current > threshold) {
-        return `§c${Math.ceil(current)}§f/§c${Math.ceil(max)}${glyphs.full}`;
+        return { text: `§c${Math.ceil(current)}§f/§c${Math.ceil(max)}${glyphs.full}` };
     }
 
-    return buildHalfStepEmojiBar(
+    return { text: buildHalfStepEmojiBar(
         current,
         max,
         glyphs,
         InsightConfig.system.maxHeartsPerLine
-    );
+    ) };
 }
 
 function buildHungerDisplay(currentValue, maxValue, displayStyle, glyphs = HungerGlyphSets.normal) {
-    if (displayStyle === DisplayStyles.Text) {
-        const current = Math.max(0, Number(currentValue) || 0);
-        const max = Math.max(1, Number(maxValue) || 1);
-        return `§6Hunger: ${current.toFixed(1)}§f/§6${max.toFixed(1)}§r`;
+    const current = Math.max(0, Number(currentValue) || 0);
+    const max = Math.max(1, Number(maxValue) || 1);
+    const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
+    const roundedPercentValue = Math.floor(Math.max(0, Math.min(100, (current / max) * 100)) * 10) / 10;
+
+    if (normalizedDisplayStyle === DisplayStyles.TextFull) {
+        return tr("ui.dorios.insight.display.hunger_full", [current.toFixed(1), max.toFixed(1)]);
     }
 
-    return buildHalfStepEmojiBar(
+    if (normalizedDisplayStyle === DisplayStyles.TextPercent) {
+        return tr("ui.dorios.insight.display.hunger_percent", [`${roundedPercentValue}`]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridFull) {
+        return tr("ui.dorios.insight.display.hunger_hybrid_full", [glyphs.full, current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridPercent) {
+        return tr("ui.dorios.insight.display.hunger_hybrid_percent", [glyphs.full, `${roundedPercentValue}`]);
+    }
+
+    return { text: buildHalfStepEmojiBar(
         currentValue,
         maxValue,
         glyphs,
         InsightConfig.system.maxHeartsPerLine
-    );
+    ) };
 }
 
 function buildAbsorptionDisplay(currentValue, displayStyle) {
@@ -1135,8 +1992,8 @@ function buildAbsorptionDisplay(currentValue, displayStyle) {
         return undefined;
     }
 
-    if (displayStyle === DisplayStyles.Text) {
-        return `§6Absorption: ${current.toFixed(1)}§r`;
+    if (normalizeDisplayStyleValue(displayStyle) !== DisplayStyles.Icon) {
+        return tr("ui.dorios.insight.display.absorption_text", [current.toFixed(1)]);
     }
 
     const roundedCurrent = getRoundedHalfHearts(current);
@@ -1149,58 +2006,88 @@ function buildAbsorptionDisplay(currentValue, displayStyle) {
     }
 
     const wrappedHearts = addLineBreakEvery(absorptionHearts, InsightConfig.system.maxHeartsPerLine);
-    return `§6${wrappedHearts}§r`;
+    return { text: `§6${wrappedHearts}§r` };
 }
 
 function buildArmorDisplay(currentValue, maxValue, displayStyle) {
-    if (displayStyle === DisplayStyles.Text) {
-        const current = Math.max(0, Number(currentValue) || 0);
-        const max = Math.max(1, Number(maxValue) || 1);
-        return `§bArmor: ${current.toFixed(1)}§f/§b${max.toFixed(1)}§r`;
+    const current = Math.max(0, Number(currentValue) || 0);
+    const max = Math.max(1, Number(maxValue) || 1);
+    const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
+    const roundedPercentValue = Math.floor(Math.max(0, Math.min(100, (current / max) * 100)) * 10) / 10;
+
+    if (normalizedDisplayStyle === DisplayStyles.TextFull) {
+        return tr("ui.dorios.insight.display.armor_full", [current.toFixed(1), max.toFixed(1)]);
     }
 
-    return buildHalfStepEmojiBar(
+    if (normalizedDisplayStyle === DisplayStyles.TextPercent) {
+        return tr("ui.dorios.insight.display.armor_percent", [`${roundedPercentValue}`]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridFull) {
+        return tr("ui.dorios.insight.display.armor_hybrid_full", [ArmorGlyphs.full, current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridPercent) {
+        return tr("ui.dorios.insight.display.armor_hybrid_percent", [ArmorGlyphs.full, `${roundedPercentValue}`]);
+    }
+
+    return { text: buildHalfStepEmojiBar(
         currentValue,
         maxValue,
         ArmorGlyphs,
         InsightConfig.system.maxHeartsPerLine
-    );
+    ) };
 }
 
 function buildAirBubbleDisplay(currentValue, maxValue, displayStyle) {
-    if (displayStyle === DisplayStyles.Text) {
-        const current = Math.max(0, Number(currentValue) || 0);
-        const max = Math.max(1, Number(maxValue) || 1);
-        return `§bAir: ${current.toFixed(1)}§f/§b${max.toFixed(1)}§r`;
+    const current = Math.max(0, Number(currentValue) || 0);
+    const max = Math.max(1, Number(maxValue) || 1);
+    const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
+    const roundedPercentValue = Math.floor(Math.max(0, Math.min(100, (current / max) * 100)) * 10) / 10;
+
+    if (normalizedDisplayStyle === DisplayStyles.TextFull) {
+        return tr("ui.dorios.insight.display.air_full", [current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.TextPercent) {
+        return tr("ui.dorios.insight.display.air_percent", [`${roundedPercentValue}`]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridFull) {
+        return tr("ui.dorios.insight.display.air_hybrid_full", [BubbleGlyphs.full, current.toFixed(1), max.toFixed(1)]);
+    }
+
+    if (normalizedDisplayStyle === DisplayStyles.HybridPercent) {
+        return tr("ui.dorios.insight.display.air_hybrid_percent", [BubbleGlyphs.full, `${roundedPercentValue}`]);
     }
 
     const normalized = normalizeAirSupplyToBubbleUnits(currentValue, maxValue);
-    return buildHalfStepEmojiBar(
+    return { text: buildHalfStepEmojiBar(
         normalized.current,
         normalized.max,
         BubbleGlyphs,
         InsightConfig.system.maxHeartsPerLine
-    );
+    ) };
 }
 
 function getBlockLocationLine(block) {
     const location = block?.location;
 
     if (!location) {
-        return "";
+        return undefined;
     }
 
-    return `\n${InsightConfig.display.technicalColor}Pos: ${location.x}, ${location.y}, ${location.z}§r`;
+    return tr("ui.dorios.insight.display.position", [`${location.x}`, `${location.y}`, `${location.z}`]);
 }
 
 function getEntityLocationLine(entity) {
     const location = entity?.location;
 
     if (!location) {
-        return "";
+        return undefined;
     }
 
-    return `\n${InsightConfig.display.technicalColor}Pos: ${location.x.toFixed(1)}, ${location.y.toFixed(1)}, ${location.z.toFixed(1)}§r`;
+    return tr("ui.dorios.insight.display.position", [location.x.toFixed(1), location.y.toFixed(1), location.z.toFixed(1)]);
 }
 
 function getEntityVelocityLine(entity) {
@@ -1212,10 +2099,148 @@ function getEntityVelocityLine(entity) {
     }
 
     if (!velocity) {
-        return "";
+        return undefined;
     }
 
-    return `\n${InsightConfig.display.technicalColor}Vel: ${velocity.x.toFixed(2)}, ${velocity.y.toFixed(2)}, ${velocity.z.toFixed(2)}§r`;
+    return tr("ui.dorios.insight.display.velocity", [velocity.x.toFixed(2), velocity.y.toFixed(2), velocity.z.toFixed(2)]);
+}
+
+// -----------------------------------------------------------------------------
+// Entity scoreboard display
+// -----------------------------------------------------------------------------
+
+/**
+ * Reads a scoreboard objective value from an entity.
+ * Returns the numeric score or undefined if not available.
+ */
+function getEntityScoreboardValue(entity, objectiveId) {
+    try {
+        const identity = entity.scoreboardIdentity;
+        if (!identity) {
+            return undefined;
+        }
+
+        const objective = world.scoreboard.getObjective(objectiveId);
+        if (!objective) {
+            return undefined;
+        }
+
+        const score = objective.getScore(identity);
+        return Number.isFinite(score) ? score : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Reads a mantissa + exponent pair from scoreboards and returns the decoded value.
+ * The pattern follows: value = mantissa * 10^exponent
+ * Used by UtilityCraft energy system (energy/energyExp, energyCap/energyCapExp).
+ */
+function decodeScoreboardMantissaExponent(entity, mantissaObjective, exponentObjective) {
+    const mantissa = getEntityScoreboardValue(entity, mantissaObjective);
+    if (mantissa === undefined) {
+        return undefined;
+    }
+
+    const exponent = getEntityScoreboardValue(entity, exponentObjective);
+    if (exponent === undefined || exponent === 0) {
+        return mantissa;
+    }
+
+    return mantissa * Math.pow(10, exponent);
+}
+
+/**
+ * Formats a large number with SI suffixes for display.
+ */
+function formatLargeNumber(value) {
+    if (!Number.isFinite(value) || value < 0) {
+        return "0";
+    }
+
+    const suffixes = ["", "K", "M", "B", "T"];
+    let tier = Math.floor(Math.log10(Math.max(1, Math.abs(value))) / 3);
+    tier = Math.min(tier, suffixes.length - 1);
+
+    if (tier === 0) {
+        return value % 1 === 0 ? `${value}` : value.toFixed(1);
+    }
+
+    const scaled = value / Math.pow(10, tier * 3);
+    return `${scaled.toFixed(1)}${suffixes[tier]}`;
+}
+
+/**
+ * Known scoreboard field definitions for display.
+ * Each entry describes how to read and display a scoreboard-based value.
+ */
+const ScoreboardFieldDefinitions = [
+    {
+        key: "energy",
+        labelKey: "ui.dorios.insight.display.scoreboard_energy",
+        mantissa: "energy",
+        exponent: "energyExp",
+        capMantissa: "energyCap",
+        capExponent: "energyCapExp",
+        mode: "mantissa_exponent_pair"
+    },
+    {
+        key: "capacity",
+        labelKey: "ui.dorios.insight.display.scoreboard_capacity",
+        objective: "capacity",
+        capObjective: "max_capacity",
+        mode: "simple_pair"
+    }
+];
+
+/**
+ * Appends scoreboard-based fields to the rawtext array for entities that have matching scores.
+ */
+function appendEntityScoreboardFields(rawtext, entity, playerSettings) {
+    if (!playerSettings.showEntityScoreboards) {
+        return;
+    }
+
+    try {
+        const identity = entity.scoreboardIdentity;
+        if (!identity) {
+            return;
+        }
+    } catch {
+        return;
+    }
+
+    for (const field of ScoreboardFieldDefinitions) {
+        if (field.mode === "mantissa_exponent_pair") {
+            const value = decodeScoreboardMantissaExponent(entity, field.mantissa, field.exponent);
+            if (value === undefined) {
+                continue;
+            }
+
+            const cap = decodeScoreboardMantissaExponent(entity, field.capMantissa, field.capExponent);
+            if (cap !== undefined && cap > 0) {
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), formatLargeNumber(cap)]));
+            } else {
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), "---"]));
+            }
+        } else if (field.mode === "simple_pair") {
+            const value = getEntityScoreboardValue(entity, field.objective);
+            if (value === undefined) {
+                continue;
+            }
+
+            const cap = field.capObjective
+                ? getEntityScoreboardValue(entity, field.capObjective)
+                : undefined;
+
+            if (cap !== undefined && cap > 0) {
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), formatLargeNumber(cap)]));
+            } else {
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), "---"]));
+            }
+        }
+    }
 }
 
 function appendBlockTags(rawtext, blockTags, playerSettings) {
@@ -1229,15 +2254,15 @@ function appendBlockTags(rawtext, blockTags, playerSettings) {
         return;
     }
 
-    rawtext.push({
-        text: `\n${InsightConfig.display.tagsColor}Tags: ${visibleTags.join(", ")}§r`
-    });
+    const formattedTags = buildColumnWrappedList(visibleTags, playerSettings.tagColumns);
+
+    rawtext.push({ text: "\n" });
+    rawtext.push(tr("ui.dorios.insight.display.tags", [`${InsightConfig.display.tagsColor}${formattedTags}§r`]));
 
     const hiddenTags = blockTags.length - visibleTags.length;
     if (hiddenTags > 0) {
-        rawtext.push({
-            text: ` & ${hiddenTags} ${InsightConfig.display.moreTagsLabel}`
-        });
+        rawtext.push({ text: " " });
+        rawtext.push(tr("ui.dorios.insight.display.more_items", [`${hiddenTags}`]));
     }
 }
 
@@ -1252,15 +2277,15 @@ function appendEntityTags(rawtext, entityTags, playerSettings) {
         return;
     }
 
-    rawtext.push({
-        text: `\n${InsightConfig.display.tagsColor}Tags: ${visibleTags.join(", ")}§r`
-    });
+    const formattedTags = buildColumnWrappedList(visibleTags, playerSettings.tagColumns);
+
+    rawtext.push({ text: "\n" });
+    rawtext.push(tr("ui.dorios.insight.display.tags", [`${InsightConfig.display.tagsColor}${formattedTags}§r`]));
 
     const hiddenTags = entityTags.length - visibleTags.length;
     if (hiddenTags > 0) {
-        rawtext.push({
-            text: ` & ${hiddenTags} ${InsightConfig.display.moreTagsLabel}`
-        });
+        rawtext.push({ text: " " });
+        rawtext.push(tr("ui.dorios.insight.display.more_items", [`${hiddenTags}`]));
     }
 }
 
@@ -1288,15 +2313,15 @@ function appendEntityFamilies(rawtext, entityFamilies, playerSettings) {
         return;
     }
 
-    rawtext.push({
-        text: `\n${InsightConfig.display.tagsColor}Families: ${visibleFamilies.join(", ")}§r`
-    });
+    const formattedFamilies = buildColumnWrappedList(visibleFamilies, playerSettings.familyColumns);
+
+    rawtext.push({ text: "\n" });
+    rawtext.push(tr("ui.dorios.insight.display.families", [`${InsightConfig.display.tagsColor}${formattedFamilies}§r`]));
 
     const hiddenFamilies = entityFamilies.length - visibleFamilies.length;
     if (hiddenFamilies > 0) {
-        rawtext.push({
-            text: ` & ${hiddenFamilies} ${InsightConfig.display.moreFamiliesLabel}`
-        });
+        rawtext.push({ text: " " });
+        rawtext.push(tr("ui.dorios.insight.display.more_items", [`${hiddenFamilies}`]));
     }
 }
 
@@ -1304,23 +2329,33 @@ function appendEntityFamilies(rawtext, entityFamilies, playerSettings) {
 // Main flow implementation
 // -----------------------------------------------------------------------------
 
-function buildBlockActionbarPayload(block, playerSettings) {
+function buildBlockActionbarPayload(block, playerSettings, context = {}) {
     // Step 1: collect block identity + namespace context.
-    const { id } = splitTypeId(block.typeId);
-    const normalizedId = id.replace("double_slab", "slab");
     const blockTags = sortBlockTagsForDisplay(getBlockTagsSafe(block));
     const namespaceInfo = resolveInjectedNamespace(block.typeId, blockTags);
 
     const rawtext = [];
     // Step 2: compose title line (translated block name + optional tool suffix).
     const toolDescriptors = getBlockToolDescriptors(block, blockTags);
+    const breakableToolsPlacement = buildBreakableToolsPlacement(toolDescriptors, blockTags, playerSettings, context);
 
-    rawtext.push(buildBlockTranslationRawtext(block.typeId, normalizedId));
-
-    const breakableToolsSuffix = buildBreakableToolsSuffix(toolDescriptors, playerSettings);
-    if (breakableToolsSuffix) {
+    if (breakableToolsPlacement.prefixText) {
         rawtext.push({
-            text: breakableToolsSuffix
+            text: breakableToolsPlacement.prefixText
+        });
+    }
+
+    rawtext.push(buildBlockTranslationRawtext(block));
+
+    if (breakableToolsPlacement.suffixText) {
+        rawtext.push({
+            text: breakableToolsPlacement.suffixText
+        });
+    }
+
+    if (breakableToolsPlacement.belowLineText) {
+        rawtext.push({
+            text: breakableToolsPlacement.belowLineText
         });
     }
 
@@ -1352,7 +2387,17 @@ function buildBlockActionbarPayload(block, playerSettings) {
         states = {};
     }
 
-    const stateEntries = Object.entries(states);
+    const rawStateEntries = Object.entries(states);
+    const stateEntries = transformBlockStateEntries({
+        block,
+        typeId: block.typeId,
+        rawStates: states,
+        blockTags,
+        namespaceInfo,
+        formatStateName,
+        toMessageText
+    });
+
     // Step 3: append optional state rows.
     if (playerSettings.showBlockStates && stateEntries.length) {
         rawtext.push({ text: InsightConfig.display.separator });
@@ -1360,17 +2405,20 @@ function buildBlockActionbarPayload(block, playerSettings) {
         const maxRows = Math.max(0, playerSettings.maxVisibleStates);
         const visibleEntries = stateEntries.slice(0, maxRows);
 
-        for (const [stateKey, stateValue] of visibleEntries) {
+        if (visibleEntries.length) {
+            const stateColumns = Math.max(1, playerSettings.stateColumns || 1);
+            const renderedStateEntries = visibleEntries.map((entry) => `${entry.label}: ${entry.valueText}`);
+            const wrappedStates = buildColumnWrappedList(renderedStateEntries, stateColumns);
+
             rawtext.push({
-                text: `\n${formatStateName(stateKey)}: ${toMessageText(stateValue)}`
+                text: `\n${wrappedStates}`
             });
         }
 
         const hiddenRows = stateEntries.length - visibleEntries.length;
         if (hiddenRows > 0) {
-            rawtext.push({
-                text: ` & ${hiddenRows} ${InsightConfig.display.moreRowsLabel}`
-            });
+            rawtext.push({ text: " " });
+            rawtext.push(tr("ui.dorios.insight.display.more_items", [`${hiddenRows}`]));
         }
     }
 
@@ -1378,25 +2426,19 @@ function buildBlockActionbarPayload(block, playerSettings) {
     appendBlockTags(rawtext, blockTags, playerSettings);
 
     if (playerSettings.showTypeId) {
-        rawtext.push({ text: `\n${InsightConfig.display.technicalColor}ID: ${block.typeId}§r` });
+        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.type_id", [block.typeId]));
     }
 
     if (playerSettings.showCoordinates) {
-        rawtext.push({ text: getBlockLocationLine(block) });
+        appendDisplayLine(rawtext, getBlockLocationLine(block));
     }
 
     if (playerSettings.showTechnicalData) {
-        rawtext.push({
-            text: `\n${InsightConfig.display.technicalColor}States: ${stateEntries.length} | Tags: ${blockTags.length}§r`
-        });
+        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_block", [`${rawStateEntries.length}`, `${stateEntries.length}`, `${blockTags.length}`]));
 
         if (namespaceInfo.injected && playerSettings.showNamespaceResolutionDebug) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Namespace: ${namespaceInfo.originalNamespace} -> ${namespaceInfo.displayNamespace}§r`
-            });
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Mapped by: ${namespaceInfo.source}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.namespace_debug", [namespaceInfo.originalNamespace, namespaceInfo.displayNamespace]));
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.namespace_mapped_by", [namespaceInfo.source]));
         }
     }
 
@@ -1405,7 +2447,6 @@ function buildBlockActionbarPayload(block, playerSettings) {
 
 function buildEntityActionbarPayload(entity, playerSettings) {
     // Step 1: gather context about target type and optional player attributes.
-    const { id } = splitTypeId(entity.typeId);
     const rawtext = [];
     let entityTags = [];
     let healthComponent;
@@ -1445,6 +2486,7 @@ function buildEntityActionbarPayload(entity, playerSettings) {
 
     const namespaceInfo = resolveInjectedNamespace(typeIdForDisplay, entityTags);
     const entityFamilies = getEntityFamilies(entity);
+    const villagerProfessionLabel = getVillagerProfessionLabel(entity, entityTags, entityFamilies);
     const isRideable = !isTargetPlayer && playerSettings.showAnimalHearts
         ? isEntityRideable(entity, entityFamilies)
         : false;
@@ -1463,19 +2505,21 @@ function buildEntityActionbarPayload(entity, playerSettings) {
         healthComponent = undefined;
     }
 
-    // Step 2: compose title line (nameTag > dropped item name > localized entity name).
-    if (entity.nameTag) {
-        rawtext.push({ text: entity.nameTag });
-    } else if (itemStack?.typeId) {
-        rawtext.push(buildItemTranslationRawtext(itemStack));
+    // Step 2: compose title line using configurable naming modes.
+    appendEntityTitle(rawtext, {
+        nickname: entity.nameTag,
+        resolvedNameRawtext: buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings),
+        nameDisplayMode: playerSettings.nameDisplayMode,
+        itemStack
+    });
 
-        if (itemStack.amount > 1) {
-            rawtext.push({ text: ` §7x${itemStack.amount}§r` });
-        }
-    } else if (entity.typeId.startsWith("minecraft:")) {
-        rawtext.push({ translate: `entity.${id}.name` });
-    } else {
-        rawtext.push({ translate: `entity.${entity.typeId}.name` });
+    if (villagerProfessionLabel && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.AfterName) {
+        rawtext.push({ text: ` §7(${villagerProfessionLabel})§r` });
+    }
+
+    if (villagerProfessionLabel && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.BelowName) {
+        rawtext.push({ text: "\n" });
+        rawtext.push(tr("ui.dorios.insight.display.profession", [villagerProfessionLabel]));
     }
 
     if (playerSettings.showNamespace) {
@@ -1498,72 +2542,59 @@ function buildEntityActionbarPayload(entity, playerSettings) {
         appendCustomFieldLines(rawtext, customFieldLines);
     }
 
+    // Step 2.5: append scoreboard-based fields (energy, capacity, etc.).
+    appendEntityScoreboardFields(rawtext, entity, playerSettings);
+
     // Step 3: append visual bars (health and hunger) when enabled.
     if (playerSettings.showHealth && healthComponent) {
-        rawtext.push({
-            text: `\n${buildHealthDisplay(
-                healthComponent.currentValue,
-                healthComponent.effectiveMax,
-                playerSettings.maxHeartDisplayHealth,
-                playerSettings.displayStyle,
-                healthGlyphs
-            )}`
-        });
+        appendDisplayLine(rawtext, buildHealthDisplay(
+            healthComponent.currentValue,
+            healthComponent.effectiveMax,
+            playerSettings.maxHeartDisplayHealth,
+            playerSettings.displayStyle,
+            healthGlyphs
+        ));
     }
 
     if (playerSettings.showAbsorption && Number.isFinite(absorptionValue) && absorptionValue > 0) {
-        const absorptionLine = buildAbsorptionDisplay(absorptionValue, playerSettings.displayStyle);
-        if (absorptionLine) {
-            rawtext.push({
-                text: `\n${absorptionLine}`
-            });
-        }
+        appendDisplayLine(rawtext, buildAbsorptionDisplay(absorptionValue, playerSettings.displayStyle));
     }
 
     if (isTargetPlayer && playerSettings.showArmor && armorInfo) {
-        rawtext.push({
-            text: `\n${buildArmorDisplay(armorInfo.current, armorInfo.max, playerSettings.displayStyle)}`
-        });
+        appendDisplayLine(rawtext, buildArmorDisplay(armorInfo.current, armorInfo.max, playerSettings.displayStyle));
     }
 
     // Show hunger for targeted players using official player hunger attribute component.
     if (playerSettings.showHunger && hungerInfo) {
-        rawtext.push({
-            text: `\n${buildHungerDisplay(hungerInfo.current, hungerInfo.max, playerSettings.displayStyle, hungerGlyphs)}`
-        });
+        appendDisplayLine(rawtext, buildHungerDisplay(hungerInfo.current, hungerInfo.max, playerSettings.displayStyle, hungerGlyphs));
     }
 
     if (isTargetPlayer && playerSettings.showAirBubbles && airInfo && airInfo.current < airInfo.max) {
-        rawtext.push({
-            text: `\n${buildAirBubbleDisplay(airInfo.current, airInfo.max, playerSettings.displayStyle)}`
-        });
+        appendDisplayLine(rawtext, buildAirBubbleDisplay(airInfo.current, airInfo.max, playerSettings.displayStyle));
     }
 
     if (playerSettings.showEffects) {
-        const effectsLine = buildEffectsDisplay(effects, playerSettings);
-        if (effectsLine) {
-            rawtext.push({
-                text: effectsLine
-            });
-        }
+        appendDisplayLine(rawtext, buildEffectsDisplay(effects, playerSettings));
     }
 
     if (playerSettings.showTameable) {
-        rawtext.push({
-            text: `\n${InsightConfig.display.technicalColor}Tameable: ${tameableData.isTameable ? TameableDisplay.yesLabel : TameableDisplay.noLabel}§r`
-        });
+        appendDisplayLine(rawtext, tr(
+            tameableData.isTameable
+                ? "ui.dorios.insight.display.tameable_yes"
+                : "ui.dorios.insight.display.tameable_no"
+        ));
 
         if (tameableData.isTameable) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Tamed: ${tameableData.isTamed ? TameableDisplay.yesLabel : TameableDisplay.noLabel}§r`
-            });
+            appendDisplayLine(rawtext, tr(
+                tameableData.isTamed
+                    ? "ui.dorios.insight.display.tamed_yes"
+                    : "ui.dorios.insight.display.tamed_no"
+            ));
         }
     }
 
     if (playerSettings.showTameFoods && tameableData.isTameable) {
-        rawtext.push({
-            text: `\n${InsightConfig.display.technicalColor}Foods: ${buildTameFoodsDisplay(tameableData.foodTypeIds)}§r`
-        });
+        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.foods", [buildTameFoodsDisplay(tameableData.foodTypeIds)]));
     }
 
     // Step 4: append optional metadata blocks.
@@ -1571,32 +2602,23 @@ function buildEntityActionbarPayload(entity, playerSettings) {
     appendEntityFamilies(rawtext, entityFamilies, playerSettings);
 
     if (playerSettings.showTypeId) {
-        rawtext.push({ text: `\n${InsightConfig.display.technicalColor}ID: ${typeIdForDisplay}§r` });
+        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.type_id", [typeIdForDisplay]));
     }
 
     if (playerSettings.showCoordinates) {
-        rawtext.push({ text: getEntityLocationLine(entity) });
+        appendDisplayLine(rawtext, getEntityLocationLine(entity));
     }
 
     if (playerSettings.showVelocity) {
-        const velocityLine = getEntityVelocityLine(entity);
-        if (velocityLine) {
-            rawtext.push({ text: velocityLine });
-        }
+        appendDisplayLine(rawtext, getEntityVelocityLine(entity));
     }
 
     if (playerSettings.showTechnicalData) {
-        rawtext.push({
-            text: `\n${InsightConfig.display.technicalColor}Tags: ${entityTags.length} | Families: ${entityFamilies.length}§r`
-        });
+        appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_entity", [`${entityTags.length}`, `${entityFamilies.length}`]));
 
         if (namespaceInfo.injected && playerSettings.showNamespaceResolutionDebug) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Namespace: ${namespaceInfo.originalNamespace} -> ${namespaceInfo.displayNamespace}§r`
-            });
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Mapped by: ${namespaceInfo.source}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.namespace_debug", [namespaceInfo.originalNamespace, namespaceInfo.displayNamespace]));
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.namespace_mapped_by", [namespaceInfo.source]));
         }
 
         if (playerSettings.showHealth && healthComponent) {
@@ -1604,33 +2626,23 @@ function buildEntityActionbarPayload(entity, playerSettings) {
             const max = Math.max(1, healthComponent.effectiveMax);
             const healthPercent = Math.floor((current / max) * 1000) / 10;
 
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}HP: ${current.toFixed(1)}/${max.toFixed(1)} (${healthPercent}%)§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_hp", [current.toFixed(1), max.toFixed(1), `${healthPercent}`]));
         }
 
         if (playerSettings.showHunger && hungerInfo) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Hunger: ${hungerInfo.current.toFixed(1)}/${hungerInfo.max.toFixed(1)}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_hunger", [hungerInfo.current.toFixed(1), hungerInfo.max.toFixed(1)]));
         }
 
         if (playerSettings.showHunger && Number.isFinite(saturationValue)) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Saturation: ${saturationValue.toFixed(2)}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_saturation", [saturationValue.toFixed(2)]));
         }
 
         if (playerSettings.showAbsorption && Number.isFinite(absorptionValue) && absorptionValue > 0) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Absorption: ${absorptionValue.toFixed(1)}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_absorption", [absorptionValue.toFixed(1)]));
         }
 
         if (playerSettings.showEffects) {
-            rawtext.push({
-                text: `\n${InsightConfig.display.technicalColor}Effects: ${effects.length}§r`
-            });
+            appendDisplayLine(rawtext, tr("ui.dorios.insight.display.technical_effects", [`${effects.length}`]));
         }
     }
 

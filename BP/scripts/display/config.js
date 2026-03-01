@@ -42,12 +42,98 @@ export const EffectDisplayModeLabels = Object.freeze([
 
 export const DisplayStyles = Object.freeze({
     Icon: "icon",
-    Text: "text"
+    Text: "text", // Legacy alias, normalized to text_full.
+    TextFull: "text_full",
+    TextPercent: "text_percent",
+    HybridFull: "hybrid_full",
+    HybridPercent: "hybrid_percent"
 });
 
 export const DisplayStyleLabels = Object.freeze([
     Object.freeze({ key: DisplayStyles.Icon, label: "Icon" }),
-    Object.freeze({ key: DisplayStyles.Text, label: "Text" })
+    Object.freeze({ key: DisplayStyles.TextFull, label: "Text Type 1 (Health: x/y)" }),
+    Object.freeze({ key: DisplayStyles.TextPercent, label: "Text Type 2 (Health: x%)" }),
+    Object.freeze({ key: DisplayStyles.HybridFull, label: "Hybrid Type 1 (❤️ x/y)" }),
+    Object.freeze({ key: DisplayStyles.HybridPercent, label: "Hybrid Type 2 (❤️ x%)" })
+]);
+
+export const EntityNameDisplayModes = Object.freeze({
+    NicknameFirst: "nickname_first",
+    MobNameFirst: "mob_name_first",
+    NicknameAfterMobName: "nickname_after_mob_name",
+    MobNameAfterNickname: "mob_name_after_nickname",
+    NicknameOnly: "nickname_only",
+    MobNameOnly: "mob_name_only"
+});
+
+export const EntityNameDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: EntityNameDisplayModes.NicknameFirst, label: "Nickname First" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameFirst, label: "Mob Name First" }),
+    Object.freeze({ key: EntityNameDisplayModes.NicknameAfterMobName, label: "Nickname After Mob Name" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameAfterNickname, label: "Mob Name After Nickname" }),
+    Object.freeze({ key: EntityNameDisplayModes.NicknameOnly, label: "Nickname Only" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameOnly, label: "Mob Name Only" })
+]);
+
+export const EntityNameResolveModes = Object.freeze({
+    TranslationKeys: "translation_keys",
+    TypeIdToText: "typeid_text"
+});
+
+export const EntityNameResolveModeLabels = Object.freeze([
+    Object.freeze({ key: EntityNameResolveModes.TranslationKeys, label: "Translation Keys" }),
+    Object.freeze({ key: EntityNameResolveModes.TypeIdToText, label: "Translate Id to Text" })
+]);
+
+export const VillagerProfessionDisplayModes = Object.freeze({
+    AfterName: "after_name",
+    BelowName: "below_name",
+    Hidden: "hidden"
+});
+
+export const VillagerProfessionDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: VillagerProfessionDisplayModes.AfterName, label: "After Name" }),
+    Object.freeze({ key: VillagerProfessionDisplayModes.BelowName, label: "Below Name" }),
+    Object.freeze({ key: VillagerProfessionDisplayModes.Hidden, label: "Hidden" })
+]);
+
+export const ToolTierIndicatorModes = Object.freeze({
+    Hidden: "hidden",
+    BooleanIndicator: "boolean_indicator",
+    TierIndicatorColor: "tier_indicator_color",
+    TierIndicatorOre: "tier_indicator_ore",
+    TextIndicator: "text_indicator"
+});
+
+export const ToolTierIndicatorModeLabels = Object.freeze([
+    Object.freeze({ key: ToolTierIndicatorModes.Hidden, label: "Hidden" }),
+    Object.freeze({ key: ToolTierIndicatorModes.BooleanIndicator, label: "Boolean Indicator (Yes/No)" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorColor, label: "Tier Indicator (Color)" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorOre, label: "Tier Indicator (Ore)" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)" })
+]);
+
+export const ToolIndicatorPlacementModes = Object.freeze({
+    BeforeName: "before_name",
+    AfterName: "after_name",
+    BelowName: "below_name"
+});
+
+export const ToolIndicatorPlacementModeLabels = Object.freeze([
+    Object.freeze({ key: ToolIndicatorPlacementModes.BeforeName, label: "Before Name" }),
+    Object.freeze({ key: ToolIndicatorPlacementModes.AfterName, label: "After Name" }),
+    Object.freeze({ key: ToolIndicatorPlacementModes.BelowName, label: "Below Name" })
+]);
+
+export const ToolIndicatorColorOptions = Object.freeze([
+    Object.freeze({ key: "§7", label: "Gray (Default)" }),
+    Object.freeze({ key: "§f", label: "White" }),
+    Object.freeze({ key: "§e", label: "Yellow" }),
+    Object.freeze({ key: "§a", label: "Green" }),
+    Object.freeze({ key: "§b", label: "Aqua" }),
+    Object.freeze({ key: "§9", label: "Blue" }),
+    Object.freeze({ key: "§d", label: "Light Purple" }),
+    Object.freeze({ key: "§c", label: "Red" })
 ]);
 
 export const InsightComponentDefinitions = Object.freeze([
@@ -70,6 +156,7 @@ export const InsightComponentDefinitions = Object.freeze([
     Object.freeze({ key: "effectHearts", label: "Status Heart Effects" }),
     Object.freeze({ key: "frozenHearts", label: "Frozen Hearts (Deprecated / Non-functional)" }),
     Object.freeze({ key: "animalHearts", label: "Rideable Hearts" }),
+    Object.freeze({ key: "entityScoreboards", label: "Entity Scoreboards" }),
     Object.freeze({ key: "tameable", label: "Tameable Status" }),
     Object.freeze({ key: "tameFoods", label: "Tame Foods" }),
     Object.freeze({ key: "technical", label: "Technical Summary" }),
@@ -107,6 +194,7 @@ export const InsightConfig = Object.freeze({
         maxVisibleTagsCap: 20,
         maxVisibleFamiliesCap: 20,
         maxVisibleEffectsCap: 20,
+        maxLayoutColumns: 6,
         maxHeartsPerLine: 10,
         maxHeartDisplayHealth: 100,
         minMaxHeartDisplayHealth: 20,
@@ -159,7 +247,16 @@ export const InsightModePresets = Object.freeze({
             maxVisibleEffects: 3,
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
-            displayStyle: DisplayStyles.Icon
+            displayStyle: DisplayStyles.Icon,
+            nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
+            nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
+            toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
+            toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
+            toolIndicatorColor: "§7",
+            stateColumns: 1,
+            tagColumns: 1,
+            familyColumns: 1
         }),
         components: Object.freeze({
             namespace: VisibilityPolicies.Show,
@@ -180,6 +277,7 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
+            entityScoreboards: VisibilityPolicies.ShowWhenSneaking,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.ShowWhenSneaking,
             technical: VisibilityPolicies.Hide,
@@ -207,7 +305,16 @@ export const InsightModePresets = Object.freeze({
             maxVisibleEffects: 5,
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
-            displayStyle: DisplayStyles.Icon
+            displayStyle: DisplayStyles.Icon,
+            nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
+            nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
+            toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
+            toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
+            toolIndicatorColor: "§7",
+            stateColumns: 1,
+            tagColumns: 1,
+            familyColumns: 1
         }),
         components: Object.freeze({
             namespace: VisibilityPolicies.Show,
@@ -228,6 +335,7 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
+            entityScoreboards: VisibilityPolicies.Show,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.Show,
             technical: VisibilityPolicies.ShowWhenSneaking,
@@ -255,7 +363,16 @@ export const InsightModePresets = Object.freeze({
             maxVisibleEffects: 8,
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
-            displayStyle: DisplayStyles.Icon
+            displayStyle: DisplayStyles.Icon,
+            nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
+            nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
+            toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
+            toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
+            toolIndicatorColor: "§7",
+            stateColumns: 2,
+            tagColumns: 2,
+            familyColumns: 2
         }),
         components: Object.freeze({
             namespace: VisibilityPolicies.Show,
@@ -276,6 +393,7 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
+            entityScoreboards: VisibilityPolicies.Show,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.Show,
             technical: VisibilityPolicies.Show,
@@ -317,6 +435,11 @@ export function getEffectDisplayModeIndex(mode) {
 
 export function normalizeDisplayStyle(style) {
     const normalized = String(style || "").trim().toLowerCase();
+
+    if (normalized === DisplayStyles.Text) {
+        return DisplayStyles.TextFull;
+    }
+
     for (const option of DisplayStyleLabels) {
         if (option.key === normalized) {
             return normalized;
@@ -329,6 +452,108 @@ export function normalizeDisplayStyle(style) {
 export function getDisplayStyleIndex(style) {
     const normalized = normalizeDisplayStyle(style);
     const index = DisplayStyleLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeEntityNameDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of EntityNameDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return EntityNameDisplayModes.NicknameFirst;
+}
+
+export function getEntityNameDisplayModeIndex(mode) {
+    const normalized = normalizeEntityNameDisplayMode(mode);
+    const index = EntityNameDisplayModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeEntityNameResolveMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of EntityNameResolveModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return EntityNameResolveModes.TranslationKeys;
+}
+
+export function getEntityNameResolveModeIndex(mode) {
+    const normalized = normalizeEntityNameResolveMode(mode);
+    const index = EntityNameResolveModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeVillagerProfessionDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of VillagerProfessionDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return VillagerProfessionDisplayModes.BelowName;
+}
+
+export function getVillagerProfessionDisplayModeIndex(mode) {
+    const normalized = normalizeVillagerProfessionDisplayMode(mode);
+    const index = VillagerProfessionDisplayModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeToolTierIndicatorMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of ToolTierIndicatorModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return ToolTierIndicatorModes.BooleanIndicator;
+}
+
+export function getToolTierIndicatorModeIndex(mode) {
+    const normalized = normalizeToolTierIndicatorMode(mode);
+    const index = ToolTierIndicatorModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeToolIndicatorPlacementMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of ToolIndicatorPlacementModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return ToolIndicatorPlacementModes.BeforeName;
+}
+
+export function getToolIndicatorPlacementModeIndex(mode) {
+    const normalized = normalizeToolIndicatorPlacementMode(mode);
+    const index = ToolIndicatorPlacementModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeToolIndicatorColor(colorCode) {
+    const normalized = String(colorCode || "").trim().toLowerCase();
+    for (const option of ToolIndicatorColorOptions) {
+        if (option.key.toLowerCase() === normalized) {
+            return option.key;
+        }
+    }
+
+    return "§7";
+}
+
+export function getToolIndicatorColorIndex(colorCode) {
+    const normalized = normalizeToolIndicatorColor(colorCode);
+    const index = ToolIndicatorColorOptions.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
 }
 
@@ -446,7 +671,34 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
             InsightConfig.system.maxMaxHeartDisplayHealth
         ),
         effectDisplayMode: normalizeEffectDisplayMode(runtime.effectDisplayMode ?? presetRuntime.effectDisplayMode),
-        displayStyle: normalizeDisplayStyle(runtime.displayStyle ?? presetRuntime.displayStyle)
+        displayStyle: normalizeDisplayStyle(runtime.displayStyle ?? presetRuntime.displayStyle),
+        nameDisplayMode: normalizeEntityNameDisplayMode(runtime.nameDisplayMode ?? presetRuntime.nameDisplayMode),
+        nameResolveMode: normalizeEntityNameResolveMode(runtime.nameResolveMode ?? presetRuntime.nameResolveMode),
+        villagerProfessionDisplay: normalizeVillagerProfessionDisplayMode(
+            runtime.villagerProfessionDisplay ?? presetRuntime.villagerProfessionDisplay
+        ),
+        toolTierIndicatorMode: normalizeToolTierIndicatorMode(runtime.toolTierIndicatorMode ?? presetRuntime.toolTierIndicatorMode),
+        toolIndicatorPlacement: normalizeToolIndicatorPlacementMode(
+            runtime.toolIndicatorPlacement ?? presetRuntime.toolIndicatorPlacement
+        ),
+        toolIndicatorColor: normalizeToolIndicatorColor(
+            runtime.toolIndicatorColor ?? presetRuntime.toolIndicatorColor
+        ),
+        stateColumns: clamp(
+            Number.isFinite(runtime.stateColumns) ? runtime.stateColumns : presetRuntime.stateColumns,
+            1,
+            InsightConfig.system.maxLayoutColumns
+        ),
+        tagColumns: clamp(
+            Number.isFinite(runtime.tagColumns) ? runtime.tagColumns : presetRuntime.tagColumns,
+            1,
+            InsightConfig.system.maxLayoutColumns
+        ),
+        familyColumns: clamp(
+            Number.isFinite(runtime.familyColumns) ? runtime.familyColumns : presetRuntime.familyColumns,
+            1,
+            InsightConfig.system.maxLayoutColumns
+        )
     };
 }
 
@@ -733,6 +985,15 @@ export function getPlayerDisplaySettings(player) {
         maxHeartDisplayHealth: runtime.maxHeartDisplayHealth,
         effectDisplayMode: runtime.effectDisplayMode,
         displayStyle: runtime.displayStyle,
+        nameDisplayMode: runtime.nameDisplayMode,
+        nameResolveMode: runtime.nameResolveMode,
+        villagerProfessionDisplay: runtime.villagerProfessionDisplay,
+        toolTierIndicatorMode: runtime.toolTierIndicatorMode,
+        toolIndicatorPlacement: runtime.toolIndicatorPlacement,
+        toolIndicatorColor: runtime.toolIndicatorColor,
+        stateColumns: runtime.stateColumns,
+        tagColumns: runtime.tagColumns,
+        familyColumns: runtime.familyColumns,
         showNamespace: evaluateVisibilityPolicy(components.namespace, visibilityContext),
         showCustomFields: evaluateVisibilityPolicy(components.customFields, visibilityContext),
         showCustomEnergyInfo: evaluateVisibilityPolicy(components.customEnergyInfo, visibilityContext),
@@ -751,6 +1012,7 @@ export function getPlayerDisplaySettings(player) {
         showEffectHearts: evaluateVisibilityPolicy(components.effectHearts, visibilityContext),
         showFrozenHearts: false,
         showAnimalHearts: evaluateVisibilityPolicy(components.animalHearts, visibilityContext),
+        showEntityScoreboards: evaluateVisibilityPolicy(components.entityScoreboards, visibilityContext),
         showTameable: evaluateVisibilityPolicy(components.tameable, visibilityContext),
         showTameFoods: evaluateVisibilityPolicy(components.tameFoods, visibilityContext),
         showTechnicalData: evaluateVisibilityPolicy(components.technical, visibilityContext),
