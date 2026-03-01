@@ -8,17 +8,17 @@
 	},
 	"header": {
 		"name": "§eDorios' Insight",
-		"description": "1.0.0 §6Dorios Studios",
+		"description": "1.1.0 §6Dorios Studios",
 		"min_engine_version": [
 			1,
-			21,
-			120
+			20,
+			80
 		],
 		"uuid": "411955f3-73f5-424a-b23d-01d040de6340",
 		"version": [
 			1,
-			0,
-			1
+			1,
+			0
 		]
 	},
 	"modules": [
@@ -27,7 +27,7 @@
 			"uuid": "748dfa7a-c778-4ff6-85d0-2134cb94f2da",
 			"version": [
 				1,
-				0,
+				1,
 				0
 			]
 		}
@@ -37,8 +37,8 @@
 			"uuid": "9cae2113-07c4-4433-ad8f-eb687d290e26",
 			"version": [
 				1,
-				0,
-				1
+				1,
+				0
 			]
 		}
 	],
@@ -46,17 +46,17 @@
 		{
 			"folder_name": "dark",
 			"memory_tier": 0,
-			"name": "§8Dark"
+			"name": "Color: §8Dark"
 		},
 		{
 			"folder_name": "copper",
 			"memory_tier": 1,
-			"name": "§6Copper"
+			"name": "Color: §6Copper"
 		},
 		{
 			"folder_name": "default",
 			"memory_tier": 2,
-			"name": "§9Default"
+			"name": "Color: §9Default"
 		}
 	]
 }
