@@ -33,9 +33,16 @@ const RegistryState = {
     initialized: false,
     mergedByKey: new Map(),
     dynamicByKey: new Map(),
-    contentToAddonKey: new Map(),
-    namespaceToAddonKey: new Map()
+    contentToAddonKeys: new Map(),
+    namespaceToAddonKeys: new Map()
 };
+
+const AddonTypePriority = Object.freeze({
+    namespace: 0,
+    expansion: 1,
+    addon: 2,
+    core: 3
+});
 
 function normalizeAddonKey(value) {
     return value
@@ -159,8 +166,8 @@ function mergeAddonDefinitions(baseAddon, overrideAddon) {
 
 function rebuildMergedRegistry() {
     RegistryState.mergedByKey = new Map();
-    RegistryState.contentToAddonKey = new Map();
-    RegistryState.namespaceToAddonKey = new Map();
+    RegistryState.contentToAddonKeys = new Map();
+    RegistryState.namespaceToAddonKeys = new Map();
 
     for (const addon of DEFAULT_ADDON_LIBRARY) {
         RegistryState.mergedByKey.set(addon.key, {
@@ -180,13 +187,73 @@ function rebuildMergedRegistry() {
     for (const addon of RegistryState.mergedByKey.values()) {
         const namespaceKey = normalizeNamespaceInput(addon.namespace);
         if (namespaceKey) {
-            RegistryState.namespaceToAddonKey.set(namespaceKey, addon.key);
+            if (!RegistryState.namespaceToAddonKeys.has(namespaceKey)) {
+                RegistryState.namespaceToAddonKeys.set(namespaceKey, []);
+            }
+
+            const namespaceOwners = RegistryState.namespaceToAddonKeys.get(namespaceKey);
+            if (!namespaceOwners.includes(addon.key)) {
+                namespaceOwners.push(addon.key);
+            }
         }
 
         for (const typeId of addon.content) {
-            RegistryState.contentToAddonKey.set(typeId, addon.key);
+            if (!RegistryState.contentToAddonKeys.has(typeId)) {
+                RegistryState.contentToAddonKeys.set(typeId, []);
+            }
+
+            const contentOwners = RegistryState.contentToAddonKeys.get(typeId);
+            if (!contentOwners.includes(addon.key)) {
+                contentOwners.push(addon.key);
+            }
         }
     }
+}
+
+function getAddonTypeRank(addonType) {
+    if (typeof addonType !== "string") {
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+    return AddonTypePriority[addonType] ?? Number.MAX_SAFE_INTEGER;
+}
+
+function selectBestAddonForTypeId(addonCandidates) {
+    if (!Array.isArray(addonCandidates) || !addonCandidates.length) {
+        return undefined;
+    }
+
+    const sortedCandidates = [...addonCandidates].sort((left, right) => {
+        const leftRank = getAddonTypeRank(left.type);
+        const rightRank = getAddonTypeRank(right.type);
+
+        if (leftRank !== rightRank) {
+            return leftRank - rightRank;
+        }
+
+        return String(left.key || "").localeCompare(String(right.key || ""));
+    });
+
+    return sortedCandidates[0];
+}
+
+function selectBestAddonForNamespace(addonCandidates) {
+    if (!Array.isArray(addonCandidates) || !addonCandidates.length) {
+        return undefined;
+    }
+
+    // Explicit namespace aliases should always override shared namespace ambiguity.
+    const explicitAlias = addonCandidates.find((addon) => addon.type === "namespace");
+    if (explicitAlias) {
+        return explicitAlias;
+    }
+
+    // If multiple addons share the same namespace, do not guess the owner.
+    if (addonCandidates.length > 1) {
+        return undefined;
+    }
+
+    return addonCandidates[0];
 }
 
 function extractTagPayload(tags, prefix) {
@@ -294,12 +361,16 @@ function getAddonByTypeId(typeId) {
         return undefined;
     }
 
-    const addonKey = RegistryState.contentToAddonKey.get(normalizedTypeId);
-    if (!addonKey) {
+    const addonKeys = RegistryState.contentToAddonKeys.get(normalizedTypeId);
+    if (!Array.isArray(addonKeys) || !addonKeys.length) {
         return undefined;
     }
 
-    return RegistryState.mergedByKey.get(addonKey);
+    const addonCandidates = addonKeys
+        .map((addonKey) => RegistryState.mergedByKey.get(addonKey))
+        .filter(Boolean);
+
+    return selectBestAddonForTypeId(addonCandidates);
 }
 
 function getAddonByNamespace(namespace) {
@@ -310,12 +381,16 @@ function getAddonByNamespace(namespace) {
         return undefined;
     }
 
-    const addonKey = RegistryState.namespaceToAddonKey.get(normalizedNamespace);
-    if (!addonKey) {
+    const addonKeys = RegistryState.namespaceToAddonKeys.get(normalizedNamespace);
+    if (!Array.isArray(addonKeys) || !addonKeys.length) {
         return undefined;
     }
 
-    return RegistryState.mergedByKey.get(addonKey);
+    const addonCandidates = addonKeys
+        .map((addonKey) => RegistryState.mergedByKey.get(addonKey))
+        .filter(Boolean);
+
+    return selectBestAddonForNamespace(addonCandidates);
 }
 
 function registerAddonContentInternal(addonContent, persist = true) {
@@ -407,14 +482,26 @@ function exposeNamespaceRegistryApi() {
         },
         getNamespaceAliases() {
             ensureRegistryInitialized();
-            return [...RegistryState.namespaceToAddonKey.entries()].map(([namespace, addonKey]) => {
-                const addon = RegistryState.mergedByKey.get(addonKey);
-                return {
+            const aliases = [];
+
+            for (const [namespace, addonKeys] of RegistryState.namespaceToAddonKeys.entries()) {
+                const addonCandidates = (addonKeys || [])
+                    .map((addonKey) => RegistryState.mergedByKey.get(addonKey))
+                    .filter(Boolean);
+
+                const resolved = selectBestAddonForNamespace(addonCandidates);
+                if (!resolved) {
+                    continue;
+                }
+
+                aliases.push({
                     namespace,
-                    name: addon?.name ?? toTitleWords(namespace.split("_")),
-                    key: addonKey
-                };
-            });
+                    name: resolved.name ?? toTitleWords(namespace.split("_")),
+                    key: resolved.key
+                });
+            }
+
+            return aliases;
         },
         refreshFromDynamicProperties() {
             RegistryState.initialized = false;
