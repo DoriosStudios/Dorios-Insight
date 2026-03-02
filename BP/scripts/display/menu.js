@@ -4,6 +4,7 @@ import {
     EntityNameDisplayModeLabels,
     EntityNameResolveModeLabels,
     EffectDisplayModeLabels,
+    FieldDisplayStyleOverrideLabels,
     InsightComponentDefinitions,
     InsightConfig,
     InsightModes,
@@ -17,6 +18,7 @@ import {
     getEntityNameDisplayModeIndex,
     getEntityNameResolveModeIndex,
     getEffectDisplayModeIndex,
+    getFieldDisplayStyleOverrideIndex,
     getModePreset,
     getPlayerDisplaySettings,
     getToolIndicatorColorIndex,
@@ -41,6 +43,9 @@ const customComponentKeySet = new Set([
     "customEnergyInfo",
     "customRotationInfo",
     "customMachineProgress",
+    "customFluidInfo",
+    "customGasInfo",
+    "customCobblestoneCount",
     "customVariantPreview"
 ]);
 
@@ -109,6 +114,12 @@ function getEntityNameResolveModeLabel(mode) {
     const normalized = String(mode || "").toLowerCase();
     const option = EntityNameResolveModeLabels.find((entry) => entry.key === normalized);
     return option?.label || EntityNameResolveModeLabels[0].label;
+}
+
+function getFieldDisplayStyleOverrideLabel(style) {
+    const normalized = String(style || "").toLowerCase();
+    const option = FieldDisplayStyleOverrideLabels.find((entry) => entry.key === normalized);
+    return option?.label || FieldDisplayStyleOverrideLabels[0].label;
 }
 
 function getVillagerProfessionDisplayModeLabel(mode) {
@@ -345,6 +356,7 @@ async function showStyleMenu(player) {
 
     const styleOptions = DisplayStyleLabels.map((option) => option.label);
     const effectModeOptions = EffectDisplayModeLabels.map((option) => option.label);
+    const fieldOverrideOptions = FieldDisplayStyleOverrideLabels.map((option) => option.label);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.style_menu.title"))
@@ -361,6 +373,41 @@ async function showStyleMenu(player) {
             {
                 defaultValueIndex: getEffectDisplayModeIndex(runtime.effectDisplayMode)
             }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.style_menu.health_style", [getFieldDisplayStyleOverrideLabel(runtime.healthDisplayStyle)]),
+            fieldOverrideOptions,
+            {
+                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.healthDisplayStyle)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.style_menu.hunger_style", [getFieldDisplayStyleOverrideLabel(runtime.hungerDisplayStyle)]),
+            fieldOverrideOptions,
+            {
+                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.hungerDisplayStyle)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.style_menu.armor_style", [getFieldDisplayStyleOverrideLabel(runtime.armorDisplayStyle)]),
+            fieldOverrideOptions,
+            {
+                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.armorDisplayStyle)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.style_menu.absorption_style", [getFieldDisplayStyleOverrideLabel(runtime.absorptionDisplayStyle)]),
+            fieldOverrideOptions,
+            {
+                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.absorptionDisplayStyle)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.style_menu.air_style", [getFieldDisplayStyleOverrideLabel(runtime.airDisplayStyle)]),
+            fieldOverrideOptions,
+            {
+                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.airDisplayStyle)
+            }
         );
 
     const result = await form.show(player);
@@ -368,10 +415,17 @@ async function showStyleMenu(player) {
         return;
     }
 
+    const formValues = result.formValues;
+
     updatePlayerOverrides(player, {
         runtime: {
-            displayStyle: DisplayStyleLabels[Number(result.formValues[0] ?? 0)]?.key ?? runtime.displayStyle,
-            effectDisplayMode: EffectDisplayModeLabels[Number(result.formValues[1] ?? 0)]?.key ?? runtime.effectDisplayMode
+            displayStyle: DisplayStyleLabels[Number(formValues[0] ?? 0)]?.key ?? runtime.displayStyle,
+            effectDisplayMode: EffectDisplayModeLabels[Number(formValues[1] ?? 0)]?.key ?? runtime.effectDisplayMode,
+            healthDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[2] ?? 0)]?.key ?? runtime.healthDisplayStyle,
+            hungerDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[3] ?? 0)]?.key ?? runtime.hungerDisplayStyle,
+            armorDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[4] ?? 0)]?.key ?? runtime.armorDisplayStyle,
+            absorptionDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[5] ?? 0)]?.key ?? runtime.absorptionDisplayStyle,
+            airDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[6] ?? 0)]?.key ?? runtime.airDisplayStyle
         }
     });
 
@@ -431,6 +485,7 @@ async function showSystemSettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
+    const blockNameResolveModeOptions = EntityNameResolveModeLabels.map((option) => option.label);
     const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
     const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
     const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
@@ -438,6 +493,13 @@ async function showSystemSettingsMenu(player) {
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.system_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.block_name_method", [getEntityNameResolveModeLabel(runtime.blockNameResolveMode)]),
+            blockNameResolveModeOptions,
+            {
+                defaultValueIndex: getEntityNameResolveModeIndex(runtime.blockNameResolveMode)
+            }
+        )
         .dropdown(
             tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
             tierIndicatorOptions,
@@ -488,27 +550,29 @@ async function showSystemSettingsMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
-            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[0] ?? 0)]?.key
+            blockNameResolveMode: EntityNameResolveModeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.blockNameResolveMode,
+            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[1] ?? 0)]?.key
                 ?? runtime.toolTierIndicatorMode,
-            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[1] ?? 0)]?.key
+            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[2] ?? 0)]?.key
                 ?? runtime.toolIndicatorPlacement,
-            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[2] ?? 0)]?.key
+            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[3] ?? 0)]?.key
                 ?? runtime.toolIndicatorColor,
             stateColumns: resolveCustomNumberInput(
-                result.formValues[4],
-                Number(result.formValues[3] ?? runtime.stateColumns),
+                result.formValues[5],
+                Number(result.formValues[4] ?? runtime.stateColumns),
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             tagColumns: resolveCustomNumberInput(
-                result.formValues[6],
-                Number(result.formValues[5] ?? runtime.tagColumns),
+                result.formValues[7],
+                Number(result.formValues[6] ?? runtime.tagColumns),
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             familyColumns: resolveCustomNumberInput(
-                result.formValues[8],
-                Number(result.formValues[7] ?? runtime.familyColumns),
+                result.formValues[9],
+                Number(result.formValues[8] ?? runtime.familyColumns),
                 1,
                 InsightConfig.system.maxLayoutColumns
             )

@@ -57,6 +57,13 @@ export const DisplayStyleLabels = Object.freeze([
     Object.freeze({ key: DisplayStyles.HybridPercent, label: "Hybrid Type 2 (❤️ x%)" })
 ]);
 
+export const FieldDisplayStyleGlobal = "global";
+
+export const FieldDisplayStyleOverrideLabels = Object.freeze([
+    Object.freeze({ key: FieldDisplayStyleGlobal, label: "Use Global" }),
+    ...DisplayStyleLabels
+]);
+
 export const EntityNameDisplayModes = Object.freeze({
     NicknameFirst: "nickname_first",
     MobNameFirst: "mob_name_first",
@@ -137,13 +144,15 @@ export const ToolIndicatorColorOptions = Object.freeze([
 ]);
 
 export const InsightComponentDefinitions = Object.freeze([
-    // All of these will eventually use localization keys, but for now the labels are hardcoded in English.
     Object.freeze({ key: "namespace", label: "Namespace Label" }),
     Object.freeze({ key: "customFields", label: "Custom Fields" }),
     Object.freeze({ key: "customEnergyInfo", label: "UtilityCraft: Energy Info" }),
     Object.freeze({ key: "customRotationInfo", label: "UtilityCraft: Rotation Info" }),
     Object.freeze({ key: "customMachineProgress", label: "UtilityCraft: Machine Progress" }),
-    Object.freeze({ key: "customVariantPreview", label: "Dorios' Atelier: Variant Preview" }),
+    Object.freeze({ key: "customFluidInfo", label: "UtilityCraft: Fluid Info" }), // Hardcoded
+    Object.freeze({ key: "customGasInfo", label: "UtilityCraft: Gas Info" }), // Hardcoded
+    Object.freeze({ key: "customCobblestoneCount", label: "UtilityCraft: Cobblestone Count" }), // Hardcoded
+    Object.freeze({ key: "customVariantPreview", label: "Dorios' Atelier: Variant Preview" }), // Hardcoded
     Object.freeze({ key: "blockStates", label: "Block States" }),
     Object.freeze({ key: "blockTags", label: "Block Tags" }),
     Object.freeze({ key: "health", label: "Entity Health" }),
@@ -248,8 +257,14 @@ export const InsightModePresets = Object.freeze({
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
+            healthDisplayStyle: FieldDisplayStyleGlobal,
+            hungerDisplayStyle: FieldDisplayStyleGlobal,
+            armorDisplayStyle: FieldDisplayStyleGlobal,
+            absorptionDisplayStyle: FieldDisplayStyleGlobal,
+            airDisplayStyle: FieldDisplayStyleGlobal,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -264,8 +279,11 @@ export const InsightModePresets = Object.freeze({
             customEnergyInfo: VisibilityPolicies.Show,
             customRotationInfo: VisibilityPolicies.ShowWhenSneaking,
             customMachineProgress: VisibilityPolicies.ShowWhenSneaking,
+            customFluidInfo: VisibilityPolicies.Show,
+            customGasInfo: VisibilityPolicies.Show,
+            customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.ShowWhenSneaking,
-            blockStates: VisibilityPolicies.Show,
+            blockStates: VisibilityPolicies.ShowWhenSneaking,
             blockTags: VisibilityPolicies.Hide,
             health: VisibilityPolicies.Show,
             absorption: VisibilityPolicies.Show,
@@ -306,8 +324,14 @@ export const InsightModePresets = Object.freeze({
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
+            healthDisplayStyle: FieldDisplayStyleGlobal,
+            hungerDisplayStyle: FieldDisplayStyleGlobal,
+            armorDisplayStyle: FieldDisplayStyleGlobal,
+            absorptionDisplayStyle: FieldDisplayStyleGlobal,
+            airDisplayStyle: FieldDisplayStyleGlobal,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -322,6 +346,9 @@ export const InsightModePresets = Object.freeze({
             customEnergyInfo: VisibilityPolicies.Show,
             customRotationInfo: VisibilityPolicies.Show,
             customMachineProgress: VisibilityPolicies.Show,
+            customFluidInfo: VisibilityPolicies.Show,
+            customGasInfo: VisibilityPolicies.Show,
+            customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.Show,
             blockStates: VisibilityPolicies.Show,
             blockTags: VisibilityPolicies.ShowWhenSneaking,
@@ -364,8 +391,14 @@ export const InsightModePresets = Object.freeze({
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
+            healthDisplayStyle: FieldDisplayStyleGlobal,
+            hungerDisplayStyle: FieldDisplayStyleGlobal,
+            armorDisplayStyle: FieldDisplayStyleGlobal,
+            absorptionDisplayStyle: FieldDisplayStyleGlobal,
+            airDisplayStyle: FieldDisplayStyleGlobal,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -380,6 +413,9 @@ export const InsightModePresets = Object.freeze({
             customEnergyInfo: VisibilityPolicies.Show,
             customRotationInfo: VisibilityPolicies.Show,
             customMachineProgress: VisibilityPolicies.Show,
+            customFluidInfo: VisibilityPolicies.Show,
+            customGasInfo: VisibilityPolicies.Show,
+            customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.Show,
             blockStates: VisibilityPolicies.Show,
             blockTags: VisibilityPolicies.Show,
@@ -487,6 +523,35 @@ export function getEntityNameResolveModeIndex(mode) {
     const normalized = normalizeEntityNameResolveMode(mode);
     const index = EntityNameResolveModeLabels.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
+}
+
+export function normalizeFieldDisplayStyleOverride(style) {
+    const normalized = String(style || "").trim().toLowerCase();
+    if (normalized === FieldDisplayStyleGlobal) {
+        return FieldDisplayStyleGlobal;
+    }
+
+    for (const option of DisplayStyleLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return FieldDisplayStyleGlobal;
+}
+
+export function getFieldDisplayStyleOverrideIndex(style) {
+    const normalized = normalizeFieldDisplayStyleOverride(style);
+    const index = FieldDisplayStyleOverrideLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function resolveFieldDisplayStyle(fieldOverride, globalStyle) {
+    if (fieldOverride && fieldOverride !== FieldDisplayStyleGlobal) {
+        return fieldOverride;
+    }
+
+    return globalStyle;
 }
 
 export function normalizeVillagerProfessionDisplayMode(mode) {
@@ -672,8 +737,14 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         ),
         effectDisplayMode: normalizeEffectDisplayMode(runtime.effectDisplayMode ?? presetRuntime.effectDisplayMode),
         displayStyle: normalizeDisplayStyle(runtime.displayStyle ?? presetRuntime.displayStyle),
+        healthDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.healthDisplayStyle ?? presetRuntime.healthDisplayStyle),
+        hungerDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.hungerDisplayStyle ?? presetRuntime.hungerDisplayStyle),
+        armorDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.armorDisplayStyle ?? presetRuntime.armorDisplayStyle),
+        absorptionDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.absorptionDisplayStyle ?? presetRuntime.absorptionDisplayStyle),
+        airDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.airDisplayStyle ?? presetRuntime.airDisplayStyle),
         nameDisplayMode: normalizeEntityNameDisplayMode(runtime.nameDisplayMode ?? presetRuntime.nameDisplayMode),
         nameResolveMode: normalizeEntityNameResolveMode(runtime.nameResolveMode ?? presetRuntime.nameResolveMode),
+        blockNameResolveMode: normalizeEntityNameResolveMode(runtime.blockNameResolveMode ?? presetRuntime.blockNameResolveMode),
         villagerProfessionDisplay: normalizeVillagerProfessionDisplayMode(
             runtime.villagerProfessionDisplay ?? presetRuntime.villagerProfessionDisplay
         ),
@@ -985,8 +1056,14 @@ export function getPlayerDisplaySettings(player) {
         maxHeartDisplayHealth: runtime.maxHeartDisplayHealth,
         effectDisplayMode: runtime.effectDisplayMode,
         displayStyle: runtime.displayStyle,
+        healthDisplayStyle: resolveFieldDisplayStyle(runtime.healthDisplayStyle, runtime.displayStyle),
+        hungerDisplayStyle: resolveFieldDisplayStyle(runtime.hungerDisplayStyle, runtime.displayStyle),
+        armorDisplayStyle: resolveFieldDisplayStyle(runtime.armorDisplayStyle, runtime.displayStyle),
+        absorptionDisplayStyle: resolveFieldDisplayStyle(runtime.absorptionDisplayStyle, runtime.displayStyle),
+        airDisplayStyle: resolveFieldDisplayStyle(runtime.airDisplayStyle, runtime.displayStyle),
         nameDisplayMode: runtime.nameDisplayMode,
         nameResolveMode: runtime.nameResolveMode,
+        blockNameResolveMode: runtime.blockNameResolveMode,
         villagerProfessionDisplay: runtime.villagerProfessionDisplay,
         toolTierIndicatorMode: runtime.toolTierIndicatorMode,
         toolIndicatorPlacement: runtime.toolIndicatorPlacement,
@@ -999,6 +1076,9 @@ export function getPlayerDisplaySettings(player) {
         showCustomEnergyInfo: evaluateVisibilityPolicy(components.customEnergyInfo, visibilityContext),
         showCustomRotationInfo: evaluateVisibilityPolicy(components.customRotationInfo, visibilityContext),
         showCustomMachineProgress: evaluateVisibilityPolicy(components.customMachineProgress, visibilityContext),
+        showCustomFluidInfo: evaluateVisibilityPolicy(components.customFluidInfo, visibilityContext),
+        showCustomGasInfo: evaluateVisibilityPolicy(components.customGasInfo, visibilityContext),
+        showCustomCobblestoneCount: evaluateVisibilityPolicy(components.customCobblestoneCount, visibilityContext),
         showCustomVariantPreview: evaluateVisibilityPolicy(components.customVariantPreview, visibilityContext),
         showBlockStates: evaluateVisibilityPolicy(components.blockStates, visibilityContext),
         showBlockTags: evaluateVisibilityPolicy(components.blockTags, visibilityContext),
