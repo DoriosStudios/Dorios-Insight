@@ -414,7 +414,9 @@ export function transformBlockStateEntries(context) {
                 stateMap,
                 entries: entries.map((entry) => ({ ...entry }))
             });
-        } catch {
+        } catch (error) {
+            const provider = transformerEntry?.metadata?.provider || "unknown";
+            console.warn(`[Insight] State transformer from "${provider}" threw: ${error?.message || error}`);
             continue;
         }
 

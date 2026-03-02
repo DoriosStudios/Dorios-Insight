@@ -1,4 +1,4 @@
-import { EntityHealthComponent, world } from "@minecraft/server";
+import { EntityHealthComponent, EntityIsBabyComponent, world } from "@minecraft/server";
 import { BlockNames, BlockPrefixes, ItemTranslationKeys } from "../const.js";
 import {
     DisplayStyles,
@@ -60,9 +60,17 @@ const Emojis = Object.freeze({
     heartAbsorptionFull: "\uF5D9",
     heartAnimalHalf: "\uF5CC",
     heartAnimalFull: "\uF5CB",
+    heartOnFireHalf: "\uF5AA",
+    heartOnFireFull: "\uF5A9",
     hungerEmpty: "",
     hungerHalf: "",
     hungerFull: "",
+    hungerFullSaturationHalf: "\uF5AC",
+    hungerFullSaturationFull: "\uF5AB",
+    hungerHalfSaturationHalf: "\uF5AE",
+    hungerHalfSaturationFull: "\uF5AD",
+    hungerEmptySaturationFull: "\uF5AF",
+    hungerEmptySaturationHalf: "\uF5BF",
     hungerEffectEmpty: "\uF5EE",
     hungerEffectHalf: "\uF5EC",
     hungerEffectFull: "\uF5ED",
@@ -92,6 +100,11 @@ const HeartGlyphSets = Object.freeze({
         half: Emojis.heartFrozenHalf,
         empty: Emojis.heartEmpty
     }),
+    burned: Object.freeze({
+        full: Emojis.heartOnFireFull,
+        half: Emojis.heartOnFireHalf,
+        empty: Emojis.heartEmpty
+    }),
     animal: Object.freeze({
         full: Emojis.heartAnimalFull,
         half: Emojis.heartAnimalHalf,
@@ -109,6 +122,14 @@ const HungerGlyphSets = Object.freeze({
         full: Emojis.hungerEffectFull,
         half: Emojis.hungerEffectHalf,
         empty: Emojis.hungerEffectEmpty
+    }),
+    saturation: Object.freeze({
+        fullSaturationFull: Emojis.hungerFullSaturationFull,
+        fullSaturationHalf: Emojis.hungerFullSaturationHalf,
+        halfSaturationFull: Emojis.hungerHalfSaturationFull,
+        halfSaturationHalf: Emojis.hungerHalfSaturationHalf,
+        emptySaturationFull: Emojis.hungerEmptySaturationFull,
+        emptySaturationHalf: Emojis.hungerEmptySaturationHalf
     })
 });
 
@@ -132,16 +153,16 @@ const ToolTierColors = Object.freeze({
     any: "§e",
     stone: "§7",
     iron: "§i",
-    diamond: "§q",
-    netherite: "§n"
+    diamond: "§s",
+    netherite: "§j"
 });
 
 const ToolTierOreGlyphs = Object.freeze({
-    any: "◇",
-    stone: "🪨",
-    iron: "⛓",
-    diamond: "💎",
-    netherite: "🧱"
+    any: "\uF573",
+    stone: "\uF55B",
+    iron: "\uF55A",
+    diamond: "\uF559",
+    netherite: "\uF55D"
 });
 
 const ToolGlyphs = Object.freeze({
@@ -186,7 +207,7 @@ const TameableDisplay = Object.freeze({
 });
 
 const EffectDisplay = Object.freeze({
-    unknownGlyph: "•", 
+    unknownGlyph: "?", 
     infiniteDurationLabel: "∞", 
     iconAmplifierSpacing: " "
 });
@@ -201,7 +222,7 @@ const EffectGlyphByTypeId = Object.freeze({
     darkness: "\uF51F",
     fire_resistance: "\uF529",
     absorption: "\uF52A",
-    health_boost: "\uF52A",
+    health_boost: "\uF54F",
     hunger: "\uF52B",
     invisibility: "\uF52C",
     jump_boost: "\uF52D",
@@ -220,8 +241,15 @@ const EffectGlyphByTypeId = Object.freeze({
     decay: "\uF54B",
     poison: "\uF54C",
     regeneration: "\uF516",
-    dolphins_grace: "\uE119",
-    fatal_poison: "\uF54C \uF531",
+    dolphins_grace: "\uF528",
+    fatal_poison: "\uF547",
+    raid_omen: "\uF54E",
+    trial_omen: "\uF548",
+    bad_omen: "\uF538",
+    weaving: "\uF526",
+    wind_charged: "\uF536",
+    infested: "\uF527",
+    oozing: "\uF537"
 });
 
 const PositiveEffectTypeIds = new Set([
@@ -268,6 +296,19 @@ const EffectTextColors = Object.freeze({
     positive: "§a",
     negative: "§c",
     neutral: InsightConfig.display.technicalColor
+});
+
+// Some vanilla effects use localization keys that are not aligned with
+// the default "potion.<effect_id>" pattern.
+const VanillaEffectLocalizationKeyOverrides = Object.freeze({
+    bad_omen: "effect.badOmen",
+    infested: "effect.infested",
+    oozing: "effect.oozing",
+    raid_omen: "effect.raid_omen",
+    trial_omen: "effect.trial_omen",
+    village_hero: "effect.villageHero",
+    weaving: "effect.weaving",
+    wind_charged: "effect.wind_charged"
 });
 
 const BlockToolTagGlyphs = Object.freeze([
@@ -441,6 +482,32 @@ function readLocalizationKey(target) {
     return localizationKey.length ? localizationKey : undefined;
 }
 
+function readLocalizationKeyList(target) {
+    const rawLocalizationKeys = target?.localizationKeys;
+
+    if (typeof rawLocalizationKeys === "string") {
+        const normalized = rawLocalizationKeys.trim();
+        return normalized.length ? normalized : undefined;
+    }
+
+    if (!Array.isArray(rawLocalizationKeys)) {
+        return undefined;
+    }
+
+    for (const candidate of rawLocalizationKeys) {
+        if (typeof candidate !== "string") {
+            continue;
+        }
+
+        const normalized = candidate.trim();
+        if (normalized.length) {
+            return normalized;
+        }
+    }
+
+    return undefined;
+}
+
 /**
  * Appends a display result on a new line. Handles both plain strings and rawtext objects.
  */
@@ -474,11 +541,151 @@ function pushRawtextParts(rawtext, parts) {
     }
 }
 
+function hasEntityComponent(entity, componentIdCandidates) {
+    if (!entity || typeof entity.getComponent !== "function") {
+        return false;
+    }
+
+    for (const componentId of componentIdCandidates) {
+        if (typeof componentId !== "string" || !componentId.length) {
+            continue;
+        }
+
+        try {
+            if (entity.getComponent(componentId)) {
+                return true;
+            }
+        } catch {
+            // Ignore unsupported component reads.
+        }
+    }
+
+    return false;
+}
+
+function readEntityBooleanState(entity, propertyNames) {
+    if (!entity) {
+        return undefined;
+    }
+
+    for (const propertyName of propertyNames) {
+        if (typeof propertyName !== "string" || !propertyName.length) {
+            continue;
+        }
+
+        try {
+            if (typeof entity[propertyName] === "boolean") {
+                return entity[propertyName];
+            }
+        } catch {
+            // Ignore direct property access failures.
+        }
+
+        try {
+            if (typeof entity.getProperty === "function") {
+                const value = entity.getProperty(propertyName);
+                if (typeof value === "boolean") {
+                    return value;
+                }
+
+                const numericValue = Number(value);
+                if (Number.isFinite(numericValue)) {
+                    return numericValue > 0;
+                }
+            }
+        } catch {
+            // Ignore dynamic property read failures.
+        }
+    }
+
+    return undefined;
+}
+
+// -----------------------------------------------------------------------------
+// Shared subfunction registry
+// -----------------------------------------------------------------------------
+
+/**
+ * Creates a centralized registry for small reusable subfunctions.
+ * This keeps tiny predicates/helpers grouped in one place for easier maintenance.
+ */
+function createDisplaySubfunctionRegistry() {
+    const entityPredicates = Object.freeze({
+        /**
+         * Checks whether an entity has the baby component.
+         * Uses the requested `component.id` path first, then official fallback paths.
+         */
+        hasIsBabyComponent(entity) {
+            const isBabyComponentId = EntityIsBabyComponent?.component?.id
+                || EntityIsBabyComponent?.componentId
+                || "minecraft:is_baby";
+
+            if (hasEntityComponent(entity, [isBabyComponentId, "minecraft:is_baby"])) {
+                return true;
+            }
+
+            const babyState = readEntityBooleanState(entity, [
+                "isBaby",
+                "minecraft:is_baby",
+                "is_baby"
+            ]);
+
+            return babyState === true;
+        },
+        isOnFireComponent(entity) {
+            if (hasEntityComponent(entity, ["minecraft:onfire", "minecraft:on_fire"])) {
+                return true;
+            }
+
+            const fireState = readEntityBooleanState(entity, [
+                "isOnFire",
+                "minecraft:onfire",
+                "minecraft:on_fire"
+            ]);
+
+            if (fireState !== undefined) {
+                return fireState;
+            }
+
+            try {
+                if (typeof entity.getFireTicks === "function") {
+                    const fireTicks = Number(entity.getFireTicks());
+                    return Number.isFinite(fireTicks) && fireTicks > 0;
+                }
+            } catch {
+                // Ignore getFireTicks failures.
+            }
+
+            return false;
+        }
+    });
+
+    const dividerText = "§8------------------------------§r";
+    const displayHelpers = Object.freeze({
+        dividerText,
+
+        /**
+         * Appends a visual divider in the actionbar to separate configurable fields
+         * from computed/function-driven fields.
+         */
+        appendConfigurableFunctionDivider(rawtext) {
+            appendDisplayLine(rawtext, { text: dividerText });
+        }
+    });
+
+    return Object.freeze({
+        entityPredicates,
+        displayHelpers
+    });
+}
+
+const DisplaySubfunctions = createDisplaySubfunctionRegistry();
+
 // -----------------------------------------------------------------------------
 // Translation helpers
 // -----------------------------------------------------------------------------
 
-function buildBlockTranslationRawtext(block) {
+function buildBlockTranslationRawtext(block, playerSettings) {
     const localizationKey = readLocalizationKey(block);
 
     if (localizationKey) {
@@ -490,6 +697,11 @@ function buildBlockTranslationRawtext(block) {
     const blockTypeId = String(block?.typeId || "");
     if (!blockTypeId.length) {
         return tr("ui.dorios.insight.display.unknown_block");
+    }
+
+    // When blockNameResolveMode is TypeIdToText, return a plain-text formatted name.
+    if (playerSettings?.blockNameResolveMode === EntityNameResolveModes.TypeIdToText) {
+        return { text: formatTypeIdToText(blockTypeId) };
     }
 
     const { id } = splitTypeId(blockTypeId);
@@ -1706,6 +1918,23 @@ function resolveEffectTypeId(effect) {
     return rawTypeId.includes(":") ? rawTypeId : `minecraft:${rawTypeId}`;
 }
 
+function resolveEffectLocalizationKey(effect) {
+    const localizationTargets = [effect, effect?.type, effect?.effectType];
+
+    for (const target of localizationTargets) {
+        const localizationKey = readLocalizationKey(target) || readLocalizationKeyList(target);
+        if (localizationKey) {
+            return localizationKey;
+        }
+    }
+
+    return undefined;
+}
+
+function resolveVanillaEffectFallbackLocalizationKey(normalizedTypeId) {
+    return VanillaEffectLocalizationKeyOverrides[normalizedTypeId] || `potion.${normalizedTypeId}`;
+}
+
 function normalizeEffectTypeId(typeId) {
     const { id } = splitTypeId(typeId);
     return id.toLowerCase();
@@ -1816,9 +2045,12 @@ function buildEffectTextEntry(effect) {
 
     const { namespace } = splitTypeId(typeId);
     const normalizedTypeId = normalizeEffectTypeId(typeId);
-    const effectNameRawtext = namespace === "minecraft"
-        ? { translate: `potion.${normalizedTypeId}.name` }
-        : { text: formatTypeIdToText(typeId) };
+    const effectLocalizationKey = resolveEffectLocalizationKey(effect);
+    const effectNameRawtext = effectLocalizationKey
+        ? { translate: effectLocalizationKey }
+        : namespace === "minecraft"
+            ? { translate: resolveVanillaEffectFallbackLocalizationKey(normalizedTypeId) }
+            : { text: formatTypeIdToText(typeId) };
     const effectLevel = toRomanNumeral(getEffectLevel(effect));
     const effectPolarity = getEffectPolarity(normalizedTypeId);
     const colorCode = EffectTextColors[effectPolarity] || EffectTextColors.neutral;
@@ -1983,8 +2215,10 @@ function buildTameFoodsDisplay(foodTypeIds) {
 
 function appendCustomFieldLines(rawtext, lines) {
     if (!Array.isArray(lines) || !lines.length) {
-        return;
+        return 0;
     }
+
+    let appendedLines = 0;
 
     for (const line of lines) {
         if (typeof line !== "string" || !line.length) {
@@ -1994,13 +2228,17 @@ function appendCustomFieldLines(rawtext, lines) {
         rawtext.push({
             text: `\n${InsightConfig.display.technicalColor}${line}§r`
         });
+        appendedLines += 1;
     }
+
+    return appendedLines;
 }
 
 function resolveHealthGlyphSet({
     isPlayer,
     isFreezing,
     effectFlags,
+    isOnFire,
     isRideable,
     playerSettings
 }) {
@@ -2009,6 +2247,10 @@ function resolveHealthGlyphSet({
     }
 
     if (playerSettings.showEffectHearts) {
+        if (isOnFire) {
+            return HeartGlyphSets.burned;
+        }
+
         if (effectFlags.hasWither) {
             return HeartGlyphSets.wither;
         }
@@ -2051,6 +2293,101 @@ function buildHalfStepEmojiBar(currentValue, maxValue, glyphs, maxIconsPerLine) 
         bar += glyphs.half;
     }
     bar += glyphs.empty.repeat(emptyGlyphs);
+
+    return addLineBreakEvery(bar, maxIconsPerLine);
+}
+
+function buildHalfUnitSlotMap(totalHalfUnits, slotCount, fillFromRightToLeft = false) {
+    const safeSlotCount = Math.max(0, Math.floor(slotCount));
+    const halfUnitsBySlot = Array.from({ length: safeSlotCount }, () => 0);
+    let remainingHalfUnits = Math.max(0, Math.min(Math.ceil(totalHalfUnits), safeSlotCount * 2));
+
+    if (!safeSlotCount || remainingHalfUnits <= 0) {
+        return halfUnitsBySlot;
+    }
+
+    if (fillFromRightToLeft) {
+        for (let slotIndex = safeSlotCount - 1; slotIndex >= 0 && remainingHalfUnits > 0; slotIndex--) {
+            const slotHalfUnits = Math.min(2, remainingHalfUnits);
+            halfUnitsBySlot[slotIndex] = slotHalfUnits;
+            remainingHalfUnits -= slotHalfUnits;
+        }
+
+        return halfUnitsBySlot;
+    }
+
+    for (let slotIndex = 0; slotIndex < safeSlotCount && remainingHalfUnits > 0; slotIndex++) {
+        const slotHalfUnits = Math.min(2, remainingHalfUnits);
+        halfUnitsBySlot[slotIndex] = slotHalfUnits;
+        remainingHalfUnits -= slotHalfUnits;
+    }
+
+    return halfUnitsBySlot;
+}
+
+function getBaseHungerGlyphForHalfUnits(hungerHalfUnits, hungerGlyphs) {
+    if (hungerHalfUnits >= 2) {
+        return hungerGlyphs.full;
+    }
+
+    if (hungerHalfUnits === 1) {
+        return hungerGlyphs.half;
+    }
+
+    return hungerGlyphs.empty;
+}
+
+function getSaturationAwareHungerGlyphForHalfUnits(hungerHalfUnits, saturationHalfUnits, hungerGlyphs, saturationGlyphs) {
+    if (saturationHalfUnits <= 0) {
+        return getBaseHungerGlyphForHalfUnits(hungerHalfUnits, hungerGlyphs);
+    }
+
+    if (saturationHalfUnits >= 2) {
+        if (hungerHalfUnits >= 2) {
+            return saturationGlyphs.fullSaturationFull;
+        }
+
+        if (hungerHalfUnits === 1) {
+            return saturationGlyphs.halfSaturationFull;
+        }
+
+        return saturationGlyphs.emptySaturationFull;
+    }
+
+    if (hungerHalfUnits >= 2) {
+        return saturationGlyphs.fullSaturationHalf;
+    }
+
+    if (hungerHalfUnits === 1) {
+        return saturationGlyphs.halfSaturationHalf;
+    }
+
+    return saturationGlyphs.emptySaturationHalf;
+}
+
+function buildHungerWithSaturationEmojiBar(currentValue, maxValue, saturationValue, hungerGlyphs, saturationGlyphs, maxIconsPerLine) {
+    const current = Math.max(0, Number(currentValue) || 0);
+    const max = Math.max(1, Number(maxValue) || 1);
+    const saturation = Math.max(0, Number(saturationValue) || 0);
+
+    const roundedCurrent = getRoundedHalfHearts(current);
+    const roundedMax = getRoundedHalfHearts(max);
+    const roundedSaturation = getRoundedHalfHearts(Math.min(saturation, max));
+
+    const slotCount = Math.max(1, Math.ceil(roundedMax / 2));
+    const hungerHalfUnitsBySlot = buildHalfUnitSlotMap(roundedCurrent, slotCount, false);
+    // Saturation is rendered from left to right.
+    const saturationHalfUnitsBySlot = buildHalfUnitSlotMap(roundedSaturation, slotCount, false);
+
+    let bar = "";
+    for (let slotIndex = 0; slotIndex < slotCount; slotIndex++) {
+        bar += getSaturationAwareHungerGlyphForHalfUnits(
+            hungerHalfUnitsBySlot[slotIndex],
+            saturationHalfUnitsBySlot[slotIndex],
+            hungerGlyphs,
+            saturationGlyphs
+        );
+    }
 
     return addLineBreakEvery(bar, maxIconsPerLine);
 }
@@ -2110,7 +2447,14 @@ function buildHealthDisplay(currentValue, maxValue, maxHeartDisplayHealth, displ
     ) };
 }
 
-function buildHungerDisplay(currentValue, maxValue, displayStyle, glyphs = HungerGlyphSets.normal) {
+function buildHungerDisplay(
+    currentValue,
+    maxValue,
+    displayStyle,
+    glyphs = HungerGlyphSets.normal,
+    saturationValue = undefined,
+    saturationGlyphs = HungerGlyphSets.saturation
+) {
     const current = Math.max(0, Number(currentValue) || 0);
     const max = Math.max(1, Number(maxValue) || 1);
     const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
@@ -2132,12 +2476,28 @@ function buildHungerDisplay(currentValue, maxValue, displayStyle, glyphs = Hunge
         return tr("ui.dorios.insight.display.hunger_hybrid_percent", [glyphs.full, `${roundedPercentValue}`]);
     }
 
-    return { text: buildHalfStepEmojiBar(
-        currentValue,
-        maxValue,
-        glyphs,
-        InsightConfig.system.maxHeartsPerLine
-    ) };
+    const hasSaturation = Number.isFinite(saturationValue) && saturationValue > 0;
+    if (hasSaturation) {
+        return {
+            text: buildHungerWithSaturationEmojiBar(
+                currentValue,
+                maxValue,
+                saturationValue,
+                glyphs,
+                saturationGlyphs,
+                InsightConfig.system.maxHeartsPerLine
+            )
+        };
+    }
+
+    return {
+        text: buildHalfStepEmojiBar(
+            currentValue,
+            maxValue,
+            glyphs,
+            InsightConfig.system.maxHeartsPerLine
+        )
+    };
 }
 
 function buildAbsorptionDisplay(currentValue, displayStyle) {
@@ -2479,6 +2839,177 @@ function appendEntityFamilies(rawtext, entityFamilies, playerSettings) {
     }
 }
 
+function toBlockStateNumber(stateValue) {
+    const numericValue = Number(stateValue);
+    return Number.isFinite(numericValue) ? numericValue : undefined;
+}
+
+function countContainerUsedSlots(container) {
+    if (!container) {
+        return undefined;
+    }
+
+    const size = Number(container.size);
+    if (!Number.isFinite(size) || size <= 0) {
+        return undefined;
+    }
+
+    let usedSlots = 0;
+    let totalItems = 0;
+
+    for (let slot = 0; slot < size; slot++) {
+        let itemStack;
+        try {
+            itemStack = container.getItem(slot);
+        } catch {
+            continue;
+        }
+
+        if (!itemStack) {
+            continue;
+        }
+
+        const amount = Number(itemStack.amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            continue;
+        }
+
+        usedSlots += 1;
+        totalItems += amount;
+    }
+
+    return {
+        usedSlots,
+        totalSlots: Math.floor(size),
+        totalItems
+    };
+}
+
+function collectBlockSpecificConfigurationLines(block, blockStates) {
+    const lines = [];
+    const blockTypeId = String(block?.typeId || "").toLowerCase();
+    const states = blockStates && typeof blockStates === "object" ? blockStates : {};
+
+    if (blockTypeId.includes("cauldron")) {
+        let liquidState = String(
+            states["cauldron_liquid"]
+                ?? states["liquid_type"]
+                ?? states["liquid"]
+                ?? "water"
+        );
+        let fillLevel = toBlockStateNumber(states["fill_level"]) ?? toBlockStateNumber(states["liquid_depth"]);
+
+        try {
+            const fluidContainer = block?.getComponent?.("minecraft:fluid_container");
+            const fluidType = fluidContainer?.getFluidType?.();
+            const fluidTypeId = String(fluidType?.typeId ?? fluidType?.id ?? fluidType ?? "").trim();
+            if (fluidTypeId.length) {
+                liquidState = fluidTypeId.includes(":")
+                    ? fluidTypeId.split(":").pop() || fluidTypeId
+                    : fluidTypeId;
+            }
+
+            const componentFillLevel = Number(fluidContainer?.fillLevel);
+            if (Number.isFinite(componentFillLevel)) {
+                fillLevel = componentFillLevel;
+            }
+        } catch {
+            // Ignore unsupported fluid container component access.
+        }
+
+        const readableLiquid = toMessageText(liquidState.replace(/_/g, " "));
+
+        lines.push(fillLevel !== undefined
+            ? `Cauldron: ${readableLiquid} (Level ${fillLevel})`
+            : `Cauldron: ${readableLiquid}`);
+    }
+
+    if (blockTypeId.endsWith("chiseled_bookshelf")) {
+        const slotStateKeys = [
+            "slot_0_occupied_bit",
+            "slot_1_occupied_bit",
+            "slot_2_occupied_bit",
+            "slot_3_occupied_bit",
+            "slot_4_occupied_bit",
+            "slot_5_occupied_bit",
+            "slot_0_occupied",
+            "slot_1_occupied",
+            "slot_2_occupied",
+            "slot_3_occupied",
+            "slot_4_occupied",
+            "slot_5_occupied"
+        ];
+
+        const occupiedSlotIndexes = new Set();
+        let occupiedSlots = 0;
+        for (const slotStateKey of slotStateKeys) {
+            if (!(slotStateKey in states)) {
+                continue;
+            }
+
+            const slotMatch = slotStateKey.match(/slot_(\d+)_occupied/);
+            const slotIndex = slotMatch ? Number(slotMatch[1]) : -1;
+            if (Number.isFinite(slotIndex) && occupiedSlotIndexes.has(slotIndex)) {
+                continue;
+            }
+
+            const rawValue = states[slotStateKey];
+            if (rawValue === true || Number(rawValue) === 1) {
+                occupiedSlots += 1;
+                if (Number.isFinite(slotIndex) && slotIndex >= 0) {
+                    occupiedSlotIndexes.add(slotIndex);
+                }
+            }
+        }
+
+        lines.push(`Bookshelf Slots: ${occupiedSlots}/6`);
+    }
+
+    if (blockTypeId.endsWith("bell")) {
+        const attachment = toMessageText(String(states["attachment"] ?? states["minecraft:attachment"] ?? "unknown"));
+        const direction = toMessageText(String(
+            states["minecraft:cardinal_direction"]
+                ?? states["direction"]
+                ?? states["facing_direction"]
+                ?? "unknown"
+        ));
+
+        lines.push(`Bell: ${attachment}, Facing ${direction}`);
+    }
+
+    try {
+        const inventoryComponent = block?.getComponent?.("minecraft:inventory");
+        const usage = countContainerUsedSlots(inventoryComponent?.container);
+        if (usage) {
+            lines.push(`Container Slots: ${usage.usedSlots}/${usage.totalSlots}`);
+            lines.push(`Container Items: ${usage.totalItems}`);
+        }
+    } catch {
+        // Ignore blocks that do not expose an inventory component.
+    }
+
+    return lines;
+}
+
+function buildNearbyItemClusterLine(itemClusterContext) {
+    if (!itemClusterContext || typeof itemClusterContext !== "object") {
+        return undefined;
+    }
+
+    const entityCount = Number(itemClusterContext.entityCount);
+    const totalAmount = Number(itemClusterContext.totalAmount);
+
+    if (!Number.isFinite(entityCount) || entityCount < 2) {
+        return undefined;
+    }
+
+    const safeTotalAmount = Number.isFinite(totalAmount)
+        ? Math.max(entityCount, Math.floor(totalAmount))
+        : entityCount;
+
+    return `${InsightConfig.display.technicalColor}Nearby Items: ${Math.floor(entityCount)} entities (x${safeTotalAmount})§r`;
+}
+
 // -----------------------------------------------------------------------------
 // Main flow implementation
 // -----------------------------------------------------------------------------
@@ -2495,7 +3026,7 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
 
     pushRawtextParts(rawtext, breakableToolsPlacement.prefixParts);
 
-    rawtext.push(buildBlockTranslationRawtext(block));
+    rawtext.push(buildBlockTranslationRawtext(block, playerSettings));
 
     pushRawtextParts(rawtext, breakableToolsPlacement.suffixParts);
 
@@ -2506,6 +3037,8 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
             text: formatNamespaceLabel(namespaceInfo.displayNamespace, InsightConfig.display.namespaceColor)
         });
     }
+
+    let customFieldLineCount = 0;
 
     if (playerSettings.showCustomFields) {
         const customFieldLines = collectCustomBlockFieldLines({
@@ -2519,7 +3052,7 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
             toMessageText
         });
 
-        appendCustomFieldLines(rawtext, customFieldLines);
+        customFieldLineCount = appendCustomFieldLines(rawtext, customFieldLines);
     }
 
     let states = {};
@@ -2530,6 +3063,7 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
     }
 
     const rawStateEntries = Object.entries(states);
+    const blockSpecificConfigurationLines = collectBlockSpecificConfigurationLines(block, states);
     const stateEntries = transformBlockStateEntries({
         block,
         typeId: block.typeId,
@@ -2539,6 +3073,21 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
         formatStateName,
         toMessageText
     });
+
+    const shouldShowBlockFunctionSection =
+        (playerSettings.showBlockStates && stateEntries.length > 0)
+        || (playerSettings.showBlockTags && blockTags.length > 0)
+        || playerSettings.showTypeId
+        || playerSettings.showCoordinates
+        || playerSettings.showTechnicalData;
+
+    if (customFieldLineCount > 0 && shouldShowBlockFunctionSection) {
+        DisplaySubfunctions.displayHelpers.appendConfigurableFunctionDivider(rawtext);
+    }
+
+    if (playerSettings.showBlockStates && blockSpecificConfigurationLines.length) {
+        appendCustomFieldLines(rawtext, blockSpecificConfigurationLines);
+    }
 
     // Step 3: append optional state rows.
     if (playerSettings.showBlockStates && stateEntries.length) {
@@ -2587,7 +3136,7 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
     return { rawtext };
 }
 
-function buildEntityActionbarPayload(entity, playerSettings) {
+function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
     // Step 1: gather context about target type and optional player attributes.
     const rawtext = [];
     let entityTags = [];
@@ -2627,6 +3176,8 @@ function buildEntityActionbarPayload(entity, playerSettings) {
     }
 
     const namespaceInfo = resolveInjectedNamespace(typeIdForDisplay, entityTags);
+    const isBaby = DisplaySubfunctions.entityPredicates.hasIsBabyComponent(entity);
+    const isOnFire = DisplaySubfunctions.entityPredicates.isOnFireComponent(entity);
     const entityFamilies = getEntityFamilies(entity);
     const villagerProfessionLabel = getVillagerProfessionLabel(entity, entityTags, entityFamilies);
     const villagerProfessionNameRawtext = buildVillagerProfessionNameRawtext(villagerProfessionLabel);
@@ -2637,6 +3188,7 @@ function buildEntityActionbarPayload(entity, playerSettings) {
         isPlayer: isTargetPlayer,
         isFreezing,
         effectFlags,
+        isOnFire,
         isRideable,
         playerSettings
     });
@@ -2656,6 +3208,12 @@ function buildEntityActionbarPayload(entity, playerSettings) {
         itemStack
     });
 
+    if (isBaby) {
+        rawtext.push({ text: " §7(" });
+        rawtext.push(tr("ui.dorios.insight.display.isBaby"));
+        rawtext.push({ text: ")§r" });
+    }
+
     if (villagerProfessionNameRawtext && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.AfterName) {
         rawtext.push({ text: " §7(" });
         rawtext.push(villagerProfessionNameRawtext);
@@ -2663,8 +3221,12 @@ function buildEntityActionbarPayload(entity, playerSettings) {
     }
 
     if (villagerProfessionNameRawtext && playerSettings.villagerProfessionDisplay === VillagerProfessionDisplayModes.BelowName) {
-        rawtext.push({ text: "\n" });
-        rawtext.push(tr("ui.dorios.insight.display.profession", [villagerProfessionNameRawtext]));
+        appendDisplayLine(rawtext, [
+            tr("ui.dorios.insight.display.profession_label"),
+            { text: " " },
+            villagerProfessionNameRawtext,
+            { text: "§r" }
+        ]);
     }
 
     if (playerSettings.showNamespace) {
@@ -2672,6 +3234,17 @@ function buildEntityActionbarPayload(entity, playerSettings) {
             text: formatNamespaceLabel(namespaceInfo.displayNamespace, InsightConfig.display.namespaceColor)
         });
     }
+
+    if (isOnFire) {
+        appendDisplayLine(rawtext, { text: `${InsightConfig.display.technicalColor}On Fire§r` });
+    }
+
+    const nearbyItemClusterLine = buildNearbyItemClusterLine(context?.nearbyItemCluster);
+    if (nearbyItemClusterLine) {
+        appendDisplayLine(rawtext, { text: nearbyItemClusterLine });
+    }
+
+    let customFieldLineCount = 0;
 
     if (playerSettings.showCustomFields) {
         const customFieldLines = collectCustomEntityFieldLines({
@@ -2684,7 +3257,28 @@ function buildEntityActionbarPayload(entity, playerSettings) {
             toMessageText
         });
 
-        appendCustomFieldLines(rawtext, customFieldLines);
+        customFieldLineCount = appendCustomFieldLines(rawtext, customFieldLines);
+    }
+
+    const shouldShowEntityFunctionSection =
+        playerSettings.showEntityScoreboards
+        || (playerSettings.showHealth && healthComponent)
+        || (playerSettings.showAbsorption && Number.isFinite(absorptionValue) && absorptionValue > 0)
+        || (isTargetPlayer && playerSettings.showArmor && armorInfo)
+        || (playerSettings.showHunger && hungerInfo)
+        || (isTargetPlayer && playerSettings.showAirBubbles && airInfo && airInfo.current < airInfo.max)
+        || playerSettings.showEffects
+        || playerSettings.showTameable
+        || (playerSettings.showTameFoods && tameableData.isTameable)
+        || (playerSettings.showEntityTags && entityTags.length > 0)
+        || (playerSettings.showEntityFamilies && entityFamilies.length > 0)
+        || playerSettings.showTypeId
+        || playerSettings.showCoordinates
+        || playerSettings.showVelocity
+        || playerSettings.showTechnicalData;
+
+    if (customFieldLineCount > 0 && shouldShowEntityFunctionSection) {
+        DisplaySubfunctions.displayHelpers.appendConfigurableFunctionDivider(rawtext);
     }
 
     // Step 2.5: append scoreboard-based fields (energy, capacity, etc.).
@@ -2696,26 +3290,35 @@ function buildEntityActionbarPayload(entity, playerSettings) {
             healthComponent.currentValue,
             healthComponent.effectiveMax,
             playerSettings.maxHeartDisplayHealth,
-            playerSettings.displayStyle,
+            playerSettings.healthDisplayStyle,
             healthGlyphs
         ));
     }
 
     if (playerSettings.showAbsorption && Number.isFinite(absorptionValue) && absorptionValue > 0) {
-        appendDisplayLine(rawtext, buildAbsorptionDisplay(absorptionValue, playerSettings.displayStyle));
+        appendDisplayLine(rawtext, buildAbsorptionDisplay(absorptionValue, playerSettings.absorptionDisplayStyle));
     }
 
     if (isTargetPlayer && playerSettings.showArmor && armorInfo) {
-        appendDisplayLine(rawtext, buildArmorDisplay(armorInfo.current, armorInfo.max, playerSettings.displayStyle));
+        appendDisplayLine(rawtext, buildArmorDisplay(armorInfo.current, armorInfo.max, playerSettings.armorDisplayStyle));
     }
 
     // Show hunger for targeted players using official player hunger attribute component.
     if (playerSettings.showHunger && hungerInfo) {
-        appendDisplayLine(rawtext, buildHungerDisplay(hungerInfo.current, hungerInfo.max, playerSettings.displayStyle, hungerGlyphs));
+        appendDisplayLine(
+            rawtext,
+            buildHungerDisplay(
+                hungerInfo.current,
+                hungerInfo.max,
+                playerSettings.hungerDisplayStyle,
+                hungerGlyphs,
+                saturationValue
+            )
+        );
     }
 
     if (isTargetPlayer && playerSettings.showAirBubbles && airInfo && airInfo.current < airInfo.max) {
-        appendDisplayLine(rawtext, buildAirBubbleDisplay(airInfo.current, airInfo.max, playerSettings.displayStyle));
+        appendDisplayLine(rawtext, buildAirBubbleDisplay(airInfo.current, airInfo.max, playerSettings.airDisplayStyle));
     }
 
     if (playerSettings.showEffects) {

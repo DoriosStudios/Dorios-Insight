@@ -8,6 +8,8 @@ const playerUpdateSchedule = new Map();
 const playerNoTargetTicks = new Map();
 let globalTickCounter = 0;
 
+const NearbyItemClusterDistance = 0.25;
+
 function getPlayerCacheKey(player) {
     return player.id || player.name;
 }
@@ -174,6 +176,84 @@ function selectEntityFromRaycast(entityRaycastHits, includeInvisibleEntities) {
     return undefined;
 }
 
+function getItemEntityAmount(entity) {
+    if (!entity || entity.typeId !== "minecraft:item") {
+        return 0;
+    }
+
+    try {
+        const itemComponent = entity.getComponent?.("minecraft:item");
+        const amount = Number(itemComponent?.itemStack?.amount);
+        return Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 1;
+    } catch {
+        return 1;
+    }
+}
+
+function getDistanceBetweenEntities(source, target) {
+    const sourceLocation = source?.location;
+    const targetLocation = target?.location;
+
+    if (!sourceLocation || !targetLocation) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    const deltaX = Number(targetLocation.x) - Number(sourceLocation.x);
+    const deltaY = Number(targetLocation.y) - Number(sourceLocation.y);
+    const deltaZ = Number(targetLocation.z) - Number(sourceLocation.z);
+    return Math.sqrt((deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ));
+}
+
+function getNearbyItemClusterContext(targetEntity) {
+    if (!targetEntity || targetEntity.typeId !== "minecraft:item") {
+        return undefined;
+    }
+
+    const dimension = targetEntity.dimension;
+    const location = targetEntity.location;
+    if (!dimension || !location) {
+        return undefined;
+    }
+
+    let nearbyItems;
+    try {
+        nearbyItems = dimension.getEntities({
+            type: "minecraft:item",
+            location,
+            maxDistance: NearbyItemClusterDistance
+        });
+    } catch {
+        return undefined;
+    }
+
+    if (!Array.isArray(nearbyItems) || nearbyItems.length < 2) {
+        return undefined;
+    }
+
+    let entityCount = 0;
+    let totalAmount = 0;
+
+    for (const nearbyItem of nearbyItems) {
+        const distance = getDistanceBetweenEntities(targetEntity, nearbyItem);
+        if (!Number.isFinite(distance) || distance > NearbyItemClusterDistance) {
+            continue;
+        }
+
+        entityCount += 1;
+        totalAmount += getItemEntityAmount(nearbyItem);
+    }
+
+    if (entityCount < 2) {
+        return undefined;
+    }
+
+    return {
+        entityCount,
+        totalAmount,
+        maxDistance: NearbyItemClusterDistance
+    };
+}
+
 function processPlayerRaycast(player, settings) {
     if (shouldSkipPlayer(player, settings)) {
         clearActionbar(player);
@@ -187,8 +267,10 @@ function processPlayerRaycast(player, settings) {
     const targetEntity = selectEntityFromRaycast(entityRaycast, settings.includeInvisibleEntities);
 
     if (targetEntity) {
+        const nearbyItemCluster = getNearbyItemClusterContext(targetEntity);
         const rawMessage = createEntityActionbar(targetEntity, settings, {
-            heldItemStack: getPlayerMainhandItem(player)
+            heldItemStack: getPlayerMainhandItem(player),
+            nearbyItemCluster
         });
         setActionbarIfChanged(player, rawMessage, settings);
         return;
@@ -240,7 +322,8 @@ function processEntityHit(data) {
     }
 
     const rawMessage = createEntityActionbar(data.hitEntity, settings, {
-        heldItemStack: getPlayerMainhandItem(player)
+        heldItemStack: getPlayerMainhandItem(player),
+        nearbyItemCluster: getNearbyItemClusterContext(data.hitEntity)
     });
     setActionbarIfChanged(player, rawMessage, settings);
 }

@@ -23,6 +23,11 @@
 // - Output: string | string[] | undefined
 // - Throwing is tolerated (Insight catches and ignores injector failures)
 
+import {
+    moduleBlockFieldInjectors,
+    moduleEntityFieldInjectors
+} from "./Modules/index.js";
+
 const blockFieldInjectors = [];
 const entityFieldInjectors = [];
 
@@ -127,8 +132,10 @@ function runInjectors(list, context) {
         try {
             const result = entry.injector(context);
             lines.push(...normalizeInjectorResult(result));
-        } catch {
+        } catch (error) {
             // Keep Insight resilient when an external injector fails.
+            const provider = entry?.metadata?.provider || "unknown";
+            console.warn(`[Insight] Custom field injector from "${provider}" threw: ${error?.message || error}`);
         }
     }
 
@@ -136,11 +143,15 @@ function runInjectors(list, context) {
 }
 
 export function collectCustomBlockFieldLines(context) {
-    return runInjectors(blockFieldInjectors, context);
+    const moduleLines = runInjectors(moduleBlockFieldInjectors, context);
+    const externalLines = runInjectors(blockFieldInjectors, context);
+    return [...moduleLines, ...externalLines];
 }
 
 export function collectCustomEntityFieldLines(context) {
-    return runInjectors(entityFieldInjectors, context);
+    const moduleLines = runInjectors(moduleEntityFieldInjectors, context);
+    const externalLines = runInjectors(entityFieldInjectors, context);
+    return [...moduleLines, ...externalLines];
 }
 
 function getProvidersByComponent(componentKey) {
@@ -153,7 +164,12 @@ function getProvidersByComponent(componentKey) {
     }
 
     const providerNames = new Set();
-    const lists = [blockFieldInjectors, entityFieldInjectors];
+    const lists = [
+        moduleBlockFieldInjectors,
+        blockFieldInjectors,
+        moduleEntityFieldInjectors,
+        entityFieldInjectors
+    ];
 
     for (const list of lists) {
         for (const entry of list) {
@@ -198,8 +214,8 @@ function exposeCustomFieldApi() {
         },
         getRegisteredCounts() {
             return {
-                block: blockFieldInjectors.length,
-                entity: entityFieldInjectors.length
+                block: moduleBlockFieldInjectors.length + blockFieldInjectors.length,
+                entity: moduleEntityFieldInjectors.length + entityFieldInjectors.length
             };
         },
         getProvidersByComponent(componentKey) {
