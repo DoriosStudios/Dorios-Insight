@@ -17,6 +17,13 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 - `/utilitycraft:insightnamespace <add|set> <namespace> <displayName>` — namespace alias
 
 ### Secondary Objectives:
+#### V1.2+
+- [ ] Move main system to UI Queue for a better style of display, as well as compatibility with vanilla title and actionbar.
+- [ ] Improve Insight to have more features other the "Seeing What the Player Us Looking At", like inventory display and modifiers, HUD modifications with more icons and configs and etc.
+- [ ] Make the position of the Insight's message configurable. *(Currently impossible. Needs manifest V3.)*
+- [ ] Fix Custom Field Injector.
+
+#### V1.1
 - [x] Add the mob's name below the nickname (given by a nametag)
   - Should be configurable. Recommended options: 
     - **Nickname First** *(Default)*, 
