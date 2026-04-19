@@ -58,6 +58,15 @@ const DEBUFF_EFFECTS = new Set([
     "minecraft:unluck"
 ]);
 
+const IGNORED_MACHINE_HELPER_IDENTIFIERS = Object.freeze([
+    "utilitycraft:machine",
+    "utilitycraft:machine_entity",
+    "entity.utilitycraft:machine",
+    "entity.utilitycraft:machine.name",
+    "entity.utilitycraft:machine_entity",
+    "entity.utilitycraft:machine_entity.name"
+]);
+
 // ---------------------------------------------------------------------------
 // Visual assets (ported from messages.js)
 // ---------------------------------------------------------------------------
@@ -421,6 +430,43 @@ function isEntityInvisible(entity) {
     return false;
 }
 
+function normalizeEntityIdentity(value) {
+    if (typeof value !== "string") {
+        return "";
+    }
+
+    return value.trim().toLowerCase();
+}
+
+function isIgnoredMachineHelperEntity(entity, settings) {
+    if (!settings?.ignoreMachineHelperEntities) {
+        return false;
+    }
+
+    const typeId = normalizeEntityIdentity(entity?.typeId);
+    const localizationKey = normalizeEntityIdentity(entity?.localizationKey);
+    const nameTag = normalizeEntityIdentity(entity?.nameTag);
+
+    if (typeId.endsWith(":machine_entity")) {
+        return true;
+    }
+
+    const candidateSet = new Set(IGNORED_MACHINE_HELPER_IDENTIFIERS);
+    if (typeId && candidateSet.has(typeId)) {
+        return true;
+    }
+
+    if (localizationKey && candidateSet.has(localizationKey)) {
+        return true;
+    }
+
+    if (nameTag && candidateSet.has(nameTag)) {
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Measure entity render height by raycasting downward from above.
  * @param {import("@minecraft/server").Entity} entity
@@ -568,11 +614,23 @@ export function collectAndSendTargetData(player, settings) {
         });
 
         if (Array.isArray(entityHits) && entityHits.length > 0) {
-            if (settings.includeInvisibleEntities) {
-                entityHit = entityHits[0];
-            } else {
-                entityHit = entityHits.find(hit => hit?.entity && !isEntityInvisible(hit.entity));
-            }
+            const allowInvisibleTargets = Boolean(settings.includeInvisibleEntities);
+            entityHit = entityHits.find((hit) => {
+                const entity = hit?.entity;
+                if (!entity) {
+                    return false;
+                }
+
+                if (isIgnoredMachineHelperEntity(entity, settings)) {
+                    return false;
+                }
+
+                if (!allowInvisibleTargets && isEntityInvisible(entity)) {
+                    return false;
+                }
+
+                return true;
+            });
         }
 
         // --- Block raycast (fallback) ---

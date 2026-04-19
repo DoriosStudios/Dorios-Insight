@@ -325,6 +325,8 @@ function buildModeSummaryMessage(previousMode, nextMode, modeSummarySetting) {
     const runtimeFields = [
         { key: "maxDistance", label: "Range" },
         { key: "updateIntervalTicks", label: "Update Interval" },
+        { key: "linkedEntityScanIntervalTicks", label: "Linked Entity Scan Interval" },
+        { key: "linkedEntityScanMaxDistance", label: "Linked Entity Scan Distance" },
         { key: "maxVisibleStates", label: "Block States Limit" },
         { key: "maxVisibleBlockTags", label: "Block Tags Limit" },
         { key: "maxVisibleEntityTags", label: "Entity Tags Limit" },
@@ -333,7 +335,8 @@ function buildModeSummaryMessage(previousMode, nextMode, modeSummarySetting) {
         { key: "displayStyle", label: "Display Style" },
         { key: "toolTierIndicatorMode", label: "Tool Indicator" },
         { key: "includeLiquidBlocks", label: "Include Liquid Blocks" },
-        { key: "includeInvisibleEntities", label: "Include Invisible Entities" }
+        { key: "includeInvisibleEntities", label: "Include Invisible Entities" },
+        { key: "ignoreMachineHelperEntities", label: "Ignore Machine Helper Entities" }
     ];
 
     for (const definition of InsightComponentDefinitions) {
@@ -1045,6 +1048,24 @@ async function showRuntimeMenu(player) {
                 getStateLabel(runtime.includeLiquidBlocks)
             ]),
             { defaultValue: runtime.includeLiquidBlocks }
+        )
+        .slider(
+            `Linked Entity Scan Interval (ticks): ${runtime.linkedEntityScanIntervalTicks}`,
+            InsightConfig.system.minLinkedEntityScanIntervalTicks,
+            InsightConfig.system.maxLinkedEntityScanIntervalTicks,
+            { defaultValue: runtime.linkedEntityScanIntervalTicks }
+        )
+        .textField(customValueLabel, customValueHint)
+        .slider(
+            `Linked Entity Scan Distance: ${runtime.linkedEntityScanMaxDistance}`,
+            InsightConfig.system.minLinkedEntityScanMaxDistance,
+            InsightConfig.system.maxLinkedEntityScanMaxDistance,
+            { defaultValue: runtime.linkedEntityScanMaxDistance }
+        )
+        .textField(customValueLabel, customValueHint)
+        .toggle(
+            `Ignore Machine Helper Entities: ${getStateLabel(runtime.ignoreMachineHelperEntities)}`,
+            { defaultValue: runtime.ignoreMachineHelperEntities }
         );
 
     const result = await form.show(player);
@@ -1115,7 +1136,20 @@ async function showRuntimeMenu(player) {
                 InsightConfig.system.maxMaxHeartDisplayHealth
             ),
             includeInvisibleEntities: Boolean(result.formValues[20] ?? runtime.includeInvisibleEntities),
-            includeLiquidBlocks: Boolean(result.formValues[21] ?? runtime.includeLiquidBlocks)
+            includeLiquidBlocks: Boolean(result.formValues[21] ?? runtime.includeLiquidBlocks),
+            linkedEntityScanIntervalTicks: resolveCustomNumberInput(
+                result.formValues[23],
+                Number(result.formValues[22] ?? runtime.linkedEntityScanIntervalTicks),
+                InsightConfig.system.minLinkedEntityScanIntervalTicks,
+                InsightConfig.system.maxLinkedEntityScanIntervalTicks
+            ),
+            linkedEntityScanMaxDistance: resolveCustomNumberInput(
+                result.formValues[25],
+                Number(result.formValues[24] ?? runtime.linkedEntityScanMaxDistance),
+                InsightConfig.system.minLinkedEntityScanMaxDistance,
+                InsightConfig.system.maxLinkedEntityScanMaxDistance
+            ),
+            ignoreMachineHelperEntities: Boolean(result.formValues[26] ?? runtime.ignoreMachineHelperEntities)
         }
     });
 

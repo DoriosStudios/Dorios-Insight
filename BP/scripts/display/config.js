@@ -242,6 +242,10 @@ export const InsightConfig = Object.freeze({
         maxUnchangedTargetRefreshTicks: 40,
         minClearAfterNoTargetTicks: 0,
         maxClearAfterNoTargetTicks: 200,
+        minLinkedEntityScanIntervalTicks: 1,
+        maxLinkedEntityScanIntervalTicks: 200,
+        minLinkedEntityScanMaxDistance: 0.5,
+        maxLinkedEntityScanMaxDistance: 4,
         maxVisibleStatesCap: 20,
         maxVisibleTagsCap: 20,
         maxVisibleFamiliesCap: 20,
@@ -292,6 +296,9 @@ export const InsightModePresets = Object.freeze({
             includeLiquidBlocks: false,
             includeInvisibleEntities: true,
             clearAfterNoTargetTicks: 20,
+            linkedEntityScanIntervalTicks: 20,
+            linkedEntityScanMaxDistance: 1.35,
+            ignoreMachineHelperEntities: true,
             maxVisibleStates: 3,
             maxVisibleBlockTags: 3,
             maxVisibleEntityTags: 0,
@@ -364,6 +371,9 @@ export const InsightModePresets = Object.freeze({
             includeLiquidBlocks: false,
             includeInvisibleEntities: true,
             clearAfterNoTargetTicks: 30,
+            linkedEntityScanIntervalTicks: 20,
+            linkedEntityScanMaxDistance: 1.35,
+            ignoreMachineHelperEntities: true,
             maxVisibleStates: 6,
             maxVisibleBlockTags: 6,
             maxVisibleEntityTags: 4,
@@ -436,6 +446,9 @@ export const InsightModePresets = Object.freeze({
             includeLiquidBlocks: true,
             includeInvisibleEntities: true,
             clearAfterNoTargetTicks: 40,
+            linkedEntityScanIntervalTicks: 20,
+            linkedEntityScanMaxDistance: 1.35,
+            ignoreMachineHelperEntities: true,
             maxVisibleStates: 12,
             maxVisibleBlockTags: 12,
             maxVisibleEntityTags: 12,
@@ -795,6 +808,23 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
             InsightConfig.system.minClearAfterNoTargetTicks,
             InsightConfig.system.maxClearAfterNoTargetTicks
         ),
+        linkedEntityScanIntervalTicks: clamp(
+            Number.isFinite(runtime.linkedEntityScanIntervalTicks)
+                ? runtime.linkedEntityScanIntervalTicks
+                : presetRuntime.linkedEntityScanIntervalTicks,
+            InsightConfig.system.minLinkedEntityScanIntervalTicks,
+            InsightConfig.system.maxLinkedEntityScanIntervalTicks
+        ),
+        linkedEntityScanMaxDistance: clamp(
+            Number.isFinite(runtime.linkedEntityScanMaxDistance)
+                ? runtime.linkedEntityScanMaxDistance
+                : presetRuntime.linkedEntityScanMaxDistance,
+            InsightConfig.system.minLinkedEntityScanMaxDistance,
+            InsightConfig.system.maxLinkedEntityScanMaxDistance
+        ),
+        ignoreMachineHelperEntities: typeof runtime.ignoreMachineHelperEntities === "boolean"
+            ? runtime.ignoreMachineHelperEntities
+            : presetRuntime.ignoreMachineHelperEntities,
         maxVisibleStates: clamp(
             Number.isFinite(runtime.maxVisibleStates) ? runtime.maxVisibleStates : presetRuntime.maxVisibleStates,
             0,
@@ -1317,6 +1347,9 @@ export function getPlayerDisplaySettings(player) {
         includeLiquidBlocks: runtime.includeLiquidBlocks,
         includeInvisibleEntities: runtime.includeInvisibleEntities,
         clearAfterNoTargetTicks: runtime.clearAfterNoTargetTicks,
+        linkedEntityScanIntervalTicks: runtime.linkedEntityScanIntervalTicks,
+        linkedEntityScanMaxDistance: runtime.linkedEntityScanMaxDistance,
+        ignoreMachineHelperEntities: runtime.ignoreMachineHelperEntities,
         maxVisibleStates: runtime.maxVisibleStates,
         maxVisibleBlockTags: runtime.maxVisibleBlockTags,
         maxVisibleEntityTags: runtime.maxVisibleEntityTags,

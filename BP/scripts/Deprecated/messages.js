@@ -2854,6 +2854,38 @@ function formatEntityScoreboardValue(field, value) {
     return formatLargeNumber(value);
 }
 
+function hasCustomEnergyFieldLine(lines) {
+    if (!Array.isArray(lines) || !lines.length) {
+        return false;
+    }
+
+    return lines.some((line) => {
+        if (typeof line !== "string") {
+            return false;
+        }
+
+        return line.trim().toLowerCase().startsWith("energy:");
+    });
+}
+
+function shouldRenderEntityScoreboardField(field, playerSettings, options = {}) {
+    if (!field || !playerSettings) {
+        return false;
+    }
+
+    if (field.key === "energy") {
+        if (!playerSettings.showCustomEnergyInfo) {
+            return false;
+        }
+
+        if (options.suppressEnergyField === true) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /**
  * Known scoreboard field definitions for display.
  * Each entry describes how to read and display a scoreboard-based value.
@@ -2880,7 +2912,7 @@ const ScoreboardFieldDefinitions = [
 /**
  * Appends scoreboard-based fields to the rawtext array for entities that have matching scores.
  */
-function appendEntityScoreboardFields(rawtext, entity, playerSettings) {
+function appendEntityScoreboardFields(rawtext, entity, playerSettings, options = {}) {
     if (!playerSettings.showEntityScoreboards) {
         return;
     }
@@ -2895,6 +2927,10 @@ function appendEntityScoreboardFields(rawtext, entity, playerSettings) {
     }
 
     for (const field of ScoreboardFieldDefinitions) {
+        if (!shouldRenderEntityScoreboardField(field, playerSettings, options)) {
+            continue;
+        }
+
         if (field.mode === "mantissa_exponent_pair") {
             const value = decodeScoreboardMantissaExponent(entity, field.mantissa, field.exponent);
             if (value === undefined) {
@@ -3418,6 +3454,7 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
     }
 
     let customFieldLineCount = 0;
+    let entityHasCustomEnergyLine = false;
 
     if (playerSettings.showCustomFields) {
         const customFieldLines = collectCustomEntityFieldLines({
@@ -3430,6 +3467,7 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
             toMessageText
         });
 
+        entityHasCustomEnergyLine = hasCustomEnergyFieldLine(customFieldLines);
         customFieldLineCount = appendCustomFieldLines(rawtext, customFieldLines);
     }
 
@@ -3455,7 +3493,9 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
     }
 
     // Step 2.5: append scoreboard-based fields (energy, capacity, etc.).
-    appendEntityScoreboardFields(rawtext, entity, playerSettings);
+    appendEntityScoreboardFields(rawtext, entity, playerSettings, {
+        suppressEnergyField: entityHasCustomEnergyLine
+    });
 
     // Step 3: append visual bars (health and hunger) when enabled.
     if (playerSettings.showHealth && healthComponent) {

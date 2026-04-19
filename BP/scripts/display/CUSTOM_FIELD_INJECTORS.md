@@ -25,6 +25,17 @@ Block injectors receive an object with:
 - `formatTypeIdToText`
 - `splitTypeId`
 - `toMessageText`
+- `linkedEntity` (nearest matched helper entity near the block, cache-based)
+- `machineEntity` (alias of `linkedEntity` for compatibility)
+- `linkedEntityLastScanTick`
+- `linkedEntityIntervalTicks`
+- `linkedEntityScanMaxDistance`
+
+Linked entity lookup behavior:
+- Default scan interval: `20` ticks.
+- Default max distance: `1.35` blocks.
+- Both are configurable through Insight runtime settings (`linkedEntityScanIntervalTicks`, `linkedEntityScanMaxDistance`).
+- Candidate names can be overridden with `playerSettings.linkedEntityCandidateNames`.
 
 Return value can be:
 - `string`
@@ -84,7 +95,7 @@ globalThis.InsightCustomFields?.registerBlockFieldInjector((ctx) => {
 
 > Notes:
 > - Property/state names depend on how each addon stores its runtime values.
-> - If values are stored in entities, scoreboards, or dynamic properties, read from those sources inside the injector.
+> - If values are stored in entities, scoreboards, or dynamic properties, read from `linkedEntity` inside the block injector when available.
 
 ## Related
 

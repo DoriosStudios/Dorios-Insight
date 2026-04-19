@@ -15,6 +15,11 @@ import {
 
 /** Distance used to group nearby dropped item entities for cluster info. */
 const NearbyItemClusterDistance = 0.25;
+const IgnoredMachineHelperIdentifiers = Object.freeze([
+    "utilitycraft:machine_entity",
+    "entity.utilitycraft:machine_entity",
+    "entity.utilitycraft:machine_entity.name"
+]);
 
 /** @type {Map<string, { targetId: string|undefined, tick: number, clearAt: number }>} */
 const playerTargetState = new Map();
@@ -274,6 +279,43 @@ function isEntityInvisible(entity) {
     return false;
 }
 
+function normalizeEntityIdentity(value) {
+    if (typeof value !== "string") {
+        return "";
+    }
+
+    return value.trim().toLowerCase();
+}
+
+function shouldIgnoreEntityTarget(entity, settings) {
+    if (!settings?.ignoreMachineHelperEntities) {
+        return false;
+    }
+
+    const typeId = normalizeEntityIdentity(entity?.typeId);
+    const localizationKey = normalizeEntityIdentity(entity?.localizationKey);
+    const nameTag = normalizeEntityIdentity(entity?.nameTag);
+    const candidateSet = new Set(IgnoredMachineHelperIdentifiers);
+
+    if (typeId.endsWith(":machine_entity")) {
+        return true;
+    }
+
+    if (typeId && candidateSet.has(typeId)) {
+        return true;
+    }
+
+    if (localizationKey && candidateSet.has(localizationKey)) {
+        return true;
+    }
+
+    if (nameTag && candidateSet.has(nameTag)) {
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Compose the WAILA display rawtext for a player.
  *
@@ -308,11 +350,24 @@ export function composeWailaDisplay(player, settings) {
         let targetEntity;
         if (Array.isArray(entityHits) && entityHits.length > 0) {
             if (settings.includeInvisibleEntities) {
-                targetEntity = entityHits[0]?.entity;
+                for (const hit of entityHits) {
+                    const entity = hit?.entity;
+                    if (!entity || shouldIgnoreEntityTarget(entity, settings)) {
+                        continue;
+                    }
+
+                    targetEntity = entity;
+                    break;
+                }
             } else {
                 for (const hit of entityHits) {
-                    if (hit?.entity && !isEntityInvisible(hit.entity)) {
-                        targetEntity = hit.entity;
+                    const entity = hit?.entity;
+                    if (!entity || shouldIgnoreEntityTarget(entity, settings)) {
+                        continue;
+                    }
+
+                    if (!isEntityInvisible(entity)) {
+                        targetEntity = entity;
                         break;
                     }
                 }
