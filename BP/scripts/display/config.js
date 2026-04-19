@@ -2,11 +2,17 @@ import { world } from "@minecraft/server";
 
 const WORLD_MODE_DYNAMIC_PROPERTY = "insight:mode";
 const WORLD_ENABLED_DYNAMIC_PROPERTY = "insight:enabled";
+const WORLD_ADMIN_ONLY_DYNAMIC_PROPERTY = "insight:admin_only";
+const WORLD_ADMIN_SOURCE_ID_DYNAMIC_PROPERTY = "insight:admin_source_id";
+const WORLD_ADMIN_SOURCE_NAME_DYNAMIC_PROPERTY = "insight:admin_source_name";
 const PLAYER_SETTINGS_DYNAMIC_PROPERTY = "insight:player_settings";
 
 const memoryFallback = {
     mode: "essential",
     enabled: true,
+    adminOnly: false,
+    adminSourceId: "",
+    adminSourceName: "",
     playerSettings: new Map()
 };
 
@@ -20,14 +26,16 @@ export const VisibilityPolicies = Object.freeze({
     Show: "show",
     ShowWhenSneaking: "sneak",
     CreativeOnly: "creative",
+    SneakingAndCreative: "sneak_creative",
     Hide: "hide"
 });
 
 export const VisibilityPolicyLabels = Object.freeze([
-    Object.freeze({ key: VisibilityPolicies.Show, label: "Show" }),
-    Object.freeze({ key: VisibilityPolicies.ShowWhenSneaking, label: "Show When Sneaking" }),
-    Object.freeze({ key: VisibilityPolicies.CreativeOnly, label: "Creative Only" }),
-    Object.freeze({ key: VisibilityPolicies.Hide, label: "Hide" })
+    Object.freeze({ key: VisibilityPolicies.Show, label: "Show / Mostrar" }),
+    Object.freeze({ key: VisibilityPolicies.ShowWhenSneaking, label: "Show When Sneaking / Mostrar Agachado" }),
+    Object.freeze({ key: VisibilityPolicies.CreativeOnly, label: "Creative Only / Apenas Criativo" }),
+    Object.freeze({ key: VisibilityPolicies.SneakingAndCreative, label: "Sneaking + Creative / Agachado + Criativo" }),
+    Object.freeze({ key: VisibilityPolicies.Hide, label: "Hide / Ocultar" })
 ]);
 
 export const EffectDisplayModes = Object.freeze({
@@ -42,6 +50,7 @@ export const EffectDisplayModeLabels = Object.freeze([
 
 export const DisplayStyles = Object.freeze({
     Icon: "icon",
+    IconValue: "icon_value",
     Text: "text", // Legacy alias, normalized to text_full.
     TextFull: "text_full",
     TextPercent: "text_percent",
@@ -51,17 +60,49 @@ export const DisplayStyles = Object.freeze({
 
 export const DisplayStyleLabels = Object.freeze([
     Object.freeze({ key: DisplayStyles.Icon, label: "Icon" }),
+    Object.freeze({ key: DisplayStyles.IconValue, label: "Icon + Value (❤️ x/y)" }),
     Object.freeze({ key: DisplayStyles.TextFull, label: "Text Type 1 (Health: x/y)" }),
     Object.freeze({ key: DisplayStyles.TextPercent, label: "Text Type 2 (Health: x%)" }),
     Object.freeze({ key: DisplayStyles.HybridFull, label: "Hybrid Type 1 (❤️ x/y)" }),
     Object.freeze({ key: DisplayStyles.HybridPercent, label: "Hybrid Type 2 (❤️ x%)" })
 ]);
 
-export const FieldDisplayStyleGlobal = "global";
+export const HudDisplayModes = Object.freeze({
+    ShowInsight: "show_insight",
+    Both: "both",
+    ShowVanilla: "show_vanilla",
+    None: "none"
+});
 
-export const FieldDisplayStyleOverrideLabels = Object.freeze([
-    Object.freeze({ key: FieldDisplayStyleGlobal, label: "Use Global" }),
-    ...DisplayStyleLabels
+export const HudDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: HudDisplayModes.ShowInsight, label: "Show Insight" }),
+    Object.freeze({ key: HudDisplayModes.Both, label: "Both" }),
+    Object.freeze({ key: HudDisplayModes.ShowVanilla, label: "Show Vanilla" }),
+    Object.freeze({ key: HudDisplayModes.None, label: "None" })
+]);
+
+export const HudIndicatorModes = Object.freeze({
+    Hidden: "hidden",
+    IconAndIndicator: "icon_and_indicator"
+});
+
+export const HudIndicatorModeLabels = Object.freeze([
+    Object.freeze({ key: HudIndicatorModes.Hidden, label: "Hidden" }),
+    Object.freeze({ key: HudIndicatorModes.IconAndIndicator, label: "Icon + Indicator" })
+]);
+
+export const ModePresetSummaryModes = Object.freeze({
+    Hidden: "hidden",
+    Summary: "summary",
+    SummaryAndChanged: "summary_and_changed",
+    ChangedOnly: "changed_only"
+});
+
+export const ModePresetSummaryModeLabels = Object.freeze([
+    Object.freeze({ key: ModePresetSummaryModes.Hidden, label: "Hidden" }),
+    Object.freeze({ key: ModePresetSummaryModes.Summary, label: "Show Enabled Summary" }),
+    Object.freeze({ key: ModePresetSummaryModes.SummaryAndChanged, label: "Show Summary + Changed" }),
+    Object.freeze({ key: ModePresetSummaryModes.ChangedOnly, label: "Show Changed Only" })
 ]);
 
 export const EntityNameDisplayModes = Object.freeze({
@@ -109,7 +150,8 @@ export const ToolTierIndicatorModes = Object.freeze({
     BooleanIndicator: "boolean_indicator",
     TierIndicatorColor: "tier_indicator_color",
     TierIndicatorOre: "tier_indicator_ore",
-    TextIndicator: "text_indicator"
+    TextIndicator: "text_indicator",
+    IconAndIndicator: "icon_and_indicator"
 });
 
 export const ToolTierIndicatorModeLabels = Object.freeze([
@@ -117,7 +159,8 @@ export const ToolTierIndicatorModeLabels = Object.freeze([
     Object.freeze({ key: ToolTierIndicatorModes.BooleanIndicator, label: "Boolean Indicator (Yes/No)" }),
     Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorColor, label: "Tier Indicator (Color)" }),
     Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorOre, label: "Tier Indicator (Ore)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)" })
+    Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)" }),
+    Object.freeze({ key: ToolTierIndicatorModes.IconAndIndicator, label: "Tool + Indicator" })
 ]);
 
 export const ToolIndicatorPlacementModes = Object.freeze({
@@ -144,15 +187,16 @@ export const ToolIndicatorColorOptions = Object.freeze([
 ]);
 
 export const InsightComponentDefinitions = Object.freeze([
+    // All of these will eventually use localization keys, but for now the labels are hardcoded in English.
     Object.freeze({ key: "namespace", label: "Namespace Label" }),
     Object.freeze({ key: "customFields", label: "Custom Fields" }),
     Object.freeze({ key: "customEnergyInfo", label: "UtilityCraft: Energy Info" }),
+    Object.freeze({ key: "customFluidInfo", label: "Custom: Fluid Info" }),
+    Object.freeze({ key: "customGasInfo", label: "Custom: Gas Info" }),
     Object.freeze({ key: "customRotationInfo", label: "UtilityCraft: Rotation Info" }),
     Object.freeze({ key: "customMachineProgress", label: "UtilityCraft: Machine Progress" }),
-    Object.freeze({ key: "customFluidInfo", label: "UtilityCraft: Fluid Info" }), // Hardcoded
-    Object.freeze({ key: "customGasInfo", label: "UtilityCraft: Gas Info" }), // Hardcoded
-    Object.freeze({ key: "customCobblestoneCount", label: "UtilityCraft: Cobblestone Count" }), // Hardcoded
-    Object.freeze({ key: "customVariantPreview", label: "Dorios' Atelier: Variant Preview" }), // Hardcoded
+    Object.freeze({ key: "customCobblestoneCount", label: "UtilityCraft: Cobblestone Count" }),
+    Object.freeze({ key: "customVariantPreview", label: "Dorios' Atelier: Variant Preview" }),
     Object.freeze({ key: "blockStates", label: "Block States" }),
     Object.freeze({ key: "blockTags", label: "Block Tags" }),
     Object.freeze({ key: "health", label: "Entity Health" }),
@@ -165,7 +209,6 @@ export const InsightComponentDefinitions = Object.freeze([
     Object.freeze({ key: "effectHearts", label: "Status Heart Effects" }),
     Object.freeze({ key: "frozenHearts", label: "Frozen Hearts (Deprecated / Non-functional)" }),
     Object.freeze({ key: "animalHearts", label: "Rideable Hearts" }),
-    Object.freeze({ key: "entityScoreboards", label: "Entity Scoreboards" }),
     Object.freeze({ key: "tameable", label: "Tameable Status" }),
     Object.freeze({ key: "tameFoods", label: "Tame Foods" }),
     Object.freeze({ key: "technical", label: "Technical Summary" }),
@@ -249,26 +292,32 @@ export const InsightModePresets = Object.freeze({
             includeLiquidBlocks: false,
             includeInvisibleEntities: true,
             clearAfterNoTargetTicks: 20,
-            maxVisibleStates: 2,
-            maxVisibleBlockTags: 2,
+            maxVisibleStates: 3,
+            maxVisibleBlockTags: 3,
             maxVisibleEntityTags: 0,
             maxVisibleEntityFamilies: 0,
             maxVisibleEffects: 3,
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
-            healthDisplayStyle: FieldDisplayStyleGlobal,
-            hungerDisplayStyle: FieldDisplayStyleGlobal,
-            armorDisplayStyle: FieldDisplayStyleGlobal,
-            absorptionDisplayStyle: FieldDisplayStyleGlobal,
-            airDisplayStyle: FieldDisplayStyleGlobal,
+            healthDisplayStyle: DisplayStyles.Icon,
+            hungerDisplayStyle: DisplayStyles.Icon,
+            armorDisplayStyle: DisplayStyles.Icon,
+            absorptionDisplayStyle: DisplayStyles.Icon,
+            airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
-            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
             toolIndicatorColor: "§7",
+            modePresetSummaryMode: ModePresetSummaryModes.SummaryAndChanged,
+            hudHealthVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudHungerVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudSaturationVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudToughnessVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -277,14 +326,14 @@ export const InsightModePresets = Object.freeze({
             namespace: VisibilityPolicies.Show,
             customFields: VisibilityPolicies.Show,
             customEnergyInfo: VisibilityPolicies.Show,
-            customRotationInfo: VisibilityPolicies.ShowWhenSneaking,
-            customMachineProgress: VisibilityPolicies.ShowWhenSneaking,
             customFluidInfo: VisibilityPolicies.Show,
             customGasInfo: VisibilityPolicies.Show,
+            customRotationInfo: VisibilityPolicies.ShowWhenSneaking,
+            customMachineProgress: VisibilityPolicies.ShowWhenSneaking,
             customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.ShowWhenSneaking,
-            blockStates: VisibilityPolicies.ShowWhenSneaking,
-            blockTags: VisibilityPolicies.Hide,
+            blockStates: VisibilityPolicies.Show,
+            blockTags: VisibilityPolicies.ShowWhenSneaking,
             health: VisibilityPolicies.Show,
             absorption: VisibilityPolicies.Show,
             armor: VisibilityPolicies.Show,
@@ -295,7 +344,6 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
-            entityScoreboards: VisibilityPolicies.ShowWhenSneaking,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.ShowWhenSneaking,
             technical: VisibilityPolicies.Hide,
@@ -324,18 +372,24 @@ export const InsightModePresets = Object.freeze({
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
-            healthDisplayStyle: FieldDisplayStyleGlobal,
-            hungerDisplayStyle: FieldDisplayStyleGlobal,
-            armorDisplayStyle: FieldDisplayStyleGlobal,
-            absorptionDisplayStyle: FieldDisplayStyleGlobal,
-            airDisplayStyle: FieldDisplayStyleGlobal,
+            healthDisplayStyle: DisplayStyles.Icon,
+            hungerDisplayStyle: DisplayStyles.Icon,
+            armorDisplayStyle: DisplayStyles.Icon,
+            absorptionDisplayStyle: DisplayStyles.Icon,
+            airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
-            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
             toolIndicatorColor: "§7",
+            modePresetSummaryMode: ModePresetSummaryModes.SummaryAndChanged,
+            hudHealthVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudHungerVisibilityMode: HudDisplayModes.ShowVanilla,
+            hudSaturationVisibilityMode: HudDisplayModes.Both,
+            hudToughnessVisibilityMode: HudDisplayModes.Both,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -344,10 +398,10 @@ export const InsightModePresets = Object.freeze({
             namespace: VisibilityPolicies.Show,
             customFields: VisibilityPolicies.Show,
             customEnergyInfo: VisibilityPolicies.Show,
-            customRotationInfo: VisibilityPolicies.Show,
-            customMachineProgress: VisibilityPolicies.Show,
             customFluidInfo: VisibilityPolicies.Show,
             customGasInfo: VisibilityPolicies.Show,
+            customRotationInfo: VisibilityPolicies.Show,
+            customMachineProgress: VisibilityPolicies.Show,
             customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.Show,
             blockStates: VisibilityPolicies.Show,
@@ -362,7 +416,6 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
-            entityScoreboards: VisibilityPolicies.Show,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.Show,
             technical: VisibilityPolicies.ShowWhenSneaking,
@@ -391,18 +444,24 @@ export const InsightModePresets = Object.freeze({
             maxHeartDisplayHealth: 100,
             effectDisplayMode: EffectDisplayModes.Emoji,
             displayStyle: DisplayStyles.Icon,
-            healthDisplayStyle: FieldDisplayStyleGlobal,
-            hungerDisplayStyle: FieldDisplayStyleGlobal,
-            armorDisplayStyle: FieldDisplayStyleGlobal,
-            absorptionDisplayStyle: FieldDisplayStyleGlobal,
-            airDisplayStyle: FieldDisplayStyleGlobal,
+            healthDisplayStyle: DisplayStyles.Icon,
+            hungerDisplayStyle: DisplayStyles.Icon,
+            armorDisplayStyle: DisplayStyles.Icon,
+            absorptionDisplayStyle: DisplayStyles.Icon,
+            airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
-            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
             toolIndicatorColor: "§7",
+            modePresetSummaryMode: ModePresetSummaryModes.SummaryAndChanged,
+            hudHealthVisibilityMode: HudDisplayModes.Both,
+            hudHungerVisibilityMode: HudDisplayModes.Both,
+            hudSaturationVisibilityMode: HudDisplayModes.Both,
+            hudToughnessVisibilityMode: HudDisplayModes.Both,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
             stateColumns: 2,
             tagColumns: 2,
             familyColumns: 2
@@ -411,10 +470,10 @@ export const InsightModePresets = Object.freeze({
             namespace: VisibilityPolicies.Show,
             customFields: VisibilityPolicies.Show,
             customEnergyInfo: VisibilityPolicies.Show,
-            customRotationInfo: VisibilityPolicies.Show,
-            customMachineProgress: VisibilityPolicies.Show,
             customFluidInfo: VisibilityPolicies.Show,
             customGasInfo: VisibilityPolicies.Show,
+            customRotationInfo: VisibilityPolicies.Show,
+            customMachineProgress: VisibilityPolicies.Show,
             customCobblestoneCount: VisibilityPolicies.Show,
             customVariantPreview: VisibilityPolicies.Show,
             blockStates: VisibilityPolicies.Show,
@@ -429,7 +488,6 @@ export const InsightModePresets = Object.freeze({
             effectHearts: VisibilityPolicies.Show,
             frozenHearts: VisibilityPolicies.Show,
             animalHearts: VisibilityPolicies.Show,
-            entityScoreboards: VisibilityPolicies.Show,
             tameable: VisibilityPolicies.Show,
             tameFoods: VisibilityPolicies.Show,
             technical: VisibilityPolicies.Show,
@@ -491,6 +549,57 @@ export function getDisplayStyleIndex(style) {
     return index === -1 ? 0 : index;
 }
 
+export function normalizeHudDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudDisplayModes.Both;
+}
+
+export function getHudDisplayModeIndex(mode) {
+    const normalized = normalizeHudDisplayMode(mode);
+    const index = HudDisplayModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeHudIndicatorMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudIndicatorModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudIndicatorModes.IconAndIndicator;
+}
+
+export function getHudIndicatorModeIndex(mode) {
+    const normalized = normalizeHudIndicatorMode(mode);
+    const index = HudIndicatorModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeModePresetSummaryMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of ModePresetSummaryModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return ModePresetSummaryModes.SummaryAndChanged;
+}
+
+export function getModePresetSummaryModeIndex(mode) {
+    const normalized = normalizeModePresetSummaryMode(mode);
+    const index = ModePresetSummaryModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
 export function normalizeEntityNameDisplayMode(mode) {
     const normalized = String(mode || "").trim().toLowerCase();
     for (const option of EntityNameDisplayModeLabels) {
@@ -523,35 +632,6 @@ export function getEntityNameResolveModeIndex(mode) {
     const normalized = normalizeEntityNameResolveMode(mode);
     const index = EntityNameResolveModeLabels.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
-}
-
-export function normalizeFieldDisplayStyleOverride(style) {
-    const normalized = String(style || "").trim().toLowerCase();
-    if (normalized === FieldDisplayStyleGlobal) {
-        return FieldDisplayStyleGlobal;
-    }
-
-    for (const option of DisplayStyleLabels) {
-        if (option.key === normalized) {
-            return normalized;
-        }
-    }
-
-    return FieldDisplayStyleGlobal;
-}
-
-export function getFieldDisplayStyleOverrideIndex(style) {
-    const normalized = normalizeFieldDisplayStyleOverride(style);
-    const index = FieldDisplayStyleOverrideLabels.findIndex((option) => option.key === normalized);
-    return index === -1 ? 0 : index;
-}
-
-export function resolveFieldDisplayStyle(fieldOverride, globalStyle) {
-    if (fieldOverride && fieldOverride !== FieldDisplayStyleGlobal) {
-        return fieldOverride;
-    }
-
-    return globalStyle;
 }
 
 export function normalizeVillagerProfessionDisplayMode(mode) {
@@ -624,6 +704,16 @@ export function getToolIndicatorColorIndex(colorCode) {
 
 export function normalizeVisibilityPolicy(policy) {
     const normalized = String(policy || "").trim().toLowerCase();
+
+    if (
+        normalized === "sneaking_creative"
+        || normalized === "creative_sneak"
+        || normalized === "creative_sneaking"
+        || normalized === "sneak+creative"
+    ) {
+        return VisibilityPolicies.SneakingAndCreative;
+    }
+
     for (const option of VisibilityPolicyLabels) {
         if (option.key === normalized) {
             return normalized;
@@ -737,14 +827,13 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         ),
         effectDisplayMode: normalizeEffectDisplayMode(runtime.effectDisplayMode ?? presetRuntime.effectDisplayMode),
         displayStyle: normalizeDisplayStyle(runtime.displayStyle ?? presetRuntime.displayStyle),
-        healthDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.healthDisplayStyle ?? presetRuntime.healthDisplayStyle),
-        hungerDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.hungerDisplayStyle ?? presetRuntime.hungerDisplayStyle),
-        armorDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.armorDisplayStyle ?? presetRuntime.armorDisplayStyle),
-        absorptionDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.absorptionDisplayStyle ?? presetRuntime.absorptionDisplayStyle),
-        airDisplayStyle: normalizeFieldDisplayStyleOverride(runtime.airDisplayStyle ?? presetRuntime.airDisplayStyle),
+        healthDisplayStyle: normalizeDisplayStyle(runtime.healthDisplayStyle ?? presetRuntime.healthDisplayStyle),
+        hungerDisplayStyle: normalizeDisplayStyle(runtime.hungerDisplayStyle ?? presetRuntime.hungerDisplayStyle),
+        armorDisplayStyle: normalizeDisplayStyle(runtime.armorDisplayStyle ?? presetRuntime.armorDisplayStyle),
+        absorptionDisplayStyle: normalizeDisplayStyle(runtime.absorptionDisplayStyle ?? presetRuntime.absorptionDisplayStyle),
+        airDisplayStyle: normalizeDisplayStyle(runtime.airDisplayStyle ?? presetRuntime.airDisplayStyle),
         nameDisplayMode: normalizeEntityNameDisplayMode(runtime.nameDisplayMode ?? presetRuntime.nameDisplayMode),
         nameResolveMode: normalizeEntityNameResolveMode(runtime.nameResolveMode ?? presetRuntime.nameResolveMode),
-        blockNameResolveMode: normalizeEntityNameResolveMode(runtime.blockNameResolveMode ?? presetRuntime.blockNameResolveMode),
         villagerProfessionDisplay: normalizeVillagerProfessionDisplayMode(
             runtime.villagerProfessionDisplay ?? presetRuntime.villagerProfessionDisplay
         ),
@@ -754,6 +843,27 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         ),
         toolIndicatorColor: normalizeToolIndicatorColor(
             runtime.toolIndicatorColor ?? presetRuntime.toolIndicatorColor
+        ),
+        modePresetSummaryMode: normalizeModePresetSummaryMode(
+            runtime.modePresetSummaryMode ?? presetRuntime.modePresetSummaryMode
+        ),
+        hudHealthVisibilityMode: normalizeHudDisplayMode(
+            runtime.hudHealthVisibilityMode ?? presetRuntime.hudHealthVisibilityMode
+        ),
+        hudHungerVisibilityMode: normalizeHudDisplayMode(
+            runtime.hudHungerVisibilityMode ?? presetRuntime.hudHungerVisibilityMode
+        ),
+        hudSaturationVisibilityMode: normalizeHudDisplayMode(
+            runtime.hudSaturationVisibilityMode ?? presetRuntime.hudSaturationVisibilityMode
+        ),
+        hudToughnessVisibilityMode: normalizeHudDisplayMode(
+            runtime.hudToughnessVisibilityMode ?? presetRuntime.hudToughnessVisibilityMode
+        ),
+        hudHealthIndicatorMode: normalizeHudIndicatorMode(
+            runtime.hudHealthIndicatorMode ?? presetRuntime.hudHealthIndicatorMode
+        ),
+        hudHungerIndicatorMode: normalizeHudIndicatorMode(
+            runtime.hudHungerIndicatorMode ?? presetRuntime.hudHungerIndicatorMode
         ),
         stateColumns: clamp(
             Number.isFinite(runtime.stateColumns) ? runtime.stateColumns : presetRuntime.stateColumns,
@@ -846,6 +956,131 @@ export function setInsightGlobalEnabled(isEnabled) {
     const normalized = Boolean(isEnabled);
     memoryFallback.enabled = normalized;
     safeWriteWorldDynamicProperty(WORLD_ENABLED_DYNAMIC_PROPERTY, normalized);
+    return normalized;
+}
+
+export function isAdminPlayer(player) {
+    if (!player) {
+        return false;
+    }
+
+    try {
+        if (typeof player.isOp === "function") {
+            return Boolean(player.isOp());
+        }
+    } catch {
+        // Ignore extension errors.
+    }
+
+    try {
+        if (typeof player.isOp === "boolean") {
+            return player.isOp;
+        }
+    } catch {
+        // Ignore extension errors.
+    }
+
+    try {
+        if (typeof player.hasTag === "function" && player.hasTag("insight:admin")) {
+            return true;
+        }
+    } catch {
+        // Ignore tag read errors.
+    }
+
+    return false;
+}
+
+export function isAdminOnlyGlobalProfileEnabled() {
+    const storedValue = safeReadWorldDynamicProperty(WORLD_ADMIN_ONLY_DYNAMIC_PROPERTY);
+    if (typeof storedValue === "boolean") {
+        memoryFallback.adminOnly = storedValue;
+        return storedValue;
+    }
+
+    return memoryFallback.adminOnly;
+}
+
+export function getAdminGlobalProfileSourceId() {
+    const storedValue = safeReadWorldDynamicProperty(WORLD_ADMIN_SOURCE_ID_DYNAMIC_PROPERTY);
+    if (typeof storedValue === "string") {
+        memoryFallback.adminSourceId = storedValue;
+        return storedValue;
+    }
+
+    return memoryFallback.adminSourceId;
+}
+
+export function getAdminGlobalProfileSourceName() {
+    const storedValue = safeReadWorldDynamicProperty(WORLD_ADMIN_SOURCE_NAME_DYNAMIC_PROPERTY);
+    if (typeof storedValue === "string") {
+        memoryFallback.adminSourceName = storedValue;
+        return storedValue;
+    }
+
+    return memoryFallback.adminSourceName;
+}
+
+function findPlayerByIdOrName(playerId, playerName) {
+    const expectedId = String(playerId || "").trim();
+    const expectedName = String(playerName || "").trim().toLowerCase();
+
+    for (const onlinePlayer of world.getAllPlayers()) {
+        if (expectedId.length && onlinePlayer.id === expectedId) {
+            return onlinePlayer;
+        }
+
+        if (expectedName.length && String(onlinePlayer.name || "").toLowerCase() === expectedName) {
+            return onlinePlayer;
+        }
+    }
+
+    return undefined;
+}
+
+function findFirstOnlineAdmin() {
+    for (const onlinePlayer of world.getAllPlayers()) {
+        if (isAdminPlayer(onlinePlayer)) {
+            return onlinePlayer;
+        }
+    }
+
+    return undefined;
+}
+
+export function resolveAdminGlobalProfileSourcePlayer() {
+    const sourceId = getAdminGlobalProfileSourceId();
+    const sourceName = getAdminGlobalProfileSourceName();
+    const explicitSource = findPlayerByIdOrName(sourceId, sourceName);
+    if (explicitSource) {
+        return explicitSource;
+    }
+
+    return findFirstOnlineAdmin();
+}
+
+export function setAdminOnlyGlobalProfileEnabled(isEnabled, sourcePlayer) {
+    const normalized = Boolean(isEnabled);
+    memoryFallback.adminOnly = normalized;
+    safeWriteWorldDynamicProperty(WORLD_ADMIN_ONLY_DYNAMIC_PROPERTY, normalized);
+
+    if (!normalized) {
+        memoryFallback.adminSourceId = "";
+        memoryFallback.adminSourceName = "";
+        safeWriteWorldDynamicProperty(WORLD_ADMIN_SOURCE_ID_DYNAMIC_PROPERTY, "");
+        safeWriteWorldDynamicProperty(WORLD_ADMIN_SOURCE_NAME_DYNAMIC_PROPERTY, "");
+        return normalized;
+    }
+
+    const source = sourcePlayer || resolveAdminGlobalProfileSourcePlayer();
+    const sourceId = String(source?.id || "").trim();
+    const sourceName = String(source?.name || "").trim();
+
+    memoryFallback.adminSourceId = sourceId;
+    memoryFallback.adminSourceName = sourceName;
+    safeWriteWorldDynamicProperty(WORLD_ADMIN_SOURCE_ID_DYNAMIC_PROPERTY, sourceId);
+    safeWriteWorldDynamicProperty(WORLD_ADMIN_SOURCE_NAME_DYNAMIC_PROPERTY, sourceName);
+
     return normalized;
 }
 
@@ -990,10 +1225,22 @@ function evaluateVisibilityPolicy(policy, context) {
             return context.isSneaking;
         case VisibilityPolicies.CreativeOnly:
             return context.isCreative;
+        case VisibilityPolicies.SneakingAndCreative:
+            return context.isSneaking && context.isCreative;
         case VisibilityPolicies.Hide:
         default:
             return false;
     }
+}
+
+function isHudInsightVisible(mode) {
+    const normalized = normalizeHudDisplayMode(mode);
+    return normalized === HudDisplayModes.ShowInsight || normalized === HudDisplayModes.Both;
+}
+
+function isHudVanillaVisible(mode) {
+    const normalized = normalizeHudDisplayMode(mode);
+    return normalized === HudDisplayModes.ShowVanilla || normalized === HudDisplayModes.Both;
 }
 
 export function getPlayerDisplaySettings(player) {
@@ -1001,14 +1248,32 @@ export function getPlayerDisplaySettings(player) {
     const isSneaking = isPlayerSneaking(player);
     const isCreative = isCreativePlayer(player);
     const globalEnabled = isInsightGloballyEnabled();
+    const adminOnlyGlobalProfile = isAdminOnlyGlobalProfileEnabled();
+    const adminSourcePlayer = adminOnlyGlobalProfile ? resolveAdminGlobalProfileSourcePlayer() : undefined;
+    const adminSourceName = adminSourcePlayer?.name || getAdminGlobalProfileSourceName();
 
     const globalMode = getCurrentMode();
-    const overrides = getPlayerOverrides(player, globalMode);
-    const activeMode = normalizeMode(overrides.modeOverride || globalMode);
+    const localOverrides = getPlayerOverrides(player, globalMode);
+    const activeOverrides = adminOnlyGlobalProfile && adminSourcePlayer
+        ? getPlayerOverrides(adminSourcePlayer, globalMode)
+        : localOverrides;
+    const activeMode = normalizeMode(activeOverrides.modeOverride || globalMode);
     const preset = getModePreset(activeMode);
 
-    const runtime = normalizeRuntime(overrides.runtime, preset.runtime);
-    const components = normalizeComponents(overrides.components, preset.components);
+    const runtime = normalizeRuntime(activeOverrides.runtime, preset.runtime);
+    const components = normalizeComponents(activeOverrides.components, preset.components);
+    const showHudHealthInsight = isHudInsightVisible(runtime.hudHealthVisibilityMode);
+    const showHudHungerInsight = isHudInsightVisible(runtime.hudHungerVisibilityMode);
+    const showHudSaturationInsight = isHudInsightVisible(runtime.hudSaturationVisibilityMode);
+    const showHudToughnessInsight = isHudInsightVisible(runtime.hudToughnessVisibilityMode);
+    const showHudHealthVanilla = isHudVanillaVisible(runtime.hudHealthVisibilityMode);
+    const showHudHungerVanilla = isHudVanillaVisible(runtime.hudHungerVisibilityMode)
+        && isHudVanillaVisible(runtime.hudSaturationVisibilityMode);
+    const showHudArmorVanilla = isHudVanillaVisible(runtime.hudToughnessVisibilityMode);
+    const hudHealthIndicatorEnabled = showHudHealthInsight
+        && runtime.hudHealthIndicatorMode === HudIndicatorModes.IconAndIndicator;
+    const hudHungerIndicatorEnabled = showHudHungerInsight
+        && runtime.hudHungerIndicatorMode === HudIndicatorModes.IconAndIndicator;
 
     // Legacy compatibility via tags.
     if (tags.has(InsightConfig.playerTags.hideNamespace)) {
@@ -1036,7 +1301,11 @@ export function getPlayerDisplaySettings(player) {
         mode: activeMode,
         modeLabel: preset.label,
         globalEnabled,
-        disabled: !globalEnabled || overrides.disabled || tags.has(InsightConfig.playerTags.disabled),
+        adminOnlyGlobalProfile,
+        adminGlobalProfileSourceName: adminSourceName,
+        disabled: !globalEnabled
+            || (adminOnlyGlobalProfile && adminSourcePlayer ? false : localOverrides.disabled)
+            || tags.has(InsightConfig.playerTags.disabled),
         requireSneak: tags.has(InsightConfig.playerTags.sneakOnly),
         isSneaking,
         isCreative,
@@ -1056,28 +1325,47 @@ export function getPlayerDisplaySettings(player) {
         maxHeartDisplayHealth: runtime.maxHeartDisplayHealth,
         effectDisplayMode: runtime.effectDisplayMode,
         displayStyle: runtime.displayStyle,
-        healthDisplayStyle: resolveFieldDisplayStyle(runtime.healthDisplayStyle, runtime.displayStyle),
-        hungerDisplayStyle: resolveFieldDisplayStyle(runtime.hungerDisplayStyle, runtime.displayStyle),
-        armorDisplayStyle: resolveFieldDisplayStyle(runtime.armorDisplayStyle, runtime.displayStyle),
-        absorptionDisplayStyle: resolveFieldDisplayStyle(runtime.absorptionDisplayStyle, runtime.displayStyle),
-        airDisplayStyle: resolveFieldDisplayStyle(runtime.airDisplayStyle, runtime.displayStyle),
+        healthDisplayStyle: runtime.healthDisplayStyle,
+        hungerDisplayStyle: runtime.hungerDisplayStyle,
+        armorDisplayStyle: runtime.armorDisplayStyle,
+        absorptionDisplayStyle: runtime.absorptionDisplayStyle,
+        airDisplayStyle: runtime.airDisplayStyle,
         nameDisplayMode: runtime.nameDisplayMode,
         nameResolveMode: runtime.nameResolveMode,
-        blockNameResolveMode: runtime.blockNameResolveMode,
         villagerProfessionDisplay: runtime.villagerProfessionDisplay,
         toolTierIndicatorMode: runtime.toolTierIndicatorMode,
         toolIndicatorPlacement: runtime.toolIndicatorPlacement,
         toolIndicatorColor: runtime.toolIndicatorColor,
+        modePresetSummaryMode: runtime.modePresetSummaryMode,
+        hudHealthVisibilityMode: runtime.hudHealthVisibilityMode,
+        hudHungerVisibilityMode: runtime.hudHungerVisibilityMode,
+        hudSaturationVisibilityMode: runtime.hudSaturationVisibilityMode,
+        hudToughnessVisibilityMode: runtime.hudToughnessVisibilityMode,
+        hudHealthIndicatorMode: runtime.hudHealthIndicatorMode,
+        hudHungerIndicatorMode: runtime.hudHungerIndicatorMode,
+        showHudHealthInsight,
+        showHudHungerInsight,
+        showHudSaturationInsight,
+        showHudToughnessInsight,
+        showHudHealthVanilla,
+        showHudHungerVanilla,
+        showHudArmorVanilla,
+        hudHealthIndicatorEnabled,
+        hudHungerIndicatorEnabled,
+        showSaturation: showHudSaturationInsight,
+        showExhaustion: showHudSaturationInsight,
+        showToughness: showHudToughnessInsight,
+        showExtraArmor: showHudToughnessInsight,
         stateColumns: runtime.stateColumns,
         tagColumns: runtime.tagColumns,
         familyColumns: runtime.familyColumns,
         showNamespace: evaluateVisibilityPolicy(components.namespace, visibilityContext),
         showCustomFields: evaluateVisibilityPolicy(components.customFields, visibilityContext),
         showCustomEnergyInfo: evaluateVisibilityPolicy(components.customEnergyInfo, visibilityContext),
-        showCustomRotationInfo: evaluateVisibilityPolicy(components.customRotationInfo, visibilityContext),
-        showCustomMachineProgress: evaluateVisibilityPolicy(components.customMachineProgress, visibilityContext),
         showCustomFluidInfo: evaluateVisibilityPolicy(components.customFluidInfo, visibilityContext),
         showCustomGasInfo: evaluateVisibilityPolicy(components.customGasInfo, visibilityContext),
+        showCustomRotationInfo: evaluateVisibilityPolicy(components.customRotationInfo, visibilityContext),
+        showCustomMachineProgress: evaluateVisibilityPolicy(components.customMachineProgress, visibilityContext),
         showCustomCobblestoneCount: evaluateVisibilityPolicy(components.customCobblestoneCount, visibilityContext),
         showCustomVariantPreview: evaluateVisibilityPolicy(components.customVariantPreview, visibilityContext),
         showBlockStates: evaluateVisibilityPolicy(components.blockStates, visibilityContext),
@@ -1092,7 +1380,6 @@ export function getPlayerDisplaySettings(player) {
         showEffectHearts: evaluateVisibilityPolicy(components.effectHearts, visibilityContext),
         showFrozenHearts: false,
         showAnimalHearts: evaluateVisibilityPolicy(components.animalHearts, visibilityContext),
-        showEntityScoreboards: evaluateVisibilityPolicy(components.entityScoreboards, visibilityContext),
         showTameable: evaluateVisibilityPolicy(components.tameable, visibilityContext),
         showTameFoods: evaluateVisibilityPolicy(components.tameFoods, visibilityContext),
         showTechnicalData: evaluateVisibilityPolicy(components.technical, visibilityContext),

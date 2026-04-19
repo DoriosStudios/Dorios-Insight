@@ -1,0 +1,9 @@
+{
+    "ui_defs": [
+        "ui/server_form.json",
+        "ui/hud_screen.json",
+        "ui/insight_hud_data.json",
+        "ui/insight_hud_bars.json",
+        "ui/insight_waila.json"
+    ]
+}

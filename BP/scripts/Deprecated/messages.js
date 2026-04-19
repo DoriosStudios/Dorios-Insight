@@ -1,3 +1,18 @@
+/**
+ * @module wailaComposer (aka messages)
+ * @description Composes actionbar messages for the WAILA-style display mode.
+ * 
+ * This module is deprecated and will be removed in a future update. The new UI Queue system with JSON bindings provides a more flexible and robust way to display information, and the old actionbar method is no longer maintained.
+ * 
+ * Data flow:
+ * 1) Controller → displayController.createEntityActionbar(entity, settings)
+ * 2) Collects and formats entity data into a rawtext object.
+ * 3) Controller sends the rawtext through the "ui" script event channel.
+ * 
+ * @version 1.0.0
+ * @author Kauziin (Dorios Studios)
+ */
+
 import { EntityHealthComponent, EntityIsBabyComponent, world } from "@minecraft/server";
 import { BlockNames, BlockPrefixes, ItemTranslationKeys } from "../const.js";
 import {
@@ -9,7 +24,7 @@ import {
     ToolIndicatorPlacementModes,
     ToolTierIndicatorModes,
     VillagerProfessionDisplayModes
-} from "./config.js";
+} from "../display/config.js";
 import {
     formatNamespaceLabel,
     formatStateName,
@@ -17,17 +32,17 @@ import {
     splitTypeId,
     toTitleWords,
     toMessageText
-} from "./formatters.js";
+} from "../display/formatters.js";
 import {
     collectCustomBlockFieldLines,
     collectCustomEntityFieldLines
-} from "./customFieldInjectors.js";
+} from "../display/customFieldInjectors.js";
 import {
     getBlockTagsSafe,
     resolveInjectedNamespace,
     sortBlockTagsForDisplay
-} from "./namespaceInjection.js";
-import { transformBlockStateEntries } from "./stateTraitInjection.js";
+} from "../display/namespaceInjection.js";
+import { transformBlockStateEntries } from "../display/stateTraitInjection.js";
 
 // -----------------------------------------------------------------------------
 // Actionbar message composer
@@ -249,7 +264,8 @@ const EffectGlyphByTypeId = Object.freeze({
     weaving: "\uF526",
     wind_charged: "\uF536",
     infested: "\uF527",
-    oozing: "\uF537"
+    oozing: "\uF537",
+    slimy_boots: "\uF557"
 });
 
 const PositiveEffectTypeIds = new Set([
@@ -1297,6 +1313,95 @@ function buildItemTranslationRawtext(itemStack) {
     };
 }
 
+function buildBlockTypeTranslationRawtext(blockTypeId, playerSettings) {
+    const normalizedBlockTypeId = String(blockTypeId || "").trim();
+    if (!normalizedBlockTypeId.length) {
+        return undefined;
+    }
+
+    if (playerSettings?.nameResolveMode === EntityNameResolveModes.TypeIdToText) {
+        return {
+            text: formatTypeIdToText(normalizedBlockTypeId)
+        };
+    }
+
+    const { id } = splitTypeId(normalizedBlockTypeId);
+    const blockIdentifier = id.replace("double_slab", "slab");
+    const translationPrefix = BlockPrefixes[blockIdentifier] || "tile";
+    const translationName = BlockNames[blockIdentifier] || blockIdentifier;
+
+    if (!normalizedBlockTypeId.startsWith("minecraft:")) {
+        return {
+            translate: `tile.${normalizedBlockTypeId}.name`
+        };
+    }
+
+    return {
+        translate: `${translationPrefix}.${translationName}.name`
+    };
+}
+
+function looksLikeLocalizationKey(value) {
+    return typeof value === "string"
+        && /^(entity|item|tile|block|ui)\.[^\s]+$/i.test(value.trim());
+}
+
+function tryGetBlockFromEntityLocation(entity) {
+    if (!entity?.dimension || !entity.location) {
+        return undefined;
+    }
+
+    try {
+        return entity.dimension.getBlock({
+            x: Math.floor(entity.location.x),
+            y: Math.floor(entity.location.y),
+            z: Math.floor(entity.location.z)
+        });
+    } catch {
+        return undefined;
+    }
+}
+
+function isLikelyMachineHelperEntity(entity) {
+    const entityTypeId = String(entity?.typeId || "").trim().toLowerCase();
+    return entityTypeId.endsWith(":machine_entity");
+}
+
+function resolveRepresentedBlockId(entity) {
+    try {
+        const storedBlockId = entity?.getDynamicProperty?.("dorios:machine_block_id");
+        if (typeof storedBlockId === "string" && storedBlockId.trim().length > 0) {
+            return storedBlockId.trim();
+        }
+    } catch {
+        // Ignore dynamic property access failures.
+    }
+
+    if (!isLikelyMachineHelperEntity(entity)) {
+        return undefined;
+    }
+
+    const block = tryGetBlockFromEntityLocation(entity);
+    if (typeof block?.typeId === "string" && block.typeId.length > 0 && block.typeId !== "minecraft:air") {
+        return block.typeId;
+    }
+
+    return undefined;
+}
+
+function shouldPreferRepresentedBlockName(entity, representedBlockId) {
+    if (!representedBlockId) {
+        return false;
+    }
+
+    const nickname = String(entity?.nameTag || "").trim();
+    if (!nickname.length) {
+        return true;
+    }
+
+    return looksLikeLocalizationKey(nickname);
+}
+
 function buildEntityTranslationRawtext(entity, typeIdForDisplay) {
     const localizationKey = readLocalizationKey(entity);
 
@@ -1313,9 +1418,13 @@ function buildEntityTranslationRawtext(entity, typeIdForDisplay) {
     return { translate: `entity.${typeIdForDisplay}.name` };
 }
 
-function buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings) {
+function buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings, representedBlockId) {
     if (itemStack?.typeId) {
         return buildItemTranslationRawtext(itemStack);
+    }
+
+    if (representedBlockId) {
+        return buildBlockTypeTranslationRawtext(representedBlockId, playerSettings);
     }
 
     if (playerSettings?.nameResolveMode === EntityNameResolveModes.TypeIdToText) {
@@ -2414,6 +2523,19 @@ function buildHealthDisplay(currentValue, maxValue, maxHeartDisplayHealth, displ
     const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
     const percentValue = Math.max(0, Math.min(100, (current / max) * 100));
     const roundedPercentValue = Math.floor(percentValue * 10) / 10;
+    const roundedCurrentValue = Math.floor(current * 10) / 10;
+    const roundedMaxValue = Math.floor(max * 10) / 10;
+
+    if (normalizedDisplayStyle === DisplayStyles.IconValue) {
+        const halfUnits = getRoundedHalfHearts(current);
+        const icon = halfUnits >= 2
+            ? glyphs.full
+            : halfUnits === 1
+                ? glyphs.half
+                : glyphs.empty;
+
+        return { text: `${icon} §c${roundedCurrentValue}§7/§c${roundedMaxValue}§r` };
+    }
 
     if (normalizedDisplayStyle === DisplayStyles.TextFull) {
         return tr("ui.dorios.insight.display.health_full", [current.toFixed(1), max.toFixed(1)]);
@@ -2459,6 +2581,19 @@ function buildHungerDisplay(
     const max = Math.max(1, Number(maxValue) || 1);
     const normalizedDisplayStyle = normalizeDisplayStyleValue(displayStyle);
     const roundedPercentValue = Math.floor(Math.max(0, Math.min(100, (current / max) * 100)) * 10) / 10;
+    const roundedCurrentValue = Math.floor(current * 10) / 10;
+    const roundedMaxValue = Math.floor(max * 10) / 10;
+
+    if (normalizedDisplayStyle === DisplayStyles.IconValue) {
+        const halfUnits = getRoundedHalfHearts(current);
+        const icon = halfUnits >= 2
+            ? glyphs.full
+            : halfUnits === 1
+                ? glyphs.half
+                : glyphs.empty;
+
+        return { text: `${icon} §6${roundedCurrentValue}§7/§6${roundedMaxValue}§r` };
+    }
 
     if (normalizedDisplayStyle === DisplayStyles.TextFull) {
         return tr("ui.dorios.insight.display.hunger_full", [current.toFixed(1), max.toFixed(1)]);
@@ -2685,6 +2820,40 @@ function formatLargeNumber(value) {
     return `${scaled.toFixed(1)}${suffixes[tier]}`;
 }
 
+function formatEnergyDisplayValue(value) {
+    const safeValue = Math.max(0, Number(value) || 0);
+
+    if (safeValue >= 1e15) {
+        return `${(safeValue / 1e15).toFixed(2)} PDE`;
+    }
+
+    if (safeValue >= 1e12) {
+        return `${(safeValue / 1e12).toFixed(2)} TDE`;
+    }
+
+    if (safeValue >= 1e9) {
+        return `${(safeValue / 1e9).toFixed(2)} GDE`;
+    }
+
+    if (safeValue >= 1e6) {
+        return `${(safeValue / 1e6).toFixed(2)} MDE`;
+    }
+
+    if (safeValue >= 1e3) {
+        return `${(safeValue / 1e3).toFixed(1)} kDE`;
+    }
+
+    return `${Math.floor(safeValue)} DE`;
+}
+
+function formatEntityScoreboardValue(field, value) {
+    if (field?.key === "energy") {
+        return formatEnergyDisplayValue(value);
+    }
+
+    return formatLargeNumber(value);
+}
+
 /**
  * Known scoreboard field definitions for display.
  * Each entry describes how to read and display a scoreboard-based value.
@@ -2734,9 +2903,9 @@ function appendEntityScoreboardFields(rawtext, entity, playerSettings) {
 
             const cap = decodeScoreboardMantissaExponent(entity, field.capMantissa, field.capExponent);
             if (cap !== undefined && cap > 0) {
-                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), formatLargeNumber(cap)]));
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatEntityScoreboardValue(field, value), formatEntityScoreboardValue(field, cap)]));
             } else {
-                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), "---"]));
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatEntityScoreboardValue(field, value), "---"]));
             }
         } else if (field.mode === "simple_pair") {
             const value = getEntityScoreboardValue(entity, field.objective);
@@ -2749,9 +2918,9 @@ function appendEntityScoreboardFields(rawtext, entity, playerSettings) {
                 : undefined;
 
             if (cap !== undefined && cap > 0) {
-                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), formatLargeNumber(cap)]));
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatEntityScoreboardValue(field, value), formatEntityScoreboardValue(field, cap)]));
             } else {
-                appendDisplayLine(rawtext, tr(field.labelKey, [formatLargeNumber(value), "---"]));
+                appendDisplayLine(rawtext, tr(field.labelKey, [formatEntityScoreboardValue(field, value), "---"]));
             }
         }
     }
@@ -3166,6 +3335,10 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
 
     const itemStack = entity.typeId === "minecraft:item" ? getEntityItemStack(entity) : undefined;
     const typeIdForDisplay = itemStack?.typeId || entity.typeId;
+    const representedBlockId = itemStack?.typeId ? undefined : resolveRepresentedBlockId(entity);
+    const titleNickname = shouldPreferRepresentedBlockName(entity, representedBlockId)
+        ? undefined
+        : entity.nameTag;
 
     try {
         if (typeof entity.getTags === "function") {
@@ -3202,8 +3375,8 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
 
     // Step 2: compose title line using configurable naming modes.
     appendEntityTitle(rawtext, {
-        nickname: entity.nameTag,
-        resolvedNameRawtext: buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings),
+        nickname: titleNickname,
+        resolvedNameRawtext: buildEntityResolvedNameRawtext(entity, typeIdForDisplay, itemStack, playerSettings, representedBlockId),
         nameDisplayMode: playerSettings.nameDisplayMode,
         itemStack
     });

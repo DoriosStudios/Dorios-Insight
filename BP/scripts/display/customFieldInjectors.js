@@ -17,6 +17,7 @@
 // - clearEntityFieldInjectors()
 // - getRegisteredCounts()
 // - getProvidersByComponent(componentKey)
+// - getSupportedComponentKeys()
 //
 // Injector contract:
 // - Input: context object (block/entity and useful metadata)
@@ -27,9 +28,16 @@ import {
     moduleBlockFieldInjectors,
     moduleEntityFieldInjectors
 } from "./Modules/index.js";
+import { InsightComponentDefinitions } from "./config.js";
 
 const blockFieldInjectors = [];
 const entityFieldInjectors = [];
+const supportedComponentKeys = Object.freeze(
+    InsightComponentDefinitions
+        .map((definition) => typeof definition?.key === "string" ? definition.key.trim() : "")
+        .filter((componentKey) => componentKey.length > 0)
+);
+const supportedComponentKeySet = new Set(supportedComponentKeys);
 
 function normalizeProviderName(provider) {
     if (typeof provider !== "string") {
@@ -40,12 +48,13 @@ function normalizeProviderName(provider) {
     return trimmed.length ? trimmed : undefined;
 }
 
-function normalizeComponentKeys(components) {
+function normalizeComponentKeys(components, provider) {
     if (!Array.isArray(components)) {
         return [];
     }
 
     const deduplicated = new Set();
+    const invalidKeys = [];
 
     for (const componentKey of components) {
         if (typeof componentKey !== "string") {
@@ -57,16 +66,29 @@ function normalizeComponentKeys(components) {
             continue;
         }
 
+        if (!supportedComponentKeySet.has(normalizedKey)) {
+            invalidKeys.push(normalizedKey);
+            continue;
+        }
+
         deduplicated.add(normalizedKey);
+    }
+
+    if (invalidKeys.length) {
+        const providerName = provider || "unknown";
+        console.warn(
+            `[Insight] Ignored unsupported custom field component keys from "${providerName}": ${invalidKeys.join(", ")}`
+        );
     }
 
     return [...deduplicated];
 }
 
 function createInjectorEntry(injector, options) {
+    const provider = normalizeProviderName(options?.provider);
     const metadata = {
-        provider: normalizeProviderName(options?.provider),
-        components: normalizeComponentKeys(options?.components)
+        provider,
+        components: normalizeComponentKeys(options?.components, provider)
     };
 
     return {
@@ -187,6 +209,10 @@ function getProvidersByComponent(componentKey) {
     return [...providerNames].sort((a, b) => a.localeCompare(b));
 }
 
+function getSupportedComponentKeys() {
+    return [...supportedComponentKeys];
+}
+
 function exposeCustomFieldApi() {
     const existingApi = globalThis.InsightCustomFields && typeof globalThis.InsightCustomFields === "object"
         ? globalThis.InsightCustomFields
@@ -220,6 +246,9 @@ function exposeCustomFieldApi() {
         },
         getProvidersByComponent(componentKey) {
             return getProvidersByComponent(componentKey);
+        },
+        getSupportedComponentKeys() {
+            return getSupportedComponentKeys();
         }
     };
 }

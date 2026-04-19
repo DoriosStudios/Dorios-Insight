@@ -4,6 +4,27 @@ Este documento descreve, com o máximo de transparência possível, as mudanças
 
 > Data deste registro: **2026-02-22**
 
+## [Unreleased] — Manifest v3 + posição configurável do display
+
+### O que mudou
+- O `RP/manifest.json` foi atualizado para **format_version 3** (semver em `version` e `min_engine_version`).
+- Foi adicionada uma configuração de pack em **settings**:
+  - `doriosinsight:display_position` (dropdown)
+  - Opções: `top_left`, `top_middle`, `top_right`, `left_middle`, `right_middle`
+- O `hud_actionbar_text` agora lê essa configuração e ajusta o posicionamento usando:
+  - `anchor_from`
+  - `anchor_to`
+  - `offset`
+
+### Arquivos alterados
+- `RP/manifest.json`
+- `RP/subpacks/default/ui/hud_screen.json`
+- `RP/subpacks/dark/ui/hud_screen.json`
+- `RP/subpacks/copper/ui/hud_screen.json`
+
+### Resultado prático
+- Jogadores podem reposicionar o display do Dorios' Insight diretamente nas configurações do pack, sem precisar trocar subpack ou editar arquivo manualmente.
+
 ## [1.1.0] — States/Traits Injection + Conditions/System + Display Expansion
 
 ### Destaques

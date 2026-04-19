@@ -1,0 +1,294 @@
+{
+    "namespace": "insight_data",
+    "hud_data_control": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            },
+            {
+                "binding_name": "#show_survival_ui",
+                "binding_name_override": "#survival_ui"
+            }
+        ]
+    },
+    "hud_data_section_a": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.11s' * #stored_text) - ('%.1s' * #stored_text))",
+                "target_property_name": "#data_a"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_a / 10000000)",
+                "target_property_name": "#health"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_a / 10000) - (#health * 1000)",
+                "target_property_name": "#max_health"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_a / 100) - (#health * 100000) - (#max_health * 100)",
+                "target_property_name": "#absorption"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_a / 1) - (#health * 10000000) - (#max_health * 10000) - (#absorption * 100)",
+                "target_property_name": "#health_gap"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+    "hud_data_section_b": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.9s' * (#stored_text - ('%.11s' * #stored_text))) - 'b')",
+                "target_property_name": "#data_b"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_b / 1000000)",
+                "target_property_name": "#hunger"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_b / 10000) - (#hunger * 100)",
+                "target_property_name": "#max_hunger"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_b / 100) - (#hunger * 10000) - (#max_hunger * 100)",
+                "target_property_name": "#saturation"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_b / 1) - (#hunger * 1000000) - (#max_hunger * 10000) - (#saturation * 100)",
+                "target_property_name": "#exhaustion"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+    "hud_data_section_c": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.9s' * (#stored_text - ('%.20s' * #stored_text))) - 'c')",
+                "target_property_name": "#data_c"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_c / 1000000)",
+                "target_property_name": "#armor"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_c / 10000) - (#armor * 100)",
+                "target_property_name": "#toughness"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_c / 100) - (#armor * 10000) - (#toughness * 100)",
+                "target_property_name": "#extra_armor"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_c / 1) - (#armor * 1000000) - (#toughness * 10000) - (#extra_armor * 100)",
+                "target_property_name": "#extra_armor_full"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+    "hud_data_section_d": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.9s' * (#stored_text - ('%.29s' * #stored_text))) - 'd')",
+                "target_property_name": "#data_d"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_d / 1000000)",
+                "target_property_name": "#hunger_preview"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_d / 10000) - (#hunger_preview * 100)",
+                "target_property_name": "#air_supply"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_d / 100) - (#hunger_preview * 10000) - (#air_supply * 100)",
+                "target_property_name": "#max_air"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_d / 1) - (#hunger_preview * 1000000) - (#air_supply * 10000) - (#max_air * 100)",
+                "target_property_name": "#flags"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#flags / 32)",
+                "target_property_name": "#flag_hunger_preview"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "((#flags / 16) - (#flag_hunger_preview * 2))",
+                "target_property_name": "#flag_hunger_effect"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "((#flags / 8) - (#flag_hunger_preview * 4) - (#flag_hunger_effect * 2))",
+                "target_property_name": "#flag_frozen"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "((#flags / 4) - (#flag_hunger_preview * 8) - (#flag_hunger_effect * 4) - (#flag_frozen * 2))",
+                "target_property_name": "#flag_has_absorption"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "((#flags / 2) - (#flag_hunger_preview * 16) - (#flag_hunger_effect * 8) - (#flag_frozen * 4) - (#flag_has_absorption * 2))",
+                "target_property_name": "#flag_withered"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#flags - (#flag_hunger_preview * 32) - (#flag_hunger_effect * 16) - (#flag_frozen * 8) - (#flag_has_absorption * 4) - (#flag_withered * 2))",
+                "target_property_name": "#flag_poisoned"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+    "hud_data_section_e": {
+        "type": "panel",
+        "size": [
+            0,
+            0
+        ],
+        "bindings": [
+            {
+                "binding_name": "#hud_title_text_string"
+            },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.9s' * (#stored_text - ('%.38s' * #stored_text))) - 'e')",
+                "target_property_name": "#data_e"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_e / 1000000)",
+                "target_property_name": "#hud_health_indicator"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_e / 10000) - (#hud_health_indicator * 100)",
+                "target_property_name": "#hud_hunger_indicator"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_e / 100) - (#hud_health_indicator * 10000) - (#hud_hunger_indicator * 100)",
+                "target_property_name": "#hud_reserved_1"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#data_e / 1) - (#hud_health_indicator * 1000000) - (#hud_hunger_indicator * 10000) - (#hud_reserved_1 * 100)",
+                "target_property_name": "#hud_reserved_2"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    }
+}

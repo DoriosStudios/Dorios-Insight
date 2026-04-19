@@ -1576,6 +1576,54 @@ globalThis.DoriosAPI = {
             "minecraft:shulker",
             "minecraft:dropper"
         ],
+    },
+
+    /**
+     * Dorios' Insight UI pipeline API.
+     *
+     * Provides external addon access to the UI Queue system,
+     * channel registration, and data encoding for custom HUD panels.
+     *
+     * @namespace DoriosAPI.insight
+     */
+    insight: {
+        /**
+         * UI Queue module reference.
+         * Set at runtime by the display controller initialization.
+         * 
+         * Available methods:
+         * - send(player, channelName, encodedData)
+         * - forceRefresh(player, channelName)
+         * - forceRefreshAll(player)
+         * - clearPlayer(player)
+         * - registerChannel(channelName)
+         * - isActive()
+         * - getRegisteredChannels()
+         *
+         * @type {Object|null}
+         */
+        uiQueue: null,
+
+        /**
+         * Channel constants.
+         * Set at runtime by the display controller initialization.
+         *
+         * @type {Object|null}
+         */
+        channels: null,
+
+        /**
+         * Data encoder utilities.
+         * Set at runtime by the display controller initialization.
+         *
+         * Available methods:
+         * - defineSchema(delimiter, fields)
+         * - encodeSection(schema, data)
+         * - encodePayload(schemas, data, channelSuffix)
+         *
+         * @type {Object|null}
+         */
+        encoder: null
     }
 }
 

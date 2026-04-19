@@ -1,4 +1,4 @@
-import { system } from "@minecraft/server";
+import { system, world } from "@minecraft/server";
 import {
     InsightComponentDefinitions,
     InsightModePresets,
@@ -15,9 +15,10 @@ import {
 } from "./config.js";
 import { registerNamespaceAlias } from "./namespaceInjection.js";
 import { openInsightMenu } from "./menu.js";
+import { resetVanillaHud, resetAllPlayersHud } from "./hudDataCollector.js";
 
 const modeSet = new Set([InsightModes.Essential, InsightModes.Detailed, InsightModes.Debug]);
-const commandActionSet = new Set(["menu", "mode", "activate", "global", "namespace"]);
+const commandActionSet = new Set(["menu", "mode", "activate", "global", "namespace", "reset"]);
 let commandsRegistered = false;
 
 const componentAliases = Object.freeze({
@@ -84,10 +85,13 @@ function getUsage() {
         "§e/utilitycraft:insightmode <essential|detailed|debug> §7- Set global mode",
         "§e/utilitycraft:insight activate <on|off|toggle> §7- Toggle your local activation",
         "§e/utilitycraft:insightactivate <on|off|toggle> §7- Toggle your local activation",
-        "§e/utilitycraft:insight activate <component> <show|sneak|creative|hide> §7- Set component visibility",
+        "§e/utilitycraft:insight activate <component> <show|sneak|creative|sneak_creative|hide> §7- Set component visibility",
         "§e/utilitycraft:insight global <on|off|toggle|status> §7- Toggle Insight globally",
         "§e/utilitycraft:insightglobal <on|off|toggle|status> §7- Toggle Insight globally",
-        "§e/utilitycraft:insight namespace add <namespace> <displayName> §7- Map a namespace to an addon name"
+        "§e/utilitycraft:insight namespace add <namespace> <displayName> §7- Map a namespace to an addon name",
+        "§e/utilitycraft:insight reset §7- Reset vanilla HUD for yourself",
+        "§e/utilitycraft:insight reset all §7- Reset vanilla HUD for all players",
+        "§e/utilitycraft:insightreset §7- Reset vanilla HUD for all players"
     ].join("\n");
 }
 
@@ -167,13 +171,13 @@ function handleActivateCommand(player, primaryValue, secondaryValue) {
 
     const policyArg = String(secondaryValue || "").trim().toLowerCase();
     if (!policyArg) {
-        sendMessage(player, "§cUsage: /utilitycraft:insight activate <component> <show|sneak|creative|hide>");
+        sendMessage(player, "§cUsage: /utilitycraft:insight activate <component> <show|sneak|creative|sneak_creative|hide>");
         return;
     }
 
     const policy = normalizeVisibilityPolicy(policyArg);
     if (!getVisibilityPolicyValues().includes(policy)) {
-        sendMessage(player, "§cInvalid policy. Use: show, sneak, creative, hide.");
+        sendMessage(player, "§cInvalid policy. Use: show, sneak, creative, sneak_creative, hide.");
         return;
     }
 
@@ -252,6 +256,20 @@ function handleNamespaceCommand(player, primaryValue, secondaryValue, tertiaryVa
     sendMessage(player, `§aNamespace ${result.namespace} mapped to ${result.name}.`);
 }
 
+function handleResetCommand(player, primaryValue) {
+    const scope = String(primaryValue || "").trim().toLowerCase();
+
+    if (scope === "all") {
+        resetAllPlayersHud(world);
+        sendMessage(player, "§aVanilla HUD reset for all players.");
+        return;
+    }
+
+    // Default: reset just this player.
+    resetVanillaHud(player);
+    sendMessage(player, "§aVanilla HUD reset for your player.");
+}
+
 function handleRootInsightCommand(player, action, value, value2, value3) {
     const normalizedAction = String(action || "").trim().toLowerCase();
 
@@ -287,6 +305,11 @@ function handleRootInsightCommand(player, action, value, value2, value3) {
         return;
     }
 
+    if (normalizedAction === "reset") {
+        handleResetCommand(player, value);
+        return;
+    }
+
     sendMessage(player, getUsage());
 }
 
@@ -305,7 +328,7 @@ export function initializeInsightCommands() {
             {
                 name: "action",
                 type: "enum",
-                enum: ["menu", "mode", "activate", "global", "namespace"]
+                enum: ["menu", "mode", "activate", "global", "namespace", "reset"]
             },
             {
                 name: "value",
@@ -444,6 +467,21 @@ export function initializeInsightCommands() {
             }
 
             handleRootInsightCommand(player, "namespace", action, namespaceValue, displayNameValue);
+        }
+    });
+
+    registerInsightCommand({
+        name: "insightreset",
+        description: "Reset vanilla HUD for all players (fallback)",
+        permissionLevel: "any",
+        parameters: [],
+        callback(origin) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            handleResetCommand(player, "all");
         }
     });
 }

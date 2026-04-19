@@ -4,10 +4,12 @@ import {
     EntityNameDisplayModeLabels,
     EntityNameResolveModeLabels,
     EffectDisplayModeLabels,
-    FieldDisplayStyleOverrideLabels,
+    HudDisplayModeLabels,
+    HudIndicatorModeLabels,
     InsightComponentDefinitions,
     InsightConfig,
     InsightModes,
+    ModePresetSummaryModeLabels,
     ToolIndicatorColorOptions,
     ToolIndicatorPlacementModeLabels,
     ToolTierIndicatorModeLabels,
@@ -18,9 +20,12 @@ import {
     getEntityNameDisplayModeIndex,
     getEntityNameResolveModeIndex,
     getEffectDisplayModeIndex,
-    getFieldDisplayStyleOverrideIndex,
+    getHudDisplayModeIndex,
+    getHudIndicatorModeIndex,
     getModePreset,
+    getModePresetSummaryModeIndex,
     getPlayerDisplaySettings,
+    isAdminPlayer,
     getToolIndicatorColorIndex,
     getToolIndicatorPlacementModeIndex,
     getToolTierIndicatorModeIndex,
@@ -29,6 +34,7 @@ import {
     isInsightComponentDeprecated,
     normalizeVisibilityPolicy,
     resetPlayerOverrides,
+    setAdminOnlyGlobalProfileEnabled,
     setCurrentMode,
     setInsightGlobalEnabled,
     setPlayerActivation,
@@ -43,9 +49,6 @@ const customComponentKeySet = new Set([
     "customEnergyInfo",
     "customRotationInfo",
     "customMachineProgress",
-    "customFluidInfo",
-    "customGasInfo",
-    "customCobblestoneCount",
     "customVariantPreview"
 ]);
 
@@ -116,12 +119,6 @@ function getEntityNameResolveModeLabel(mode) {
     return option?.label || EntityNameResolveModeLabels[0].label;
 }
 
-function getFieldDisplayStyleOverrideLabel(style) {
-    const normalized = String(style || "").toLowerCase();
-    const option = FieldDisplayStyleOverrideLabels.find((entry) => entry.key === normalized);
-    return option?.label || FieldDisplayStyleOverrideLabels[0].label;
-}
-
 function getVillagerProfessionDisplayModeLabel(mode) {
     const normalized = String(mode || "").toLowerCase();
     const option = VillagerProfessionDisplayModeLabels.find((entry) => entry.key === normalized);
@@ -144,6 +141,24 @@ function getToolIndicatorColorLabel(colorCode) {
     const normalized = String(colorCode || "").toLowerCase();
     const option = ToolIndicatorColorOptions.find((entry) => entry.key.toLowerCase() === normalized);
     return option?.label || ToolIndicatorColorOptions[0].label;
+}
+
+function getModePresetSummaryModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = ModePresetSummaryModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || ModePresetSummaryModeLabels[0].label;
+}
+
+function getHudDisplayModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudDisplayModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudDisplayModeLabels[0].label;
+}
+
+function getHudIndicatorModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudIndicatorModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudIndicatorModeLabels[0].label;
 }
 
 function getStateLabel(isEnabled, enabledLabel = "Enabled", disabledLabel = "Disabled") {
@@ -231,7 +246,7 @@ function buildComponentDropdownLabel(componentTitle, componentDescription, curre
     return {
         rawtext: [
             ...titleParts,
-            { text: "\n§7" },
+            { text: "\n§j" },
             ...descriptionParts,
             { text: "\n" },
             {
@@ -256,6 +271,154 @@ function sendPlayerMessage(player, message) {
     }
 }
 
+function appendLimitedRows(target, rows, limit = 10) {
+    const cappedRows = rows.slice(0, limit);
+    target.push(...cappedRows);
+
+    const remaining = rows.length - cappedRows.length;
+    if (remaining > 0) {
+        target.push(`- ... +${remaining} more`);
+    }
+}
+
+function getModeRank(mode) {
+    if (mode === InsightModes.Debug) {
+        return 2;
+    }
+
+    if (mode === InsightModes.Detailed) {
+        return 1;
+    }
+
+    return 0;
+}
+
+function countEnabledComponents(components) {
+    let count = 0;
+
+    for (const definition of InsightComponentDefinitions) {
+        const policy = normalizeVisibilityPolicy(components?.[definition.key]);
+        if (policy !== "hide") {
+            count += 1;
+        }
+    }
+
+    return count;
+}
+
+function buildModeSummaryMessage(previousMode, nextMode, modeSummarySetting) {
+    const summaryMode = String(modeSummarySetting || "").toLowerCase();
+    if (summaryMode === "hidden") {
+        return "";
+    }
+
+    const previousPreset = getModePreset(previousMode);
+    const nextPreset = getModePreset(nextMode);
+    if (!previousPreset || !nextPreset) {
+        return "";
+    }
+
+    const isDowngrade = getModeRank(nextMode) < getModeRank(previousMode);
+    const enableRows = [];
+    const changedRows = [];
+    const removedRows = [];
+    const runtimeFields = [
+        { key: "maxDistance", label: "Range" },
+        { key: "updateIntervalTicks", label: "Update Interval" },
+        { key: "maxVisibleStates", label: "Block States Limit" },
+        { key: "maxVisibleBlockTags", label: "Block Tags Limit" },
+        { key: "maxVisibleEntityTags", label: "Entity Tags Limit" },
+        { key: "maxVisibleEntityFamilies", label: "Entity Families Limit" },
+        { key: "maxVisibleEffects", label: "Effects Limit" },
+        { key: "displayStyle", label: "Display Style" },
+        { key: "toolTierIndicatorMode", label: "Tool Indicator" },
+        { key: "includeLiquidBlocks", label: "Include Liquid Blocks" },
+        { key: "includeInvisibleEntities", label: "Include Invisible Entities" }
+    ];
+
+    for (const definition of InsightComponentDefinitions) {
+        const componentLabel = definition.label || definition.key;
+        const previousPolicy = normalizeVisibilityPolicy(previousPreset.components?.[definition.key]);
+        const nextPolicy = normalizeVisibilityPolicy(nextPreset.components?.[definition.key]);
+
+        if (nextPolicy !== "hide") {
+            enableRows.push(`- ${componentLabel}`);
+        }
+
+        if (previousPolicy === nextPolicy) {
+            continue;
+        }
+
+        if (previousPolicy !== "hide" && nextPolicy === "hide") {
+            removedRows.push(`- ${componentLabel}`);
+            continue;
+        }
+
+        changedRows.push(`- ${componentLabel}: ${getPolicyLabel(previousPolicy)} > ${getPolicyLabel(nextPolicy)}`);
+    }
+
+    for (const runtimeField of runtimeFields) {
+        const previousValue = previousPreset.runtime?.[runtimeField.key];
+        const nextValue = nextPreset.runtime?.[runtimeField.key];
+        if (previousValue === nextValue) {
+            continue;
+        }
+
+        const formatValue = (value) => {
+            if (runtimeField.key === "displayStyle") {
+                return getDisplayStyleLabel(value);
+            }
+
+            if (runtimeField.key === "toolTierIndicatorMode") {
+                return getToolTierIndicatorModeLabel(value);
+            }
+
+            if (typeof value === "boolean") {
+                return value ? "Enabled" : "Disabled";
+            }
+
+            return String(value);
+        };
+
+        changedRows.push(`- ${runtimeField.label}: ${formatValue(previousValue)} > ${formatValue(nextValue)}`);
+    }
+
+    const lines = [`§a${getModeLabel(nextMode)} Mode Selected!`];
+
+    const includeEnableSummary = !isDowngrade && (
+        summaryMode === "summary"
+        || summaryMode === "summary_and_changed"
+    );
+    const includeChanged = isDowngrade
+        || summaryMode === "changed_only"
+        || summaryMode === "summary_and_changed";
+
+    if (includeEnableSummary) {
+        lines.push("§7Enable:");
+        if (enableRows.length) {
+            appendLimitedRows(lines, enableRows);
+        } else {
+            lines.push("- None");
+        }
+    }
+
+    if (includeChanged) {
+        lines.push("§3Changed:");
+        if (changedRows.length) {
+            appendLimitedRows(lines, changedRows);
+        } else {
+            lines.push("- None");
+        }
+
+        if (removedRows.length) {
+            lines.push("§cRemoved:");
+            appendLimitedRows(lines, removedRows);
+        }
+    }
+
+    return lines.join("\n");
+}
+
 async function showModeMenu(player) {
     const currentMode = getCurrentMode();
 
@@ -266,12 +429,14 @@ async function showModeMenu(player) {
     for (const mode of modeSequence) {
         const preset = getModePreset(mode);
         const runtime = preset.runtime;
+        const enabledComponentCount = countEnabledComponents(preset.components);
 
         form.button(
             tr("ui.dorios.insight.mode_menu.option", [
                 getModeLabel(mode),
                 runtime.maxDistance,
                 runtime.updateIntervalTicks,
+                enabledComponentCount,
                 runtime.maxVisibleStates,
                 runtime.maxVisibleBlockTags
             ])
@@ -284,12 +449,24 @@ async function showModeMenu(player) {
     }
 
     const selectedMode = modeSequence[result.selection ?? 0] || currentMode;
+    const previousMode = currentMode;
     const appliedMode = setCurrentMode(selectedMode);
 
     sendPlayerMessage(
         player,
         tr("ui.dorios.insight.feedback.mode_set", [getModeLabel(appliedMode)])
     );
+
+    const nextSettings = getPlayerDisplaySettings(player);
+    const summaryMessage = buildModeSummaryMessage(
+        previousMode,
+        appliedMode,
+        nextSettings.modePresetSummaryMode
+    );
+
+    if (summaryMessage.length) {
+        sendPlayerMessage(player, summaryMessage);
+    }
 }
 
 async function showComponentGroupMenu(player, componentGroup) {
@@ -350,13 +527,136 @@ async function showComponentGroupMenu(player, componentGroup) {
     }
 }
 
+async function showComponentGroupWithRuntimeMenu(player, componentGroup) {
+    const settings = getPlayerDisplaySettings(player);
+    const visibilityLabels = VisibilityPolicyLabels.map((option) => option.label);
+    const runtimeFieldKeys = Array.isArray(componentGroup.runtimeFields) ? componentGroup.runtimeFields : [];
+
+    const runtimeFieldMap = {
+        maxVisibleStates: {
+            min: 0,
+            max: InsightConfig.system.maxVisibleStatesCap,
+            labelKey: "ui.dorios.insight.runtime.visible_block_states"
+        },
+        maxVisibleBlockTags: {
+            min: 0,
+            max: InsightConfig.system.maxVisibleTagsCap,
+            labelKey: "ui.dorios.insight.runtime.visible_block_tags"
+        },
+        maxVisibleEntityTags: {
+            min: 0,
+            max: InsightConfig.system.maxVisibleTagsCap,
+            labelKey: "ui.dorios.insight.runtime.visible_entity_tags"
+        },
+        maxVisibleEntityFamilies: {
+            min: 0,
+            max: InsightConfig.system.maxVisibleFamiliesCap,
+            labelKey: "ui.dorios.insight.runtime.visible_entity_families"
+        },
+        stateColumns: {
+            min: 1,
+            max: InsightConfig.system.maxLayoutColumns,
+            labelKey: "ui.dorios.insight.system_menu.state_columns"
+        },
+        tagColumns: {
+            min: 1,
+            max: InsightConfig.system.maxLayoutColumns,
+            labelKey: "ui.dorios.insight.system_menu.tag_columns"
+        },
+        familyColumns: {
+            min: 1,
+            max: InsightConfig.system.maxLayoutColumns,
+            labelKey: "ui.dorios.insight.system_menu.family_columns"
+        }
+    };
+
+    const runtimeFields = runtimeFieldKeys
+        .map((key) => ({ key, ...(runtimeFieldMap[key] || {}) }))
+        .filter((field) => field.labelKey);
+
+    const form = new ModalFormData()
+        .title(tr(componentGroup.titleKey));
+
+    for (const component of componentGroup.components) {
+        const currentPolicy = settings.components[component.key];
+        const componentTitle = getComponentOptionTitle(component);
+        const componentDescription = buildComponentDescriptionRawtext(component);
+        const currentPolicyLabel = getPolicyLabel(currentPolicy);
+        const dropdownLabel = buildComponentDropdownLabel(
+            componentTitle,
+            componentDescription,
+            currentPolicyLabel
+        );
+
+        form.dropdown(
+            dropdownLabel,
+            visibilityLabels,
+            {
+                defaultValueIndex: getVisibilityPolicyIndex(currentPolicy)
+            }
+        );
+    }
+
+    for (const field of runtimeFields) {
+        const currentValue = Number(settings.runtime?.[field.key] ?? field.min);
+        form.slider(
+            tr(field.labelKey, [currentValue]),
+            field.min,
+            field.max,
+            { defaultValue: currentValue }
+        );
+    }
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    const nextPolicies = {};
+    const ignoredDeprecated = [];
+
+    for (let index = 0; index < componentGroup.components.length; index++) {
+        const component = componentGroup.components[index];
+        if (isInsightComponentDeprecated(component.key)) {
+            ignoredDeprecated.push(component.label);
+            continue;
+        }
+
+        const selectedIndex = Number(result.formValues[index] ?? 0);
+        const selectedOption = VisibilityPolicyLabels[selectedIndex] || VisibilityPolicyLabels[0];
+        nextPolicies[component.key] = normalizeVisibilityPolicy(selectedOption.key);
+    }
+
+    const nextRuntime = {};
+    for (let fieldIndex = 0; fieldIndex < runtimeFields.length; fieldIndex++) {
+        const field = runtimeFields[fieldIndex];
+        const formIndex = componentGroup.components.length + fieldIndex;
+        nextRuntime[field.key] = resolveCustomNumberInput(
+            result.formValues[formIndex],
+            settings.runtime?.[field.key] ?? field.min,
+            field.min,
+            field.max
+        );
+    }
+
+    updatePlayerOverrides(player, {
+        components: nextPolicies,
+        runtime: nextRuntime
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.components_updated"));
+
+    if (ignoredDeprecated.length) {
+        sendPlayerMessage(player, tr("ui.dorios.insight.feedback.deprecated_ignored", [ignoredDeprecated.join(", ")]));
+    }
+}
+
 async function showStyleMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
     const styleOptions = DisplayStyleLabels.map((option) => option.label);
     const effectModeOptions = EffectDisplayModeLabels.map((option) => option.label);
-    const fieldOverrideOptions = FieldDisplayStyleOverrideLabels.map((option) => option.label);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.style_menu.title"))
@@ -375,38 +675,38 @@ async function showStyleMenu(player) {
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.health_style", [getFieldDisplayStyleOverrideLabel(runtime.healthDisplayStyle)]),
-            fieldOverrideOptions,
+            tr("ui.dorios.insight.style_menu.health_style", [getDisplayStyleLabel(runtime.healthDisplayStyle)]),
+            styleOptions,
             {
-                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.healthDisplayStyle)
+                defaultValueIndex: getDisplayStyleIndex(runtime.healthDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.hunger_style", [getFieldDisplayStyleOverrideLabel(runtime.hungerDisplayStyle)]),
-            fieldOverrideOptions,
+            tr("ui.dorios.insight.style_menu.hunger_style", [getDisplayStyleLabel(runtime.hungerDisplayStyle)]),
+            styleOptions,
             {
-                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.hungerDisplayStyle)
+                defaultValueIndex: getDisplayStyleIndex(runtime.hungerDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.armor_style", [getFieldDisplayStyleOverrideLabel(runtime.armorDisplayStyle)]),
-            fieldOverrideOptions,
+            tr("ui.dorios.insight.style_menu.armor_style", [getDisplayStyleLabel(runtime.armorDisplayStyle)]),
+            styleOptions,
             {
-                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.armorDisplayStyle)
+                defaultValueIndex: getDisplayStyleIndex(runtime.armorDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.absorption_style", [getFieldDisplayStyleOverrideLabel(runtime.absorptionDisplayStyle)]),
-            fieldOverrideOptions,
+            tr("ui.dorios.insight.style_menu.absorption_style", [getDisplayStyleLabel(runtime.absorptionDisplayStyle)]),
+            styleOptions,
             {
-                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.absorptionDisplayStyle)
+                defaultValueIndex: getDisplayStyleIndex(runtime.absorptionDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.air_style", [getFieldDisplayStyleOverrideLabel(runtime.airDisplayStyle)]),
-            fieldOverrideOptions,
+            tr("ui.dorios.insight.style_menu.air_style", [getDisplayStyleLabel(runtime.airDisplayStyle)]),
+            styleOptions,
             {
-                defaultValueIndex: getFieldDisplayStyleOverrideIndex(runtime.airDisplayStyle)
+                defaultValueIndex: getDisplayStyleIndex(runtime.airDisplayStyle)
             }
         );
 
@@ -421,15 +721,93 @@ async function showStyleMenu(player) {
         runtime: {
             displayStyle: DisplayStyleLabels[Number(formValues[0] ?? 0)]?.key ?? runtime.displayStyle,
             effectDisplayMode: EffectDisplayModeLabels[Number(formValues[1] ?? 0)]?.key ?? runtime.effectDisplayMode,
-            healthDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[2] ?? 0)]?.key ?? runtime.healthDisplayStyle,
-            hungerDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[3] ?? 0)]?.key ?? runtime.hungerDisplayStyle,
-            armorDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[4] ?? 0)]?.key ?? runtime.armorDisplayStyle,
-            absorptionDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[5] ?? 0)]?.key ?? runtime.absorptionDisplayStyle,
-            airDisplayStyle: FieldDisplayStyleOverrideLabels[Number(formValues[6] ?? 0)]?.key ?? runtime.airDisplayStyle
+            healthDisplayStyle: DisplayStyleLabels[Number(formValues[2] ?? 0)]?.key ?? runtime.healthDisplayStyle,
+            hungerDisplayStyle: DisplayStyleLabels[Number(formValues[3] ?? 0)]?.key ?? runtime.hungerDisplayStyle,
+            armorDisplayStyle: DisplayStyleLabels[Number(formValues[4] ?? 0)]?.key ?? runtime.armorDisplayStyle,
+            absorptionDisplayStyle: DisplayStyleLabels[Number(formValues[5] ?? 0)]?.key ?? runtime.absorptionDisplayStyle,
+            airDisplayStyle: DisplayStyleLabels[Number(formValues[6] ?? 0)]?.key ?? runtime.airDisplayStyle
         }
     });
 
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.style_updated"));
+}
+
+async function showHudBarsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const hudDisplayOptions = HudDisplayModeLabels.map((option) => option.label);
+    const hudIndicatorOptions = HudIndicatorModeLabels.map((option) => option.label);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.hud_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.health_visibility", [getHudDisplayModeLabel(runtime.hudHealthVisibilityMode)]),
+            hudDisplayOptions,
+            {
+                defaultValueIndex: getHudDisplayModeIndex(runtime.hudHealthVisibilityMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.health_indicator", [getHudIndicatorModeLabel(runtime.hudHealthIndicatorMode)]),
+            hudIndicatorOptions,
+            {
+                defaultValueIndex: getHudIndicatorModeIndex(runtime.hudHealthIndicatorMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.hunger_visibility", [getHudDisplayModeLabel(runtime.hudHungerVisibilityMode)]),
+            hudDisplayOptions,
+            {
+                defaultValueIndex: getHudDisplayModeIndex(runtime.hudHungerVisibilityMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.hunger_indicator", [getHudIndicatorModeLabel(runtime.hudHungerIndicatorMode)]),
+            hudIndicatorOptions,
+            {
+                defaultValueIndex: getHudIndicatorModeIndex(runtime.hudHungerIndicatorMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.saturation_visibility", [getHudDisplayModeLabel(runtime.hudSaturationVisibilityMode)]),
+            hudDisplayOptions,
+            {
+                defaultValueIndex: getHudDisplayModeIndex(runtime.hudSaturationVisibilityMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_menu.toughness_visibility", [getHudDisplayModeLabel(runtime.hudToughnessVisibilityMode)]),
+            hudDisplayOptions,
+            {
+                defaultValueIndex: getHudDisplayModeIndex(runtime.hudToughnessVisibilityMode)
+            }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    const formValues = result.formValues;
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            hudHealthVisibilityMode: HudDisplayModeLabels[Number(formValues[0] ?? 0)]?.key
+                ?? runtime.hudHealthVisibilityMode,
+            hudHealthIndicatorMode: HudIndicatorModeLabels[Number(formValues[1] ?? 0)]?.key
+                ?? runtime.hudHealthIndicatorMode,
+            hudHungerVisibilityMode: HudDisplayModeLabels[Number(formValues[2] ?? 0)]?.key
+                ?? runtime.hudHungerVisibilityMode,
+            hudHungerIndicatorMode: HudIndicatorModeLabels[Number(formValues[3] ?? 0)]?.key
+                ?? runtime.hudHungerIndicatorMode,
+            hudSaturationVisibilityMode: HudDisplayModeLabels[Number(formValues[4] ?? 0)]?.key
+                ?? runtime.hudSaturationVisibilityMode,
+            hudToughnessVisibilityMode: HudDisplayModeLabels[Number(formValues[5] ?? 0)]?.key
+                ?? runtime.hudToughnessVisibilityMode
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_updated"));
 }
 
 async function showConditionsMenu(player) {
@@ -485,21 +863,13 @@ async function showSystemSettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const blockNameResolveModeOptions = EntityNameResolveModeLabels.map((option) => option.label);
     const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
     const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
     const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
-    const customValueHint = tr("ui.dorios.insight.runtime.custom_hint");
+    const modeSummaryOptions = ModePresetSummaryModeLabels.map((option) => option.label);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.system_menu.title"))
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.block_name_method", [getEntityNameResolveModeLabel(runtime.blockNameResolveMode)]),
-            blockNameResolveModeOptions,
-            {
-                defaultValueIndex: getEntityNameResolveModeIndex(runtime.blockNameResolveMode)
-            }
-        )
         .dropdown(
             tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
             tierIndicatorOptions,
@@ -521,27 +891,31 @@ async function showSystemSettingsMenu(player) {
                 defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
             }
         )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.mode_summary", [getModePresetSummaryModeLabel(runtime.modePresetSummaryMode)]),
+            modeSummaryOptions,
+            {
+                defaultValueIndex: getModePresetSummaryModeIndex(runtime.modePresetSummaryMode)
+            }
+        )
         .slider(
-            tr("ui.dorios.insight.system_menu.state_columns", [`${runtime.stateColumns}`]),
+            tr("ui.dorios.insight.system_menu.state_columns", [runtime.stateColumns]),
             1,
             InsightConfig.system.maxLayoutColumns,
             { defaultValue: runtime.stateColumns }
         )
-        .textField("", customValueHint)
         .slider(
-            tr("ui.dorios.insight.system_menu.tag_columns", [`${runtime.tagColumns}`]),
+            tr("ui.dorios.insight.system_menu.tag_columns", [runtime.tagColumns]),
             1,
             InsightConfig.system.maxLayoutColumns,
             { defaultValue: runtime.tagColumns }
         )
-        .textField("", customValueHint)
         .slider(
-            tr("ui.dorios.insight.system_menu.family_columns", [`${runtime.familyColumns}`]),
+            tr("ui.dorios.insight.system_menu.family_columns", [runtime.familyColumns]),
             1,
             InsightConfig.system.maxLayoutColumns,
             { defaultValue: runtime.familyColumns }
-        )
-        .textField("", customValueHint);
+        );
 
     const result = await form.show(player);
     if (result.canceled || !result.formValues) {
@@ -550,29 +924,29 @@ async function showSystemSettingsMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
-            blockNameResolveMode: EntityNameResolveModeLabels[Number(result.formValues[0] ?? 0)]?.key
-                ?? runtime.blockNameResolveMode,
-            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[1] ?? 0)]?.key
+            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[0] ?? 0)]?.key
                 ?? runtime.toolTierIndicatorMode,
-            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[2] ?? 0)]?.key
+            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[1] ?? 0)]?.key
                 ?? runtime.toolIndicatorPlacement,
-            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[3] ?? 0)]?.key
+            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[2] ?? 0)]?.key
                 ?? runtime.toolIndicatorColor,
+            modePresetSummaryMode: ModePresetSummaryModeLabels[Number(result.formValues[3] ?? 0)]?.key
+                ?? runtime.modePresetSummaryMode,
             stateColumns: resolveCustomNumberInput(
-                result.formValues[5],
-                Number(result.formValues[4] ?? runtime.stateColumns),
+                result.formValues[4],
+                runtime.stateColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             tagColumns: resolveCustomNumberInput(
-                result.formValues[7],
-                Number(result.formValues[6] ?? runtime.tagColumns),
+                result.formValues[5],
+                runtime.tagColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             familyColumns: resolveCustomNumberInput(
-                result.formValues[9],
-                Number(result.formValues[8] ?? runtime.familyColumns),
+                result.formValues[6],
+                runtime.familyColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             )
@@ -786,17 +1160,62 @@ async function showNamespaceMenu(player) {
 }
 
 function getComponentGroups() {
-    const generalComponents = InsightComponentDefinitions.filter((component) => !customComponentKeySet.has(component.key));
-    const customComponents = InsightComponentDefinitions.filter((component) => customComponentKeySet.has(component.key));
+    const byKey = (keys) => InsightComponentDefinitions.filter((component) => keys.includes(component.key));
 
     return {
-        general: {
-            titleKey: "ui.dorios.insight.components.general.title",
-            components: generalComponents
+        entity: {
+            titleKey: "ui.dorios.insight.components.entity.title",
+            components: byKey([
+                "health",
+                "absorption",
+                "armor",
+                "hunger",
+                "hungerEffect",
+                "airBubbles",
+                "effects",
+                "effectHearts",
+                "animalHearts",
+                "tameable",
+                "tameFoods",
+                "technical",
+                "coordinates",
+                "typeId",
+                "velocity"
+            ])
+        },
+        block: {
+            titleKey: "ui.dorios.insight.components.block.title",
+            components: byKey([
+                "namespace",
+                "technical",
+                "coordinates",
+                "typeId",
+                "namespaceResolution"
+            ])
         },
         custom: {
             titleKey: "ui.dorios.insight.components.custom.title",
-            components: customComponents
+            components: InsightComponentDefinitions.filter((component) => customComponentKeySet.has(component.key))
+        },
+        blockStates: {
+            titleKey: "ui.dorios.insight.components.block_states.title",
+            components: byKey(["blockStates"]),
+            runtimeFields: ["maxVisibleStates", "stateColumns"]
+        },
+        blockTags: {
+            titleKey: "ui.dorios.insight.components.block_tags.title",
+            components: byKey(["blockTags"]),
+            runtimeFields: ["maxVisibleBlockTags", "tagColumns"]
+        },
+        entityTags: {
+            titleKey: "ui.dorios.insight.components.entity_tags.title",
+            components: byKey(["entityTags"]),
+            runtimeFields: ["maxVisibleEntityTags", "tagColumns"]
+        },
+        entityFamilies: {
+            titleKey: "ui.dorios.insight.components.entity_families.title",
+            components: byKey(["entityFamilies"]),
+            runtimeFields: ["maxVisibleEntityFamilies", "familyColumns"]
         }
     };
 }
@@ -824,17 +1243,35 @@ function toggleGlobalActivation(player, settings) {
     );
 }
 
+function toggleAdminOnlyGlobalProfile(player, settings) {
+    if (!isAdminPlayer(player)) {
+        sendPlayerMessage(player, tr("ui.dorios.insight.feedback.admin_only_denied"));
+        return;
+    }
+
+    const nextValue = setAdminOnlyGlobalProfileEnabled(!settings.adminOnlyGlobalProfile, player);
+    sendPlayerMessage(
+        player,
+        nextValue
+            ? tr("ui.dorios.insight.feedback.admin_only_enabled", [player.name])
+            : tr("ui.dorios.insight.feedback.admin_only_disabled")
+    );
+}
+
 // ---- Sub-menus for grouped sections ----
 
 async function showActivationMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const localStateLabel = getStateLabel(!settings.disabled, "Active", "Disabled");
     const globalStateLabel = getStateLabel(settings.globalEnabled, "Enabled", "Disabled");
+    const adminOnlyStateLabel = getStateLabel(settings.adminOnlyGlobalProfile, "Enabled", "Disabled");
+    const adminSourceLabel = settings.adminGlobalProfileSourceName || "-";
 
     const form = new ActionFormData()
         .title(tr("ui.dorios.insight.activation_menu.title"))
         .button(tr("ui.dorios.insight.menu.local_toggle_button", [localStateLabel]))
-        .button(tr("ui.dorios.insight.menu.global_toggle_button", [globalStateLabel]));
+        .button(tr("ui.dorios.insight.menu.global_toggle_button", [globalStateLabel]))
+        .button(tr("ui.dorios.insight.menu.admin_only_button", [adminOnlyStateLabel, adminSourceLabel]));
 
     const result = await form.show(player);
     if (result.canceled) {
@@ -848,6 +1285,9 @@ async function showActivationMenu(player) {
         case 1:
             toggleGlobalActivation(player, settings);
             break;
+        case 2:
+            toggleAdminOnlyGlobalProfile(player, settings);
+            break;
     }
 }
 
@@ -855,10 +1295,16 @@ async function showDisplayMenu(player) {
     const settings = getPlayerDisplaySettings(player);
 
     const form = new ActionFormData()
-        .title(tr("ui.dorios.insight.display_menu.title"))
+        .title(tr("ui.dorios.insight.display_root.title"))
+        .body(tr("ui.dorios.insight.display_root.body", [
+            getDisplayStyleLabel(settings.displayStyle),
+            getToolTierIndicatorModeLabel(settings.toolTierIndicatorMode)
+        ]))
         .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
-        .button(tr("ui.dorios.insight.display_menu.entity_display_button"))
-        .button(tr("ui.dorios.insight.display_menu.block_display_button"));
+        .button(tr("ui.dorios.insight.display_root.hud_button"))
+        .button(tr("ui.dorios.insight.display_root.conditions_button"))
+        .button(tr("ui.dorios.insight.display_root.system_button"))
+        .button(tr("ui.dorios.insight.display_root.runtime_button"));
 
     const result = await form.show(player);
     if (result.canceled) {
@@ -870,21 +1316,40 @@ async function showDisplayMenu(player) {
             await showStyleMenu(player);
             break;
         case 1:
-            await showConditionsMenu(player);
+            await showHudBarsMenu(player);
             break;
         case 2:
+            await showConditionsMenu(player);
+            break;
+        case 3:
             await showSystemSettingsMenu(player);
+            break;
+        case 4:
+            await showRuntimeMenu(player);
             break;
     }
 }
 
 async function showComponentsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
     const componentGroups = getComponentGroups();
 
     const form = new ActionFormData()
-        .title(tr("ui.dorios.insight.components_menu.title"))
-        .button(tr("ui.dorios.insight.menu.components_general_button"))
-        .button(tr("ui.dorios.insight.menu.components_custom_button"));
+        .title(tr("ui.dorios.insight.target_menu.title"))
+        .body(tr("ui.dorios.insight.target_menu.body", [
+            countEnabledComponents(settings.components),
+            settings.maxVisibleStates,
+            settings.maxVisibleBlockTags,
+            settings.maxVisibleEntityTags,
+            settings.maxVisibleEntityFamilies
+        ]))
+        .button(tr("ui.dorios.insight.target_menu.entity_button"))
+        .button(tr("ui.dorios.insight.target_menu.block_button"))
+        .button(tr("ui.dorios.insight.target_menu.custom_button"))
+        .button(tr("ui.dorios.insight.target_menu.block_states_button"))
+        .button(tr("ui.dorios.insight.target_menu.block_tags_button"))
+        .button(tr("ui.dorios.insight.target_menu.entity_tags_button"))
+        .button(tr("ui.dorios.insight.target_menu.entity_families_button"));
 
     const result = await form.show(player);
     if (result.canceled) {
@@ -893,10 +1358,25 @@ async function showComponentsMenu(player) {
 
     switch (result.selection) {
         case 0:
-            await showComponentGroupMenu(player, componentGroups.general);
+            await showComponentGroupMenu(player, componentGroups.entity);
             break;
         case 1:
+            await showComponentGroupMenu(player, componentGroups.block);
+            break;
+        case 2:
             await showComponentGroupMenu(player, componentGroups.custom);
+            break;
+        case 3:
+            await showComponentGroupWithRuntimeMenu(player, componentGroups.blockStates);
+            break;
+        case 4:
+            await showComponentGroupWithRuntimeMenu(player, componentGroups.blockTags);
+            break;
+        case 5:
+            await showComponentGroupWithRuntimeMenu(player, componentGroups.entityTags);
+            break;
+        case 6:
+            await showComponentGroupWithRuntimeMenu(player, componentGroups.entityFamilies);
             break;
     }
 }
@@ -920,10 +1400,9 @@ export async function openInsightMenu(player) {
         ]))
         .button(tr("ui.dorios.insight.menu.mode_button", [modeLabel]))
         .button(tr("ui.dorios.insight.menu.activation_button"))
-        .button(tr("ui.dorios.insight.menu.display_button"))
-        .button(tr("ui.dorios.insight.menu.components_button"))
+        .button(tr("ui.dorios.insight.menu.target_insight_button"))
+        .button(tr("ui.dorios.insight.menu.display_root_button"))
         .button(tr("ui.dorios.insight.menu.namespace_button"))
-        .button(tr("ui.dorios.insight.menu.runtime_button"))
         .button(tr("ui.dorios.insight.menu.reset_button"))
         .button(tr("ui.dorios.insight.menu.close_button"));
 
@@ -940,18 +1419,15 @@ export async function openInsightMenu(player) {
             await showActivationMenu(player);
             break;
         case 2:
-            await showDisplayMenu(player);
+            await showComponentsMenu(player);
             break;
         case 3:
-            await showComponentsMenu(player);
+            await showDisplayMenu(player);
             break;
         case 4:
             await showNamespaceMenu(player);
             break;
         case 5:
-            await showRuntimeMenu(player);
-            break;
-        case 6:
             resetPlayerOverrides(player);
             sendPlayerMessage(player, tr("ui.dorios.insight.feedback.reset_done"));
             break;

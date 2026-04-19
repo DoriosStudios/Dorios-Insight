@@ -5,6 +5,7 @@ ui.dorios.insight.state.enabled=Enabled
 ui.dorios.insight.policy.show=Show
 ui.dorios.insight.policy.sneak=Show When Sneaking
 ui.dorios.insight.policy.creative=Creative Only
+ui.dorios.insight.policy.sneak_creative=Sneaking + Creative
 ui.dorios.insight.policy.hide=Hide
 
 ui.dorios.insight.style.icon=Icon
@@ -20,23 +21,66 @@ ui.dorios.insight.mode.debug=Debug
 ui.dorios.insight.menu.title=Dorios' Insight
 ui.dorios.insight.menu.body=Mode: %1\nRange: %2\nInterval: %3 ticks\nTarget Hold Refresh: %4 ticks\nGlobal: %5\nLocal: %6
 ui.dorios.insight.menu.mode_button=Mode\n§3Current: %1
-ui.dorios.insight.menu.local_toggle_button=Local Activation\n§3Current: %1
-ui.dorios.insight.menu.global_toggle_button=Global Activation\n§3Current: %1
-ui.dorios.insight.menu.components_general_button=Components (General)
-ui.dorios.insight.menu.components_custom_button=Components (Custom Fields)
+ui.dorios.insight.menu.activation_button=Activation
+ui.dorios.insight.menu.elements_button=Elements
+ui.dorios.insight.menu.display_button=Display
+ui.dorios.insight.menu.channels_button=HUD Channels
 ui.dorios.insight.menu.namespace_button=Namespaces
-ui.dorios.insight.menu.style_button=Style\n§3Current: %1
-ui.dorios.insight.menu.runtime_button=Range & Update
+ui.dorios.insight.menu.parameters_button=Parameters
 ui.dorios.insight.menu.reset_button=Reset My Overrides
 ui.dorios.insight.menu.close_button=Close
+ui.dorios.insight.menu.local_toggle_button=Local Activation\n§3Current: %1
+ui.dorios.insight.menu.global_toggle_button=Global Activation\n§3Current: %1
+ui.dorios.insight.menu.style_button=Style\n§3Current: %1
+ui.dorios.insight.menu.target_insight_button=Target Insight\n§7Entities, blocks, tags and families
+ui.dorios.insight.menu.display_root_button=Display & Layout\n§7Style, names, tools and runtime
+
+## Menu - HUD Channels
+ui.dorios.insight.channels_menu.title=Insight - HUD Channels
+ui.dorios.insight.channels_menu.hide_vanilla=Hide Vanilla HUD\n§7Hides vanilla health, hunger and armor bars.\n§3Current: %1
+ui.dorios.insight.channels_menu.hud_bars=§8------------------------------§r\nHUD Bars\n§7Health, hunger, armor and air overlay.\n§3Current: %1
+ui.dorios.insight.channels_menu.target_indicator=§8------------------------------§r\nTarget Indicator\n§7Entity/block info on the HUD.\n§3Current: %1
+ui.dorios.insight.channels_menu.biome_indicator=§8------------------------------§r\nBiome Indicator\n§7Dimension and coordinate display.\n§3Current: %1
 
 ui.dorios.insight.mode_menu.title=Insight - Mode
 ui.dorios.insight.mode_menu.body=Select a mode preset.\n§3Current: %1
-ui.dorios.insight.mode_menu.option=%1\nRange: %2\nInterval: %3 ticks\nStates: %4\nTags: %5
+ui.dorios.insight.mode_menu.option=%1\nRange: %2 | Interval: %3t\nEnabled Items: %4\nBlock States/Tags: %5/%6
 
-ui.dorios.insight.components.general.title=Insight - Components (General)
-ui.dorios.insight.components.custom.title=Insight - Components (Custom Fields)
-ui.dorios.insight.components.dropdown=%1\n§7%2\n§3Current: %3
+ui.dorios.insight.target_menu.title=Insight - Target Insight
+ui.dorios.insight.target_menu.body=Enabled items: %1\nStates: %2 | Block tags: %3\nEntity tags: %4 | Families: %5
+ui.dorios.insight.target_menu.entity_button=Entity Components
+ui.dorios.insight.target_menu.block_button=Block Components
+ui.dorios.insight.target_menu.custom_button=Custom Components
+ui.dorios.insight.target_menu.block_states_button=Block States
+ui.dorios.insight.target_menu.block_tags_button=Block Tags
+ui.dorios.insight.target_menu.entity_tags_button=Entity Tags
+ui.dorios.insight.target_menu.entity_families_button=Entity Families
+
+ui.dorios.insight.components.entity.title=Insight - Entity Components
+ui.dorios.insight.components.block.title=Insight - Block Components
+ui.dorios.insight.components.custom.title=Insight - Custom Components
+ui.dorios.insight.components.block_states.title=Insight - Block States
+ui.dorios.insight.components.block_tags.title=Insight - Block Tags
+ui.dorios.insight.components.entity_tags.title=Insight - Entity Tags
+ui.dorios.insight.components.entity_families.title=Insight - Entity Families
+
+ui.dorios.insight.display_root.title=Insight - Display & Layout
+ui.dorios.insight.display_root.body=Current style: %1\nTool mode: %2
+ui.dorios.insight.display_root.conditions_button=Entity Names
+ui.dorios.insight.display_root.system_button=Blocks & Tools
+ui.dorios.insight.display_root.runtime_button=Advanced Runtime
+
+## Menu - Elements
+ui.dorios.insight.elements_menu.title=Insight - Elements
+ui.dorios.insight.menu.elements_components_button=Components\n§7Health, hunger, armor, effects...
+ui.dorios.insight.menu.elements_tags_button=Tags\n§7Block tags, entity tags, families
+ui.dorios.insight.menu.elements_states_button=States & Info\n§7Block states, coordinates, type ID...
+ui.dorios.insight.menu.elements_custom_button=Custom Fields\n§7Addon-registered custom data
+ui.dorios.insight.elements.components.title=Insight - Components
+ui.dorios.insight.elements.tags.title=Insight - Tags
+ui.dorios.insight.elements.states.title=Insight - States & Info
+ui.dorios.insight.elements.custom.title=Insight - Custom Fields
+ui.dorios.insight.components.dropdown=%1\n§j%2\n§3Current: %3
 ui.dorios.insight.components.current=§3Current: %1
 ui.dorios.insight.namespace_menu.title=Insight - Namespace Labels
 ui.dorios.insight.namespace_menu.namespace_label=Namespace
@@ -56,7 +100,7 @@ ui.dorios.insight.style_menu.armor_style=Armor Display Style\n§3Current: %1
 ui.dorios.insight.style_menu.absorption_style=Absorption Display Style\n§3Current: %1
 ui.dorios.insight.style_menu.air_style=Air Display Style\n§3Current: %1
 
-ui.dorios.insight.runtime_menu.title=Insight - Range & Update
+ui.dorios.insight.runtime_menu.title=Insight - Parameters
 ui.dorios.insight.runtime.range=Range\n§3Current: %1
 ui.dorios.insight.runtime.update_interval=§8------------------------------§r\nUpdate Interval (ticks)\n§3Current: %1
 ui.dorios.insight.runtime.target_hold_ticks=§8------------------------------§r\nTarget Hold Refresh (ticks)\n§3Current: %1
@@ -69,17 +113,21 @@ ui.dorios.insight.runtime.visible_effects=§8------------------------------§r\n
 ui.dorios.insight.runtime.health_threshold=§8------------------------------§r\nNumeric Health Threshold\n§3Current: %1
 ui.dorios.insight.runtime.include_invisible=§8------------------------------§r\nInclude Invisible Entities\n§3Current: %1
 ui.dorios.insight.runtime.include_liquids=§8------------------------------§r\nInclude Liquid Blocks\n§3Current: %1
-ui.dorios.insight.runtime.custom_hint=§7Optional custom value
+ui.dorios.insight.runtime.custom_hint=§jOptional custom value
 
 ui.dorios.insight.feedback.mode_set=§aDorios' Insight mode set to %1.
-ui.dorios.insight.feedback.components_updated=§aDorios' Insight component visibility updated.
-ui.dorios.insight.feedback.style_updated=§aDorios' Insight style settings updated.
-ui.dorios.insight.feedback.runtime_updated=§aDorios' Insight runtime settings updated.
+ui.dorios.insight.feedback.components_updated=§aElement visibility updated.
+ui.dorios.insight.feedback.channels_updated=§aHUD channel settings updated.
+ui.dorios.insight.feedback.style_updated=§aDisplay style settings updated.
+ui.dorios.insight.feedback.runtime_updated=§aParameter settings updated.
+ui.dorios.insight.feedback.conditions_updated=§aEntity name settings updated.
+ui.dorios.insight.feedback.system_updated=§aBlock & tool settings updated.
 ui.dorios.insight.feedback.local_enabled=§aDorios' Insight activated for your player.
 ui.dorios.insight.feedback.local_disabled=§eDorios' Insight deactivated for your player.
 ui.dorios.insight.feedback.global_enabled=§aDorios' Insight enabled globally.
 ui.dorios.insight.feedback.global_disabled=§eDorios' Insight disabled globally.
 ui.dorios.insight.feedback.reset_done=§aDorios' Insight overrides reset for your player.
+ui.dorios.insight.feedback.deprecated_ignored=§8Deprecated items ignored: %1§r
 
 ui.dorios.insight.component.namespace.label= Namespace Label
 ui.dorios.insight.component.namespace.description=Shows the namespace suffix next to the inspected target.
@@ -190,36 +238,28 @@ ui.dorios.insight.display.technical_effects=§7Effects: %1§r
 ui.dorios.insight.display.scoreboard_energy=§eEnergy: %1§f/§e%2§r
 ui.dorios.insight.display.scoreboard_capacity=§dCapacity: %1§f/§d%2§r
 
-## Menu - Conditions
-ui.dorios.insight.conditions_menu.title=Insight - Entity Display
+## Menu - Display > Entity Names & Labels
+ui.dorios.insight.conditions_menu.title=Insight - Entity Names & Labels
 ui.dorios.insight.conditions_menu.name_order=Entity Name Order\n§3Current: %1
 ui.dorios.insight.conditions_menu.name_method=Entity Name Method\n§3Current: %1
 ui.dorios.insight.conditions_menu.villager_profession=Villager Profession\n§3Current: %1
 
-## Menu - System Settings
-ui.dorios.insight.system_menu.title=Insight - Block Display
+## Menu - Display > Blocks & Tools
+ui.dorios.insight.system_menu.title=Insight - Blocks & Tools
+ui.dorios.insight.system_menu.block_name_method=Block Name Method\n§3Current: %1
 ui.dorios.insight.system_menu.tier_indicator=Tool Tier Indicator\n§3Current: %1
 ui.dorios.insight.system_menu.tool_position=Tool/Tier Position\n§3Current: %1
 ui.dorios.insight.system_menu.tool_color=Tool/Tier Color\n§3Current: %1
+ui.dorios.insight.system_menu.mode_summary=Mode Switch Preset Summary\n§3Current: %1
 ui.dorios.insight.system_menu.state_columns=State Columns\n§3Current: %1
 ui.dorios.insight.system_menu.tag_columns=Tag Columns\n§3Current: %1
 ui.dorios.insight.system_menu.family_columns=Family Columns\n§3Current: %1
-ui.dorios.insight.system_menu.block_name_method=Block Name Method\n§3Current: %1
 
 ## Menu - Sub-menus
 ui.dorios.insight.activation_menu.title=Insight - Activation
-ui.dorios.insight.display_menu.title=Insight - Display Settings
-ui.dorios.insight.display_menu.entity_display_button=Entity Display
-ui.dorios.insight.display_menu.block_display_button=Block Display
-ui.dorios.insight.components_menu.title=Insight - Components
-ui.dorios.insight.menu.activation_button=Activation
-ui.dorios.insight.menu.display_button=Display Settings
-ui.dorios.insight.menu.components_button=Components
-
-## Feedback
-ui.dorios.insight.feedback.conditions_updated=§aEntity display conditions updated.
-ui.dorios.insight.feedback.system_updated=§aBlock display settings updated.
-ui.dorios.insight.feedback.deprecated_ignored=§8Deprecated items ignored: %1§r
+ui.dorios.insight.display_menu.title=Insight - Display
+ui.dorios.insight.display_menu.entity_names_button=Entity Names & Labels
+ui.dorios.insight.display_menu.blocks_tools_button=Blocks & Tools
 
 ui.dorios.insight.display.effects_label=§7Effects:§r
 ui.dorios.insight.display.foods_label=§7Foods:§r
@@ -243,3 +283,19 @@ ui.dorios.insight.tool.sword=Sword
 
 ui.dorios.insight.display.unknown_block=Block
 ui.dorios.insight.display.unknown_item=Item
+
+## Insight - HUD Bars
+ui.dorios.insight.display_root.hud_button=HUD Bars
+ui.dorios.insight.hud_menu.title=Insight - HUD Bars
+ui.dorios.insight.hud_menu.health_visibility=Health Display\n§3Current: %1
+ui.dorios.insight.hud_menu.health_indicator=Health Indicator\n§3Current: %1
+ui.dorios.insight.hud_menu.hunger_visibility=Hunger Display\n§3Current: %1
+ui.dorios.insight.hud_menu.hunger_indicator=Hunger Indicator\n§3Current: %1
+ui.dorios.insight.hud_menu.saturation_visibility=Saturation Display\n§3Current: %1
+ui.dorios.insight.hud_menu.toughness_visibility=Toughness Display\n§3Current: %1
+ui.dorios.insight.feedback.hud_updated=§aHUD display settings updated.
+
+ui.dorios.insight.menu.admin_only_button=Admin Only (Apply To All)\n§3Current: %1\n§jSource: %2
+ui.dorios.insight.feedback.admin_only_denied=§cOnly admins can change this option.
+ui.dorios.insight.feedback.admin_only_enabled=§aAdmin Only enabled. Global profile source: %1.
+ui.dorios.insight.feedback.admin_only_disabled=§eAdmin Only disabled. Players use their own profiles again.

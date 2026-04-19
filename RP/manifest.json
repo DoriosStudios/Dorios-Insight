@@ -18,7 +18,7 @@
 		"version": [
 			1,
 			1,
-			1
+			2
 		]
 	},
 	"modules": [
@@ -38,25 +38,8 @@
 			"version": [
 				1,
 				1,
-				1
+				2
 			]
-		}
-	],
-	"subpacks": [
-		{
-			"folder_name": "dark",
-			"memory_tier": 0,
-			"name": "Color: §8Dark"
-		},
-		{
-			"folder_name": "copper",
-			"memory_tier": 1,
-			"name": "Color: §6Copper"
-		},
-		{
-			"folder_name": "default",
-			"memory_tier": 2,
-			"name": "Color: §9Default"
 		}
 	]
 }

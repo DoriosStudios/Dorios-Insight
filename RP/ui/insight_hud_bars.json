@@ -1,0 +1,1338 @@
+{
+	"namespace": "insight_hud",
+
+	"root_panel": {
+		"type": "panel",
+		"size": ["100%", "100%"],
+		"controls": [
+			{ "data_layer@insight_hud.data_layer": {} },
+			{
+				"centered_gui_elements@insight_hud.centered_gui_elements": {
+					"bindings": [
+						{
+							"binding_name": "#hud_visible_centered",
+							"binding_name_override": "#visible",
+							"binding_type": "global"
+						}
+					]
+				}
+			},
+			{
+				"centered_gui_elements_touch@insight_hud.centered_gui_elements_touch": {
+					"bindings": [
+						{
+							"binding_name": "#hud_visible_centered_touch",
+							"binding_name_override": "#visible",
+							"binding_type": "global"
+						}
+					]
+				}
+			},
+			{
+				"not_centered_gui_elements@insight_hud.not_centered_gui_elements": {
+					"bindings": [
+						{
+							"binding_name": "#hud_visible_not_centered",
+							"binding_name_override": "#visible",
+							"binding_type": "global"
+						}
+					]
+				}
+			}
+		]
+	},
+
+	"data_layer": {
+		"type": "panel",
+		"size": [0, 0],
+		"controls": [
+			{ "section_a@insight_data.hud_data_section_a": {} },
+			{ "section_b@insight_data.hud_data_section_b": {} },
+			{ "section_c@insight_data.hud_data_section_c": {} },
+			{ "section_d@insight_data.hud_data_section_d": {} },
+			{ "section_e@insight_data.hud_data_section_e": {} }
+		]
+	},
+
+	"centered_gui_elements": {
+		"type": "panel",
+		"anchor_from": "bottom_middle",
+		"anchor_to": "bottom_middle",
+		"size": [182, 60],
+		"controls": [
+			{
+				"extra_armor_bar_panel": {
+					"type": "stack_panel",
+					"orientation": "vertical",
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [0, -51],
+					"size": ["100%c", "100%c"],
+					"controls": [
+						{
+							"extra_armor_bar@insight_hud.extra_armor_bar": {
+								"layer": 10,
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor > 0)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"gap": { "type": "panel", "size": [1, 1] }
+						},
+						{
+							"extra_armor_full_factory@insight_hud.extra_armor_full_factory": {}
+						},
+						{
+							"health_gap_factory@insight_hud.health_gap_factory": {}
+						}
+					],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "(#extra_armor + #extra_armor_full)",
+							"target_property_name": "#total_extra"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"health_numeric_indicator@insight_hud.health_numeric_indicator": {
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [0, -62]
+				}
+			},
+			{
+				"toughness_bar@insight_hud.toughness_bar": {
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [-9, -42],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"hunger_numeric_indicator@insight_hud.hunger_numeric_indicator": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [1, -62]
+				}
+			},
+			{
+				"hunger_buffer_bar@insight_hud.hunger_buffer_bar": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [0, -32],
+					"layer": -10,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"saturation_bar@insight_hud.saturation_bar": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [0, -32],
+					"layer": 3,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			}
+			// {
+			// 	"exhaustion_bar@insight_hud.exhaustion_bar": {
+			// 		"anchor_from": "bottom_right",
+			// 		"anchor_to": "bottom_right",
+			// 		"offset": [0, -31],
+			// 		"layer": -12,
+			// 		"bindings": [
+			// 			{
+			// 				"binding_name": "#show_survival_ui"
+			// 			}
+			// 		]
+			// 	}
+			// }
+		]
+	},
+
+	"centered_gui_elements_touch": {
+		"type": "panel",
+		"anchor_from": "bottom_middle",
+		"anchor_to": "bottom_middle",
+		"size": [182, 60],
+		"controls": [
+			{
+				"extra_armor_bar_panel": {
+					"type": "stack_panel",
+					"orientation": "vertical",
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [-11, -41],
+					"size": ["100%c", "100%c"],
+					"controls": [
+						{
+							"extra_armor_bar@insight_hud.extra_armor_bar": {
+								"layer": 10,
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor > 0)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"gap": { "type": "panel", "size": [1, 1] }
+						},
+						{
+							"extra_armor_full_factory@insight_hud.extra_armor_full_factory": {}
+						},
+						{
+							"health_gap_factory@insight_hud.health_gap_factory": {}
+						}
+					],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "(#extra_armor + #extra_armor_full)",
+							"target_property_name": "#total_extra"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"health_numeric_indicator@insight_hud.health_numeric_indicator": {
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [-11, -52]
+				}
+			},
+			{
+				"toughness_bar@insight_hud.toughness_bar": {
+					"anchor_from": "bottom_left",
+					"anchor_to": "bottom_left",
+					"offset": [-20, -41],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"hunger_numeric_indicator@insight_hud.hunger_numeric_indicator": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [11, -52]
+				}
+			},
+			{
+				"hunger_buffer_bar@insight_hud.hunger_buffer_bar": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [10, -32],
+					"layer": -10,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"saturation_bar@insight_hud.saturation_bar": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [10, -32],
+					"layer": 3,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			}
+			// {
+			// 	"exhaustion_bar@insight_hud.exhaustion_bar": {
+			// 		"anchor_from": "bottom_right",
+			// 		"anchor_to": "bottom_right",
+			// 		"offset": [10, -31],
+			// 		"layer": -12,
+			// 		"bindings": [
+			// 			{
+			// 				"binding_name": "#show_survival_ui"
+			// 			}
+			// 		]
+			// 	}
+			// }
+		]
+	},
+
+	"not_centered_gui_elements": {
+		"type": "panel",
+		"controls": [
+			{
+				"extra_armor_bar_panel": {
+					"type": "stack_panel",
+					"orientation": "vertical",
+					"offset": [2, 12],
+					"anchor_from": "top_left",
+					"anchor_to": "top_left",
+					"size": ["100%c", "100%c"],
+					"controls": [
+						{
+							"health_gap_factory@insight_hud.health_gap_factory": {}
+						},
+						{
+							"extra_armor_full_factory@insight_hud.extra_armor_full_factory": {}
+						},
+						{
+							"extra_armor_bar@insight_hud.extra_armor_bar": {
+								"layer": 10,
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor > 0)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "(#extra_armor + #extra_armor_full)",
+							"target_property_name": "#total_extra"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"health_numeric_indicator@insight_hud.health_numeric_indicator": {
+					"offset": [2, 2],
+					"anchor_from": "top_left",
+					"anchor_to": "top_left"
+				}
+			},
+			{
+				"toughness_bar@insight_hud.toughness_bar": {
+					"offset": [-8, 22],
+					"anchor_from": "top_left",
+					"anchor_to": "top_left",
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"hunger_numeric_indicator@insight_hud.hunger_numeric_indicator": {
+					"offset": [-2, 2],
+					"anchor_from": "top_right",
+					"anchor_to": "top_right"
+				}
+			},
+			{
+				"hunger_buffer_bar@insight_hud.hunger_buffer_bar": {
+					"offset": [-3, 2],
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"layer": -10,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			},
+			{
+				"saturation_bar@insight_hud.saturation_bar": {
+					"offset": [-3, 2],
+					"anchor_from": "top_right",
+					"anchor_to": "top_right",
+					"layer": 3,
+					"bindings": [
+						{
+							"binding_name": "#show_survival_ui"
+						}
+					]
+				}
+			}
+			// {
+			// 	"exhaustion_bar@insight_hud.exhaustion_bar": {
+			// 		"offset": [-3, 2],
+			// 		"anchor_from": "top_right",
+			// 		"anchor_to": "top_right",
+			// 		"layer": -12,
+			// 		"bindings": [
+			// 			{
+			// 				"binding_name": "#show_survival_ui"
+			// 			}
+			// 		]
+			// 	}
+			// }
+		]
+	},
+
+	"health_numeric_indicator": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"icon": {
+					"type": "panel",
+					"size": [8, 9],
+					"controls": [
+						{
+							"full@insight_hud.health_img_full": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_a",
+										"source_property_name": "(#health > 1)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"half@insight_hud.health_img_half": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_a",
+										"source_property_name": "((#health > 0) and not(#health > 1))",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"gap": {
+					"type": "panel",
+					"size": [4, 1]
+				}
+			},
+			{
+				"value_group": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
+						{
+							"current": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [1.0, 0.42, 0.42],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_a",
+										"source_property_name": "#health",
+										"target_property_name": "#text"
+									}
+								]
+							}
+						},
+						{
+							"current_gap": {
+								"type": "panel",
+								"size": [2, 1]
+							}
+						},
+						{
+							"slash": {
+								"type": "label",
+								"text": "/",
+								"shadow": true,
+								"color": [0.82, 0.82, 0.82]
+							}
+						},
+						{
+							"max_gap": {
+								"type": "panel",
+								"size": [2, 1]
+							}
+						},
+						{
+							"max": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [1.0, 0.42, 0.42],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_a",
+										"source_property_name": "#max_health",
+										"target_property_name": "#text"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "(#hud_health_indicator > 0)",
+				"target_property_name": "#indicator_enabled"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "(#max_health > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #indicator_enabled and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"hunger_numeric_indicator": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"current": {
+					"type": "label",
+					"text": "#text",
+					"shadow": true,
+					"color": [1.0, 0.76, 0.38],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_b",
+							"source_property_name": "#hunger",
+							"target_property_name": "#text"
+						}
+					]
+				}
+			},
+			{
+				"slash": {
+					"type": "label",
+					"text": "/",
+					"shadow": true,
+					"color": [0.82, 0.82, 0.82]
+				}
+			},
+			{
+				"max": {
+					"type": "label",
+					"text": "#text",
+					"shadow": true,
+					"color": [1.0, 0.76, 0.38],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_b",
+							"source_property_name": "#max_hunger",
+							"target_property_name": "#text"
+						}
+					]
+				}
+			},
+			{
+				"gap": {
+					"type": "panel",
+					"size": [2, 1]
+				}
+			},
+			{
+				"icon": {
+					"type": "panel",
+					"size": [8, 9],
+					"controls": [
+						{
+							"full@insight_hud.hunger_img_full": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "(#hunger > 1)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"half@insight_hud.hunger_img_half": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "((#hunger > 0) and not(#hunger > 1))",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "(#hud_hunger_indicator > 0)",
+				"target_property_name": "#indicator_enabled"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#max_hunger > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #indicator_enabled and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"health_img_empty": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [16, 0],
+		"uv_size": [8, 9]
+	},
+
+	"health_img_full@insight_hud.health_img_empty": {
+		"controls": [
+			{
+				"img": {
+					"type": "image",
+					"texture": "textures/gui/icons",
+					"size": [8, 9],
+					"uv": [52, 0],
+					"uv_size": [8, 9],
+					"layer": 1
+				}
+			}
+		]
+	},
+
+	"health_img_half@insight_hud.health_img_empty": {
+		"controls": [
+			{
+				"img": {
+					"type": "image",
+					"texture": "textures/gui/icons",
+					"size": [8, 9],
+					"uv": [61, 0],
+					"uv_size": [8, 9],
+					"layer": 1
+				}
+			}
+		]
+	},
+
+	"health_img_end": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [1, 9],
+		"uv": [24, 0],
+		"uv_size": [1, 9]
+	},
+
+	"armor_img_full": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [34, 9],
+		"uv_size": [8, 9]
+	},
+
+	"armor_img_half": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [25, 9],
+		"uv_size": [8, 9]
+	},
+
+	"armor_img_empty": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [16, 9],
+		"uv_size": [8, 9]
+	},
+
+	"armor_img_end": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [1, 9],
+		"uv": [33, 9],
+		"uv_size": [1, 9]
+	},
+
+	"hunger_img_full": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [53, 27],
+		"uv_size": [8, 9]
+	},
+
+	"hunger_img_half": {
+		"type": "image",
+		"texture": "textures/gui/icons",
+		"size": [8, 9],
+		"uv": [62, 27],
+		"uv_size": [8, 9]
+	},
+
+	"hunger_bar_empty": {
+		"type": "panel",
+		"size": [8, 9],
+		"controls": [
+			{
+				"image": {
+					"type": "image",
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"texture": "textures/gui/icons",
+					"size": [9, 9],
+					"uv": [16, 27],
+					"uv_size": [9, 9]
+				}
+			}
+		]
+	},
+
+	"toughness_img_full": {
+		"type": "image",
+		"texture": "textures/gui/toughness",
+		"size": [8, 9],
+		"uv": [19, 0],
+		"uv_size": [8, 9]
+	},
+
+	"toughness_img_half": {
+		"type": "image",
+		"texture": "textures/gui/toughness",
+		"size": [8, 9],
+		"uv": [10, 0],
+		"uv_size": [8, 9]
+	},
+
+	"toughness_img_empty": {
+		"type": "image",
+		"texture": "textures/gui/toughness",
+		"size": [8, 9],
+		"uv": [0, 0],
+		"uv_size": [8, 9]
+	},
+
+	"toughness_img_end": {
+		"type": "image",
+		"texture": "textures/gui/toughness",
+		"size": [1, 9],
+		"uv": [0, 0],
+		"uv_size": [1, 9]
+	},
+
+	"saturation_img_full": {
+		"type": "image",
+		"texture": "textures/gui/saturation",
+		"size": [8, 9],
+		"uv": [1, 0],
+		"uv_size": [8, 9]
+	},
+
+	"saturation_img_half": {
+		"type": "image",
+		"texture": "textures/gui/saturation",
+		"size": [8, 9],
+		"uv": [10, 0],
+		"uv_size": [8, 9]
+	},
+
+	"exhaustion_indicator": {
+		"type": "panel",
+		"size": [4, 9],
+		"controls": [
+			{
+				"image": {
+					"type": "image",
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"texture": "textures/gui/icons",
+					"size": [4, 9],
+					"uv": [16, 27],
+					"uv_size": [4, 9],
+					"alpha": 0.55
+				}
+			}
+		]
+	},
+
+	"health_gap": {
+		"type": "panel",
+		"size": [10, 10]
+	},
+
+	"bar_factory": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"size": ["100%c", "100%cm"],
+		"collection_name": "$factory_name",
+		"factory": {
+			"name": "bar_factory",
+			"control_name": "$image"
+		}
+	},
+
+	"extra_armor_full": {
+		"type": "panel",
+		"size": [81, 10],
+		"controls": [
+			{
+				"bar@insight_hud.armor_img_full": {
+					"tiled": true,
+					"size": [81, 9]
+				}
+			}
+		]
+	},
+
+	"health_full": {
+		"type": "panel",
+		"size": [81, 10],
+		"controls": [
+			{
+				"bar@insight_hud.health_img_empty": {
+					"tiled": true,
+					"size": [81, 9]
+				}
+			},
+			{
+				"img": {
+					"type": "image",
+					"texture": "textures/gui/icons",
+					"tiled": true,
+					"size": [81, 9],
+					"uv": [52, 0],
+					"uv_size": [8, 9],
+					"layer": 1
+				}
+			}
+		]
+	},
+
+	"extra_armor_full_factory": {
+		"type": "stack_panel",
+		"orientation": "vertical",
+		"size": ["100%cm", "100%c"],
+		"collection_name": "extra_armor_full_factory",
+		"factory": {
+			"name": "bar_factory",
+			"control_name": "insight_hud.extra_armor_full"
+		},
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_c",
+				"source_property_name": "#extra_armor_full",
+				"target_property_name": "#collection_length"
+			}
+		]
+	},
+
+	"health_gap_factory": {
+		"type": "stack_panel",
+		"orientation": "vertical",
+		"size": ["100%cm", "100%c"],
+		"collection_name": "health_gap_factory",
+		"factory": {
+			"name": "bar_factory",
+			"control_name": "insight_hud.health_gap"
+		},
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "#health_gap",
+				"target_property_name": "#collection_length"
+			}
+		]
+	},
+
+	"extra_armor_bar": {
+		"type": "panel",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"empty@insight_hud.armor_img_empty": {
+					"tiled": true,
+					"size": [81, 9],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "(#extra_armor > 0)",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"bar": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%c", "100%cm"],
+					"anchor_from": "left_middle",
+					"anchor_to": "left_middle",
+					"controls": [
+						{
+							"full@insight_hud.bar_factory": {
+								"anchor_from": "center",
+								"anchor_to": "center",
+								"$image": "insight_hud.armor_img_full",
+								"$factory_name": "extra_armor_factory",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor / 2)",
+										"target_property_name": "#collection_length"
+									}
+								]
+							}
+						},
+						{
+							"half@insight_hud.armor_img_half": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "((#extra_armor + 1) / 2)",
+										"target_property_name": "#odd"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor / 2)",
+										"target_property_name": "#even"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "(#odd > #even)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"end@insight_hud.armor_img_end": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_c",
+										"source_property_name": "(#extra_armor > 0)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+
+	"toughness_bar": {
+		"type": "panel",
+		"size": [8, 9],
+		"controls": [
+			{
+				"full@insight_hud.toughness_img_full": {
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "(#toughness > 1)",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"half@insight_hud.toughness_img_half": {
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_c",
+							"source_property_name": "((#toughness > 0) and not(#toughness > 1))",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_c",
+				"source_property_name": "(#toughness > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"hunger_buffer_bar": {
+		"type": "panel",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"empty@insight_hud.bar_factory": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"$image": "insight_hud.hunger_bar_empty",
+					"$factory_name": "hunger_bar_empty_factory",
+					"property_bag": {
+						"#count": 10
+					},
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_property_name": "#count",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			},
+			{
+				"factory_buffer": {
+					"type": "stack_panel",
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"orientation": "horizontal",
+					"size": ["100%c", "100%cm"],
+					"controls": [
+						{
+							"half@insight_hud.hunger_img_half": {
+								"alpha": "@insight_hud.buffer_cycle_start",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_d",
+										"source_property_name": "((#hunger_preview + 1) / 2)",
+										"target_property_name": "#odd"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_d",
+										"source_property_name": "(#hunger_preview / 2)",
+										"target_property_name": "#even"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_d",
+										"source_property_name": "#flag_hunger_preview",
+										"target_property_name": "#has_preview"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "(#odd > #even and #has_preview > 0)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"full@insight_hud.bar_factory": {
+								"anchor_from": "center",
+								"anchor_to": "center",
+								"$image": "insight_hud.hunger_img_full",
+								"$factory_name": "hunger_buffer_factory",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_d",
+										"source_property_name": "(#hunger_preview / 2)",
+										"target_property_name": "#collection_length"
+									}
+								]
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_d",
+							"source_property_name": "(#flag_hunger_preview > 0)",
+							"target_property_name": "#visible"
+						}
+					]
+				}
+			},
+			{
+				"factory": {
+					"type": "stack_panel",
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"orientation": "horizontal",
+					"size": ["100%c", "100%cm"],
+					"layer": 4,
+					"controls": [
+						{
+							"half@insight_hud.hunger_img_half": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "((#hunger + 1) / 2)",
+										"target_property_name": "#odd"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "(#hunger / 2)",
+										"target_property_name": "#even"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "(#odd > #even)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"full@insight_hud.bar_factory": {
+								"anchor_from": "center",
+								"anchor_to": "center",
+								"$image": "insight_hud.hunger_img_full",
+								"$factory_name": "hunger_factory",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "(#hunger / 2)",
+										"target_property_name": "#collection_length"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#max_hunger > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"saturation_bar": {
+		"type": "panel",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"bar": {
+					"type": "stack_panel",
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"orientation": "horizontal",
+					"size": ["100%c", "100%cm"],
+					"controls": [
+						{
+							"half@insight_hud.saturation_img_half": {
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "((#saturation + 1) / 2)",
+										"target_property_name": "#odd"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "(#saturation / 2)",
+										"target_property_name": "#even"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "(#odd > #even)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"full@insight_hud.bar_factory": {
+								"anchor_from": "center",
+								"anchor_to": "center",
+								"$image": "insight_hud.saturation_img_full",
+								"$factory_name": "saturation_factory",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_b",
+										"source_property_name": "(#saturation / 2)",
+										"target_property_name": "#collection_length"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#saturation > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"exhaustion_bar": {
+		"size": [81, 9],
+		"type": "panel",
+		"controls": [
+			{
+				"bar@insight_hud.bar_factory": {
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"$image": "insight_hud.exhaustion_indicator",
+					"$factory_name": "exhaustion_factory",
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_b",
+							"source_property_name": "#exhaustion",
+							"target_property_name": "#collection_length"
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#exhaustion > 0)",
+				"target_property_name": "#has_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_data)",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"buffer_cycle_start": {
+		"anim_type": "alpha",
+		"easing": "in_sine",
+		"next": "@insight_hud.buffer_cycle_end",
+		"duration": 1,
+		"from": 1,
+		"to": 0.0
+	},
+
+	"buffer_cycle_end": {
+		"anim_type": "alpha",
+		"easing": "in_sine",
+		"next": "@insight_hud.buffer_cycle_start",
+		"duration": 1,
+		"from": 0.0,
+		"to": 1
+	}
+}
+

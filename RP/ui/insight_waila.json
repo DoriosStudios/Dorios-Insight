@@ -1,0 +1,627 @@
+{
+	"namespace": "insight_waila",
+
+	"target_data_control_1": {
+		"type": "panel",
+		"size": [0, 0],
+		"bindings": [
+			{ "binding_name": "#show_survival_ui", "binding_name_override": "#survival_ui" },
+			{ "binding_name": "#hud_title_text_string" },
+			{ "binding_name": "#hud_title_text_string", "binding_name_override": "#stored_text", "binding_condition": "visibility_changed" },
+			{ "binding_name": "#hud_subtitle_text_string", "binding_name_override": "#aux_render_id", "binding_condition": "visibility_changed" },
+			{
+				"binding_type": "view",
+				"source_property_name": "(((('%.66s' * #stored_text) - ('%.18s' * #stored_text)) - 'insight_target') - '~')",
+				"target_property_name": "#target_key"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(('%.9s' * #stored_text) - ('%.1s' * #stored_text))",
+				"target_property_name": "#data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(('%.1s' * #stored_text))",
+				"target_property_name": "#prefix"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(('%.9s' * (#stored_text - ('%.9s' * #stored_text))) - 'b')",
+				"target_property_name": "#data_2"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 10000000)",
+				"target_property_name": "#shears_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 1000000) - (#shears_tool * 10)",
+				"target_property_name": "#hoe_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 100000) - (#shears_tool * 100) - (#hoe_tool * 10)",
+				"target_property_name": "#shovel_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 10000) - (#shears_tool * 1000) - (#hoe_tool * 100) - (#shovel_tool * 10)",
+				"target_property_name": "#axe_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 1000) - (#shears_tool * 10000) - (#hoe_tool * 1000) - (#shovel_tool * 100) - (#axe_tool * 10)",
+				"target_property_name": "#pickaxe_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 100) - (#shears_tool * 100000) - (#hoe_tool * 10000) - (#shovel_tool * 1000) - (#axe_tool * 100) - (#pickaxe_tool * 10)",
+				"target_property_name": "#sword_tool"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#data / 1) - (#shears_tool * 10000000) - (#hoe_tool * 1000000) - (#shovel_tool * 100000) - (#axe_tool * 10000) - (#pickaxe_tool * 1000) - (#sword_tool * 100)",
+				"target_property_name": "#entity_height"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_target') = #hud_title_text_string))",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"target_data_control_2": {
+		"type": "panel",
+		"size": [0, 0],
+		"bindings": [
+			{ "binding_name": "#show_survival_ui", "binding_name_override": "#survival_ui" },
+			{ "binding_name": "#hud_title_text_string" },
+			{ "binding_name": "#hud_title_text_string", "binding_name_override": "#stored_text", "binding_condition": "visibility_changed" },
+			{
+				"binding_type": "view",
+				"source_property_name": "(#stored_text - ('%.66s' * #stored_text) - 'insight_target')",
+				"target_property_name": "#detail"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_target') = #hud_title_text_string))",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"biome_data_control": {
+		"type": "panel",
+		"size": [0, 0],
+		"bindings": [
+			{ "binding_name": "#show_survival_ui", "binding_name_override": "#survival_ui" },
+			{ "binding_name": "#hud_title_text_string" },
+			{ "binding_name": "#hud_title_text_string", "binding_name_override": "#stored_text", "binding_condition": "visible" },
+			{
+				"binding_type": "view",
+				"source_property_name": "((('%.64s' * #stored_text) - '~') - 'insight_biome')",
+				"target_property_name": "#dimension_name"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(((('%.128s' * #stored_text) - ('%.64s' * #stored_text)) - '~') - 'insight_biome')",
+				"target_property_name": "#biome_name"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_biome') = #hud_title_text_string))",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"title_drop_start": {
+		"anim_type": "alpha",
+		"easing": "in_sine",
+		"next": "@insight_waila.title_drop_end",
+		"duration": 1.5,
+		"from": 0,
+		"to": 1
+	},
+
+	"title_drop_end": {
+		"anim_type": "alpha",
+		"easing": "in_sine",
+		"duration": 2.5,
+		"from": 1,
+		"to": 0
+	},
+
+	"title_drop_offset": {
+		"anim_type": "offset",
+		"easing": "out_sine",
+		"duration": 0.75,
+		"from": [0, -48],
+		"to": [0, 0]
+	},
+
+	"title_drop_flash_start": {
+		"anim_type": "alpha",
+		"easing": "in_sine",
+		"next": "@insight_waila.title_drop_flash_end",
+		"duration": 0.25,
+		"from": 0.1,
+		"to": 0.85
+	},
+
+	"title_drop_flash_end": {
+		"anim_type": "alpha",
+		"easing": "out_sine",
+		"duration": 0.75,
+		"from": 0.85,
+		"to": 0
+	},
+
+	"render_gap": {
+		"type": "panel",
+		"size": [3, 14]
+	},
+
+	"tool_required_panel": {
+		"type": "panel",
+		"size": [12, 9],
+		"controls": [
+			{
+				"container": {
+					"type": "image",
+					"texture": "$texture",
+					"size": [9, 9],
+					"anchor_from": "right_middle",
+					"anchor_to": "right_middle",
+					"controls": [
+						{
+							"accept": {
+								"type": "image",
+								"texture": "textures/gui/accept_tool",
+								"size": [9, 9],
+								"offset": [1, 0],
+								"layer": 1,
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "$control_source",
+										"source_property_name": "($control_key = 2)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"decline": {
+								"type": "image",
+								"texture": "textures/gui/decline_tool",
+								"size": [9, 9],
+								"offset": [1, 0],
+								"layer": 1,
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "$control_source",
+										"source_property_name": "($control_key = 1)",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "$control_source",
+				"source_property_name": "(not($control_key = 0))",
+				"target_property_name": "#visible"
+			}
+		]
+	},
+
+	"view_indicator_renderer": {
+		"type": "image",
+		"texture": "textures/insight/style_default",
+		"alpha": 0.5,
+		"offset": [0, -54],
+		"size": ["100%c + 20px", "100%cm + 10px"],
+		"nineslice_size": 4,
+		"$alpha_visibility": 0.85,
+		"controls": [
+			{
+				"container": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%c", "100%cm"],
+					"layer": 5,
+					"controls": [
+						{
+							"entity_renderer": {
+								"type": "panel",
+								"size": [32, "100%sm"],
+								"controls": [
+									{
+										"entity": {
+											"type": "panel",
+											"size": ["50%", "50%"],
+											"offset": [0, "50%y"],
+											"controls": [
+												{
+													"render": {
+														"type": "custom",
+														"anchor_from": "center",
+														"anchor_to": "center",
+														"renderer": "live_horse_renderer",
+														"property_bag": {
+															"#entity_id": "#entity_id",
+															"#look_at_cursor": false
+														},
+														"bindings": [
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_1",
+																"source_property_name": "#aux_render_id",
+																"target_property_name": "#entity_id"
+															},
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_1",
+																"source_property_name": "(not(#aux_render_id = ''))",
+																"target_property_name": "#visible"
+															}
+														]
+													}
+												}
+											],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "target_data_control_1",
+													"source_property_name": "(#prefix = 'a')",
+													"target_property_name": "#visible"
+												}
+											]
+										}
+									},
+									{
+										"player": {
+											"type": "panel",
+											"size": ["40%", "40%"],
+											"offset": [0, "-10%"],
+											"controls": [
+												{
+													"render": {
+														"type": "custom",
+														"anchor_from": "center",
+														"anchor_to": "center",
+														"renderer": "live_horse_renderer",
+														"property_bag": {
+															"#entity_id": "#entity_id",
+															"#look_at_cursor": false
+														},
+														"bindings": [
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_1",
+																"source_property_name": "#aux_render_id",
+																"target_property_name": "#entity_id"
+															},
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_1",
+																"source_property_name": "(not(#aux_render_id = ''))",
+																"target_property_name": "#visible"
+															}
+														]
+													}
+												}
+											],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "target_data_control_1",
+													"source_property_name": "(#prefix = 'A')",
+													"target_property_name": "#visible"
+												}
+											]
+										}
+									}
+								],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "target_data_control_1",
+										"source_property_name": "(not(#aux_render_id = ''))",
+										"target_property_name": "#visible"
+									}
+								]
+							}
+						},
+						{
+							"gap": {
+								"type": "stack_panel",
+								"orientation": "vertical",
+								"size": ["100%cm", "100%c"],
+								"collection_name": "render_gap_factory",
+								"factory": {
+									"name": "bar_factory",
+									"control_name": "insight_waila.render_gap"
+								},
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "target_data_control_1",
+										"source_property_name": "#entity_height",
+										"target_property_name": "#collection_length"
+									}
+								]
+							}
+						},
+						{
+							"body": {
+								"type": "stack_panel",
+								"orientation": "vertical",
+								"size": ["100%cm", "100%c"],
+								"controls": [
+									{
+										"header": {
+											"type": "stack_panel",
+											"orientation": "horizontal",
+											"size": ["100%c", "100%cm"],
+											"controls": [
+												{
+													"name": {
+														"type": "label",
+														"text": "#text",
+														"shadow": true,
+														"bindings": [
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_1",
+																"source_property_name": "#target_key",
+																"target_property_name": "#text"
+															}
+														]
+													}
+												},
+												{
+													"shears_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/shears",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#shears_tool"
+													}
+												},
+												{
+													"hoe_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/iron_hoe",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#hoe_tool"
+													}
+												},
+												{
+													"shovel_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/iron_shovel",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#shovel_tool"
+													}
+												},
+												{
+													"axe_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/iron_axe",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#axe_tool"
+													}
+												},
+												{
+													"pickaxe_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/iron_pickaxe",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#pickaxe_tool"
+													}
+												},
+												{
+													"sword_tool@insight_waila.tool_required_panel": {
+														"$texture": "textures/items/iron_sword",
+														"$control_source": "target_data_control_1",
+														"$control_key": "#sword_tool"
+													}
+												}
+											]
+										}
+									},
+									{
+										"detail": {
+											"type": "stack_panel",
+											"orientation": "vertical",
+											"size": ["100%cm", "100%c"],
+											"controls": [
+												{
+													"more_detail": {
+														"type": "label",
+														"text": "#text",
+														"shadow": true,
+														"color": [0.7, 0.7, 0.7],
+														"bindings": [
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_2",
+																"source_property_name": "(not(#stored_text = '') and not(#detail = ''))",
+																"target_property_name": "#visible"
+															},
+															{
+																"binding_type": "view",
+																"source_control_name": "target_data_control_2",
+																"source_property_name": "#detail",
+																"target_property_name": "#text"
+															}
+														]
+													}
+												}
+											]
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "target_data_control_1",
+				"source_property_name": "(not(#stored_text = ''))",
+				"target_property_name": "#visible"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "target_data_control_1",
+				"source_property_name": "($alpha_visibility * not(#target_key = ''))",
+				"target_property_name": "#alpha"
+			}
+		]
+	},
+
+	"view_indicator_render": {
+		"type": "panel",
+		"size": ["100%c", "100%c"],
+		"anchor_from": "top_middle",
+		"anchor_to": "top_middle",
+		"offset": [0, "20%"],
+		"controls": [
+			{
+				"renderer@insight_waila.view_indicator_renderer": {}
+			}
+		]
+	},
+
+	"traveler_indicator_renderer": {
+		"type": "stack_panel",
+		"orientation": "vertical",
+		"size": ["100%cm", "100%c"],
+		"offset": "@insight_waila.title_drop_offset",
+		"controls": [
+            {
+                "biome_name": {
+                    "type": "panel",
+                    "size": [384, 24],
+                    "controls": [
+                        {
+                            "text": {
+                                "type": "label",
+                                "text": "#text",
+                                "font_type": "MinecraftTen",
+                                "font_size": "large",
+                                "anchor_from": "top_left",
+                                "anchor_to": "top_left",
+                                "alpha": "@insight_waila.title_drop_start",
+                                "bindings": [
+                                    {
+                                        "binding_type": "view",
+                                        "source_control_name": "biome_data_control",
+                                        "source_property_name": "#biome_name",
+                                        "target_property_name": "#text"
+                                    }
+                                ],
+                                "controls": [
+                                    {
+                                        "flash": {
+                                            "type": "image",
+                                            "keep_ratio": false,
+                                            "texture": "textures/gui/text_flash",
+                                            "size": ["100% + 64px", "100% - 12px"],
+                                            "offset": [0, 2],
+                                            "alpha": "@insight_waila.title_drop_flash_start"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+			{
+				"dimension_name": {
+					"type": "panel",
+					"size": [384, 14],
+					"controls": [
+						{
+							"text": {
+								"type": "label",
+								"text": "#text",
+								"anchor_from": "top_left",
+								"anchor_to": "top_left",
+                                "offset": [56, -28],
+								"shadow": true,
+								"alpha": "@insight_waila.title_drop_start",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "biome_data_control",
+										"source_property_name": "#dimension_name",
+										"target_property_name": "#text"
+									}
+								],
+								"controls": [
+									{
+										"flash": {
+											"type": "image",
+											"keep_ratio": false,
+											"texture": "textures/gui/text_flash",
+											"size": ["100% + 64px", "100% + 2px"],
+											"alpha": "@insight_waila.title_drop_flash_start"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+
+	"traveler_indicator_render": {
+		"type": "collection_panel",
+		"size": ["100%c", "100%c"],
+		"collection_name": "traveler_indicator_renderer_factory",
+		"factory": {
+			"name": "traveler_indicator_factory",
+			"control_name": "insight_waila.traveler_indicator_renderer"
+		},
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "biome_data_control",
+				"source_property_name": "(1 * not(#dimension_name = ''))",
+				"target_property_name": "#collection_length"
+			}
+		]
+	},
+
+	"root_panel": {
+		"type": "panel",
+		"size": ["100%", "100%"],
+		"controls": [
+			{ "target_data_control_1@insight_waila.target_data_control_1": {} },
+			{ "target_data_control_2@insight_waila.target_data_control_2": {} },
+			{ "biome_data_control@insight_waila.biome_data_control": {} },
+			{
+				"view_indicator_render@insight_waila.view_indicator_render": {}
+			},
+			{
+				"traveler_indicator_render@insight_waila.traveler_indicator_render": {
+					"anchor_from": "top_middle",
+					"anchor_to": "center",
+					"offset": [0, "25%"]
+				}
+			}
+		]
+	}
+}
