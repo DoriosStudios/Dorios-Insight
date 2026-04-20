@@ -589,7 +589,7 @@
 			},
 			{
 				"binding_type": "view",
-				"source_property_name": "(#show_survival_ui and #has_target)",
+				"source_property_name": "(#has_target)",
 				"target_property_name": "#visible",
 				"binding_condition": "always"
 			}
