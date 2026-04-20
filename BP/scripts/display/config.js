@@ -31,11 +31,11 @@ export const VisibilityPolicies = Object.freeze({
 });
 
 export const VisibilityPolicyLabels = Object.freeze([
-    Object.freeze({ key: VisibilityPolicies.Show, label: "Show / Mostrar" }),
-    Object.freeze({ key: VisibilityPolicies.ShowWhenSneaking, label: "Show When Sneaking / Mostrar Agachado" }),
-    Object.freeze({ key: VisibilityPolicies.CreativeOnly, label: "Creative Only / Apenas Criativo" }),
-    Object.freeze({ key: VisibilityPolicies.SneakingAndCreative, label: "Sneaking + Creative / Agachado + Criativo" }),
-    Object.freeze({ key: VisibilityPolicies.Hide, label: "Hide / Ocultar" })
+    Object.freeze({ key: VisibilityPolicies.Show, label: "Show", labelKey: "ui.dorios.insight.option.visibility.show" }),
+    Object.freeze({ key: VisibilityPolicies.ShowWhenSneaking, label: "Show When Sneaking", labelKey: "ui.dorios.insight.option.visibility.show_when_sneaking" }),
+    Object.freeze({ key: VisibilityPolicies.CreativeOnly, label: "Creative Only", labelKey: "ui.dorios.insight.option.visibility.creative_only" }),
+    Object.freeze({ key: VisibilityPolicies.SneakingAndCreative, label: "Sneaking + Creative", labelKey: "ui.dorios.insight.option.visibility.sneaking_and_creative" }),
+    Object.freeze({ key: VisibilityPolicies.Hide, label: "Hide", labelKey: "ui.dorios.insight.option.visibility.hide" })
 ]);
 
 export const EffectDisplayModes = Object.freeze({
@@ -44,8 +44,8 @@ export const EffectDisplayModes = Object.freeze({
 });
 
 export const EffectDisplayModeLabels = Object.freeze([
-    Object.freeze({ key: EffectDisplayModes.Emoji, label: "Emoji" }),
-    Object.freeze({ key: EffectDisplayModes.Text, label: "Text" })
+    Object.freeze({ key: EffectDisplayModes.Emoji, label: "Emoji", labelKey: "ui.dorios.insight.option.effect_display.emoji" }),
+    Object.freeze({ key: EffectDisplayModes.Text, label: "Text", labelKey: "ui.dorios.insight.option.effect_display.text" })
 ]);
 
 export const DisplayStyles = Object.freeze({
@@ -59,12 +59,12 @@ export const DisplayStyles = Object.freeze({
 });
 
 export const DisplayStyleLabels = Object.freeze([
-    Object.freeze({ key: DisplayStyles.Icon, label: "Icon" }),
-    Object.freeze({ key: DisplayStyles.IconValue, label: "Icon + Value (❤️ x/y)" }),
-    Object.freeze({ key: DisplayStyles.TextFull, label: "Text Type 1 (Health: x/y)" }),
-    Object.freeze({ key: DisplayStyles.TextPercent, label: "Text Type 2 (Health: x%)" }),
-    Object.freeze({ key: DisplayStyles.HybridFull, label: "Hybrid Type 1 (❤️ x/y)" }),
-    Object.freeze({ key: DisplayStyles.HybridPercent, label: "Hybrid Type 2 (❤️ x%)" })
+    Object.freeze({ key: DisplayStyles.Icon, label: "Icon", labelKey: "ui.dorios.insight.option.display_style.icon" }),
+    Object.freeze({ key: DisplayStyles.IconValue, label: "Icon + Value (❤️ x/y)", labelKey: "ui.dorios.insight.option.display_style.icon_value" }),
+    Object.freeze({ key: DisplayStyles.TextFull, label: "Text Type 1 (Health: x/y)", labelKey: "ui.dorios.insight.option.display_style.text_full" }),
+    Object.freeze({ key: DisplayStyles.TextPercent, label: "Text Type 2 (Health: x%)", labelKey: "ui.dorios.insight.option.display_style.text_percent" }),
+    Object.freeze({ key: DisplayStyles.HybridFull, label: "Hybrid Type 1 (❤️ x/y)", labelKey: "ui.dorios.insight.option.display_style.hybrid_full" }),
+    Object.freeze({ key: DisplayStyles.HybridPercent, label: "Hybrid Type 2 (❤️ x%)", labelKey: "ui.dorios.insight.option.display_style.hybrid_percent" })
 ]);
 
 export const HudDisplayModes = Object.freeze({
@@ -75,10 +75,10 @@ export const HudDisplayModes = Object.freeze({
 });
 
 export const HudDisplayModeLabels = Object.freeze([
-    Object.freeze({ key: HudDisplayModes.ShowInsight, label: "Show Insight" }),
-    Object.freeze({ key: HudDisplayModes.Both, label: "Both" }),
-    Object.freeze({ key: HudDisplayModes.ShowVanilla, label: "Show Vanilla" }),
-    Object.freeze({ key: HudDisplayModes.None, label: "None" })
+    Object.freeze({ key: HudDisplayModes.ShowInsight, label: "Show Insight", labelKey: "ui.dorios.insight.option.hud_display.show_insight" }),
+    Object.freeze({ key: HudDisplayModes.Both, label: "Both", labelKey: "ui.dorios.insight.option.hud_display.both" }),
+    Object.freeze({ key: HudDisplayModes.ShowVanilla, label: "Show Vanilla", labelKey: "ui.dorios.insight.option.hud_display.show_vanilla" }),
+    Object.freeze({ key: HudDisplayModes.None, label: "None", labelKey: "ui.dorios.insight.option.hud_display.none" })
 ]);
 
 export const HudIndicatorModes = Object.freeze({
@@ -87,8 +87,8 @@ export const HudIndicatorModes = Object.freeze({
 });
 
 export const HudIndicatorModeLabels = Object.freeze([
-    Object.freeze({ key: HudIndicatorModes.Hidden, label: "Hidden" }),
-    Object.freeze({ key: HudIndicatorModes.IconAndIndicator, label: "Icon + Indicator" })
+    Object.freeze({ key: HudIndicatorModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.hud_indicator.hidden" }),
+    Object.freeze({ key: HudIndicatorModes.IconAndIndicator, label: "Icon + Indicator", labelKey: "ui.dorios.insight.option.hud_indicator.icon_and_indicator" })
 ]);
 
 export const HudElementPositionModes = Object.freeze({
@@ -100,11 +100,11 @@ export const HudElementPositionModes = Object.freeze({
 });
 
 export const HudElementPositionModeLabels = Object.freeze([
-    Object.freeze({ key: HudElementPositionModes.Center, label: "Center (Default) / Centro (Padrão)" }),
-    Object.freeze({ key: HudElementPositionModes.TopRight, label: "Top Right / Superior Direito" }),
-    Object.freeze({ key: HudElementPositionModes.MiddleRight, label: "Middle Right / Meio Direito" }),
-    Object.freeze({ key: HudElementPositionModes.BottomRight, label: "Bottom Right / Inferior Direito" }),
-    Object.freeze({ key: HudElementPositionModes.BottomLeft, label: "Bottom Left / Inferior Esquerdo" })
+    Object.freeze({ key: HudElementPositionModes.Center, label: "Center (Default)", labelKey: "ui.dorios.insight.option.hud_position.center" }),
+    Object.freeze({ key: HudElementPositionModes.TopRight, label: "Top Right", labelKey: "ui.dorios.insight.option.hud_position.top_right" }),
+    Object.freeze({ key: HudElementPositionModes.MiddleRight, label: "Middle Right", labelKey: "ui.dorios.insight.option.hud_position.middle_right" }),
+    Object.freeze({ key: HudElementPositionModes.BottomRight, label: "Bottom Right", labelKey: "ui.dorios.insight.option.hud_position.bottom_right" }),
+    Object.freeze({ key: HudElementPositionModes.BottomLeft, label: "Bottom Left", labelKey: "ui.dorios.insight.option.hud_position.bottom_left" })
 ]);
 
 export const HudInventoryDisplayModes = Object.freeze({
@@ -114,9 +114,9 @@ export const HudInventoryDisplayModes = Object.freeze({
 });
 
 export const HudInventoryDisplayModeLabels = Object.freeze([
-    Object.freeze({ key: HudInventoryDisplayModes.Full, label: "Full / Completo" }),
-    Object.freeze({ key: HudInventoryDisplayModes.HotbarOnly, label: "Hotbar Only / Apenas Hotbar" }),
-    Object.freeze({ key: HudInventoryDisplayModes.InventoryOnly, label: "Inventory Only / Apenas Inventário" })
+    Object.freeze({ key: HudInventoryDisplayModes.Full, label: "Full", labelKey: "ui.dorios.insight.option.hud_inventory_display.full" }),
+    Object.freeze({ key: HudInventoryDisplayModes.HotbarOnly, label: "Hotbar Only", labelKey: "ui.dorios.insight.option.hud_inventory_display.hotbar_only" }),
+    Object.freeze({ key: HudInventoryDisplayModes.InventoryOnly, label: "Inventory Only", labelKey: "ui.dorios.insight.option.hud_inventory_display.inventory_only" })
 ]);
 
 export const HudElementOrientationModes = Object.freeze({
@@ -125,8 +125,8 @@ export const HudElementOrientationModes = Object.freeze({
 });
 
 export const HudElementOrientationModeLabels = Object.freeze([
-    Object.freeze({ key: HudElementOrientationModes.Horizontal, label: "Horizontal" }),
-    Object.freeze({ key: HudElementOrientationModes.Vertical, label: "Vertical" })
+    Object.freeze({ key: HudElementOrientationModes.Horizontal, label: "Horizontal", labelKey: "ui.dorios.insight.option.hud_orientation.horizontal" }),
+    Object.freeze({ key: HudElementOrientationModes.Vertical, label: "Vertical", labelKey: "ui.dorios.insight.option.hud_orientation.vertical" })
 ]);
 
 export const WailaColorThemes = Object.freeze({
@@ -140,13 +140,105 @@ export const WailaColorThemes = Object.freeze({
 });
 
 export const WailaColorThemeLabels = Object.freeze([
-    Object.freeze({ key: WailaColorThemes.Default, label: "Default (Dark Blue) / Padrão (Azul Escuro)" }),
-    Object.freeze({ key: WailaColorThemes.Dark, label: "Dark / Escuro" }),
-    Object.freeze({ key: WailaColorThemes.Copper, label: "Copper / Cobre" }),
-    Object.freeze({ key: WailaColorThemes.Magenta, label: "Magenta" }),
-    Object.freeze({ key: WailaColorThemes.Cyan, label: "Cyan / Ciano" }),
-    Object.freeze({ key: WailaColorThemes.Blood, label: "Blood / Sangue" }),
-    Object.freeze({ key: WailaColorThemes.Ascane, label: "Ascane" })
+    Object.freeze({ key: WailaColorThemes.Default, label: "Default (Dark Blue)", labelKey: "ui.dorios.insight.option.waila_theme.default" }),
+    Object.freeze({ key: WailaColorThemes.Dark, label: "Dark", labelKey: "ui.dorios.insight.option.waila_theme.dark" }),
+    Object.freeze({ key: WailaColorThemes.Copper, label: "Copper", labelKey: "ui.dorios.insight.option.waila_theme.copper" }),
+    Object.freeze({ key: WailaColorThemes.Magenta, label: "Magenta", labelKey: "ui.dorios.insight.option.waila_theme.magenta" }),
+    Object.freeze({ key: WailaColorThemes.Cyan, label: "Cyan", labelKey: "ui.dorios.insight.option.waila_theme.cyan" }),
+    Object.freeze({ key: WailaColorThemes.Blood, label: "Blood", labelKey: "ui.dorios.insight.option.waila_theme.blood" }),
+    Object.freeze({ key: WailaColorThemes.Ascane, label: "Ascane", labelKey: "ui.dorios.insight.option.waila_theme.ascane" })
+]);
+
+export const HudDurabilityDisplayModes = Object.freeze({
+    Hidden: "hidden",
+    Values: "values",
+    Percent: "percent",
+    ValuesAndPercent: "values_percent",
+    Bar: "bar"
+});
+
+export const HudDurabilityDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: HudDurabilityDisplayModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.hud_durability_display.hidden" }),
+    Object.freeze({ key: HudDurabilityDisplayModes.Values, label: "Values (123/1561)", labelKey: "ui.dorios.insight.option.hud_durability_display.values" }),
+    Object.freeze({ key: HudDurabilityDisplayModes.Percent, label: "Percent (92%)", labelKey: "ui.dorios.insight.option.hud_durability_display.percent" }),
+    Object.freeze({ key: HudDurabilityDisplayModes.ValuesAndPercent, label: "Values + Percent", labelKey: "ui.dorios.insight.option.hud_durability_display.values_and_percent" }),
+    Object.freeze({ key: HudDurabilityDisplayModes.Bar, label: "Bar", labelKey: "ui.dorios.insight.option.hud_durability_display.bar" })
+]);
+
+export const HudDurabilityPositionModes = Object.freeze({
+    RightHotbar: "right_hotbar",
+    LeftHotbar: "left_hotbar",
+    BelowCrosshair: "below_crosshair",
+    BottomLeft: "bottom_left",
+    BottomRight: "bottom_right"
+});
+
+export const HudDurabilityPositionModeLabels = Object.freeze([
+    Object.freeze({ key: HudDurabilityPositionModes.RightHotbar, label: "Right of Hotbar", labelKey: "ui.dorios.insight.option.hud_durability_position.right_hotbar" }),
+    Object.freeze({ key: HudDurabilityPositionModes.LeftHotbar, label: "Left of Hotbar", labelKey: "ui.dorios.insight.option.hud_durability_position.left_hotbar" }),
+    Object.freeze({ key: HudDurabilityPositionModes.BelowCrosshair, label: "Below Crosshair", labelKey: "ui.dorios.insight.option.hud_durability_position.below_crosshair" }),
+    Object.freeze({ key: HudDurabilityPositionModes.BottomLeft, label: "Bottom Left HUD", labelKey: "ui.dorios.insight.option.hud_durability_position.bottom_left" }),
+    Object.freeze({ key: HudDurabilityPositionModes.BottomRight, label: "Bottom Right HUD", labelKey: "ui.dorios.insight.option.hud_durability_position.bottom_right" })
+]);
+
+export const HudQuickCounterModes = Object.freeze({
+    Hidden: "hidden",
+    HandStack: "hand_stack",
+    InventoryTotal: "inventory_total",
+    DurabilityCurrent: "durability_current",
+    DurabilityMax: "durability_max",
+    DurabilityPercent: "durability_percent",
+    XpLevel: "xp_level",
+    Speed: "speed"
+});
+
+export const HudQuickCounterModeLabels = Object.freeze([
+    Object.freeze({ key: HudQuickCounterModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.quick_counter.hidden" }),
+    Object.freeze({ key: HudQuickCounterModes.HandStack, label: "Hand Stack", labelKey: "ui.dorios.insight.option.quick_counter.hand_stack" }),
+    Object.freeze({ key: HudQuickCounterModes.InventoryTotal, label: "Inventory Total", labelKey: "ui.dorios.insight.option.quick_counter.inventory_total" }),
+    Object.freeze({ key: HudQuickCounterModes.DurabilityCurrent, label: "Durability Current", labelKey: "ui.dorios.insight.option.quick_counter.durability_current" }),
+    Object.freeze({ key: HudQuickCounterModes.DurabilityMax, label: "Durability Max", labelKey: "ui.dorios.insight.option.quick_counter.durability_max" }),
+    Object.freeze({ key: HudQuickCounterModes.DurabilityPercent, label: "Durability Percent", labelKey: "ui.dorios.insight.option.quick_counter.durability_percent" }),
+    Object.freeze({ key: HudQuickCounterModes.XpLevel, label: "XP Level", labelKey: "ui.dorios.insight.option.quick_counter.xp_level" }),
+    Object.freeze({ key: HudQuickCounterModes.Speed, label: "Speed", labelKey: "ui.dorios.insight.option.quick_counter.speed" })
+]);
+
+export const WailaAnchorModes = Object.freeze({
+    TopLeft: "top_left",
+    TopMiddle: "top_middle",
+    TopRight: "top_right",
+    LeftMiddle: "left_middle",
+    RightMiddle: "right_middle",
+    BottomLeft: "bottom_left",
+    BottomRight: "bottom_right"
+});
+
+export const WailaAnchorModeLabels = Object.freeze([
+    Object.freeze({ key: WailaAnchorModes.TopLeft, label: "Top Left", labelKey: "ui.dorios.insight.option.waila_anchor.top_left" }),
+    Object.freeze({ key: WailaAnchorModes.TopMiddle, label: "Top Middle", labelKey: "ui.dorios.insight.option.waila_anchor.top_middle" }),
+    Object.freeze({ key: WailaAnchorModes.TopRight, label: "Top Right", labelKey: "ui.dorios.insight.option.waila_anchor.top_right" }),
+    Object.freeze({ key: WailaAnchorModes.LeftMiddle, label: "Left Middle", labelKey: "ui.dorios.insight.option.waila_anchor.left_middle" }),
+    Object.freeze({ key: WailaAnchorModes.RightMiddle, label: "Right Middle", labelKey: "ui.dorios.insight.option.waila_anchor.right_middle" }),
+    Object.freeze({ key: WailaAnchorModes.BottomLeft, label: "Bottom Left", labelKey: "ui.dorios.insight.option.waila_anchor.bottom_left" }),
+    Object.freeze({ key: WailaAnchorModes.BottomRight, label: "Bottom Right", labelKey: "ui.dorios.insight.option.waila_anchor.bottom_right" })
+]);
+
+export const WailaOffsetModes = Object.freeze({
+    Negative: "negative",
+    Center: "center",
+    Positive: "positive"
+});
+
+export const WailaHorizontalOffsetModeLabels = Object.freeze([
+    Object.freeze({ key: WailaOffsetModes.Negative, label: "Left", labelKey: "ui.dorios.insight.option.waila_horizontal_offset.left" }),
+    Object.freeze({ key: WailaOffsetModes.Center, label: "Center", labelKey: "ui.dorios.insight.option.waila_horizontal_offset.center" }),
+    Object.freeze({ key: WailaOffsetModes.Positive, label: "Right", labelKey: "ui.dorios.insight.option.waila_horizontal_offset.right" })
+]);
+
+export const WailaVerticalOffsetModeLabels = Object.freeze([
+    Object.freeze({ key: WailaOffsetModes.Negative, label: "Up", labelKey: "ui.dorios.insight.option.waila_vertical_offset.up" }),
+    Object.freeze({ key: WailaOffsetModes.Center, label: "Center", labelKey: "ui.dorios.insight.option.waila_vertical_offset.center" }),
+    Object.freeze({ key: WailaOffsetModes.Positive, label: "Down", labelKey: "ui.dorios.insight.option.waila_vertical_offset.down" })
 ]);
 
 export const ModePresetSummaryModes = Object.freeze({
@@ -157,10 +249,10 @@ export const ModePresetSummaryModes = Object.freeze({
 });
 
 export const ModePresetSummaryModeLabels = Object.freeze([
-    Object.freeze({ key: ModePresetSummaryModes.Hidden, label: "Hidden" }),
-    Object.freeze({ key: ModePresetSummaryModes.Summary, label: "Show Enabled Summary" }),
-    Object.freeze({ key: ModePresetSummaryModes.SummaryAndChanged, label: "Show Summary + Changed" }),
-    Object.freeze({ key: ModePresetSummaryModes.ChangedOnly, label: "Show Changed Only" })
+    Object.freeze({ key: ModePresetSummaryModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.mode_summary.hidden" }),
+    Object.freeze({ key: ModePresetSummaryModes.Summary, label: "Show Enabled Summary", labelKey: "ui.dorios.insight.option.mode_summary.summary" }),
+    Object.freeze({ key: ModePresetSummaryModes.SummaryAndChanged, label: "Show Summary + Changed", labelKey: "ui.dorios.insight.option.mode_summary.summary_and_changed" }),
+    Object.freeze({ key: ModePresetSummaryModes.ChangedOnly, label: "Show Changed Only", labelKey: "ui.dorios.insight.option.mode_summary.changed_only" })
 ]);
 
 export const EntityNameDisplayModes = Object.freeze({
@@ -173,12 +265,12 @@ export const EntityNameDisplayModes = Object.freeze({
 });
 
 export const EntityNameDisplayModeLabels = Object.freeze([
-    Object.freeze({ key: EntityNameDisplayModes.NicknameFirst, label: "Nickname First" }),
-    Object.freeze({ key: EntityNameDisplayModes.MobNameFirst, label: "Mob Name First" }),
-    Object.freeze({ key: EntityNameDisplayModes.NicknameAfterMobName, label: "Nickname After Mob Name" }),
-    Object.freeze({ key: EntityNameDisplayModes.MobNameAfterNickname, label: "Mob Name After Nickname" }),
-    Object.freeze({ key: EntityNameDisplayModes.NicknameOnly, label: "Nickname Only" }),
-    Object.freeze({ key: EntityNameDisplayModes.MobNameOnly, label: "Mob Name Only" })
+    Object.freeze({ key: EntityNameDisplayModes.NicknameFirst, label: "Nickname First", labelKey: "ui.dorios.insight.option.entity_name_display.nickname_first" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameFirst, label: "Mob Name First", labelKey: "ui.dorios.insight.option.entity_name_display.mob_name_first" }),
+    Object.freeze({ key: EntityNameDisplayModes.NicknameAfterMobName, label: "Nickname After Mob Name", labelKey: "ui.dorios.insight.option.entity_name_display.nickname_after_mob_name" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameAfterNickname, label: "Mob Name After Nickname", labelKey: "ui.dorios.insight.option.entity_name_display.mob_name_after_nickname" }),
+    Object.freeze({ key: EntityNameDisplayModes.NicknameOnly, label: "Nickname Only", labelKey: "ui.dorios.insight.option.entity_name_display.nickname_only" }),
+    Object.freeze({ key: EntityNameDisplayModes.MobNameOnly, label: "Mob Name Only", labelKey: "ui.dorios.insight.option.entity_name_display.mob_name_only" })
 ]);
 
 export const EntityNameResolveModes = Object.freeze({
@@ -187,8 +279,20 @@ export const EntityNameResolveModes = Object.freeze({
 });
 
 export const EntityNameResolveModeLabels = Object.freeze([
-    Object.freeze({ key: EntityNameResolveModes.TranslationKeys, label: "Translation Keys" }),
-    Object.freeze({ key: EntityNameResolveModes.TypeIdToText, label: "Translate Id to Text" })
+    Object.freeze({ key: EntityNameResolveModes.TranslationKeys, label: "Translation Keys", labelKey: "ui.dorios.insight.option.entity_name_resolve.translation_keys" }),
+    Object.freeze({ key: EntityNameResolveModes.TypeIdToText, label: "Translate ID to Text", labelKey: "ui.dorios.insight.option.entity_name_resolve.type_id_to_text" })
+]);
+
+export const NamespaceDisplayModes = Object.freeze({
+    Name: "name",
+    NameAndIdentifier: "name_identifier",
+    Identifier: "identifier"
+});
+
+export const NamespaceDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: NamespaceDisplayModes.Name, label: "Display Name", labelKey: "ui.dorios.insight.option.namespace_display.name" }),
+    Object.freeze({ key: NamespaceDisplayModes.NameAndIdentifier, label: "Display Name + Identifier", labelKey: "ui.dorios.insight.option.namespace_display.name_identifier" }),
+    Object.freeze({ key: NamespaceDisplayModes.Identifier, label: "Identifier Only", labelKey: "ui.dorios.insight.option.namespace_display.identifier" })
 ]);
 
 export const VillagerProfessionDisplayModes = Object.freeze({
@@ -198,9 +302,9 @@ export const VillagerProfessionDisplayModes = Object.freeze({
 });
 
 export const VillagerProfessionDisplayModeLabels = Object.freeze([
-    Object.freeze({ key: VillagerProfessionDisplayModes.AfterName, label: "After Name" }),
-    Object.freeze({ key: VillagerProfessionDisplayModes.BelowName, label: "Below Name" }),
-    Object.freeze({ key: VillagerProfessionDisplayModes.Hidden, label: "Hidden" })
+    Object.freeze({ key: VillagerProfessionDisplayModes.AfterName, label: "After Name", labelKey: "ui.dorios.insight.option.villager_profession.after_name" }),
+    Object.freeze({ key: VillagerProfessionDisplayModes.BelowName, label: "Below Name", labelKey: "ui.dorios.insight.option.villager_profession.below_name" }),
+    Object.freeze({ key: VillagerProfessionDisplayModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.villager_profession.hidden" })
 ]);
 
 export const ToolTierIndicatorModes = Object.freeze({
@@ -213,12 +317,12 @@ export const ToolTierIndicatorModes = Object.freeze({
 });
 
 export const ToolTierIndicatorModeLabels = Object.freeze([
-    Object.freeze({ key: ToolTierIndicatorModes.Hidden, label: "Hidden" }),
-    Object.freeze({ key: ToolTierIndicatorModes.BooleanIndicator, label: "Boolean Indicator (Yes/No)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorColor, label: "Tier Indicator (Color)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorOre, label: "Tier Indicator (Ore)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.IconAndIndicator, label: "Tool Icons + Indicator" })
+    Object.freeze({ key: ToolTierIndicatorModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.tool_tier.hidden" }),
+    Object.freeze({ key: ToolTierIndicatorModes.BooleanIndicator, label: "Boolean Indicator (Yes/No)", labelKey: "ui.dorios.insight.option.tool_tier.boolean_indicator" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorColor, label: "Tier Indicator (Color)", labelKey: "ui.dorios.insight.option.tool_tier.tier_indicator_color" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorOre, label: "Tier Indicator (Ore)", labelKey: "ui.dorios.insight.option.tool_tier.tier_indicator_ore" }),
+    Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)", labelKey: "ui.dorios.insight.option.tool_tier.text_indicator" }),
+    Object.freeze({ key: ToolTierIndicatorModes.IconAndIndicator, label: "Tool Icons + Indicator", labelKey: "ui.dorios.insight.option.tool_tier.icon_and_indicator" })
 ]);
 
 export const ToolIndicatorPlacementModes = Object.freeze({
@@ -228,20 +332,20 @@ export const ToolIndicatorPlacementModes = Object.freeze({
 });
 
 export const ToolIndicatorPlacementModeLabels = Object.freeze([
-    Object.freeze({ key: ToolIndicatorPlacementModes.BeforeName, label: "Before Name" }),
-    Object.freeze({ key: ToolIndicatorPlacementModes.AfterName, label: "After Name" }),
-    Object.freeze({ key: ToolIndicatorPlacementModes.BelowName, label: "Below Name" })
+    Object.freeze({ key: ToolIndicatorPlacementModes.BeforeName, label: "Before Name", labelKey: "ui.dorios.insight.option.tool_position.before_name" }),
+    Object.freeze({ key: ToolIndicatorPlacementModes.AfterName, label: "After Name", labelKey: "ui.dorios.insight.option.tool_position.after_name" }),
+    Object.freeze({ key: ToolIndicatorPlacementModes.BelowName, label: "Below Name", labelKey: "ui.dorios.insight.option.tool_position.below_name" })
 ]);
 
 export const ToolIndicatorColorOptions = Object.freeze([
-    Object.freeze({ key: "§7", label: "Gray (Default)" }),
-    Object.freeze({ key: "§f", label: "White" }),
-    Object.freeze({ key: "§e", label: "Yellow" }),
-    Object.freeze({ key: "§a", label: "Green" }),
-    Object.freeze({ key: "§b", label: "Aqua" }),
-    Object.freeze({ key: "§9", label: "Blue" }),
-    Object.freeze({ key: "§d", label: "Light Purple" }),
-    Object.freeze({ key: "§c", label: "Red" })
+    Object.freeze({ key: "§7", label: "Gray (Default)", labelKey: "ui.dorios.insight.option.tool_color.gray" }),
+    Object.freeze({ key: "§f", label: "White", labelKey: "ui.dorios.insight.option.tool_color.white" }),
+    Object.freeze({ key: "§e", label: "Yellow", labelKey: "ui.dorios.insight.option.tool_color.yellow" }),
+    Object.freeze({ key: "§a", label: "Green", labelKey: "ui.dorios.insight.option.tool_color.green" }),
+    Object.freeze({ key: "§b", label: "Aqua", labelKey: "ui.dorios.insight.option.tool_color.aqua" }),
+    Object.freeze({ key: "§9", label: "Blue", labelKey: "ui.dorios.insight.option.tool_color.blue" }),
+    Object.freeze({ key: "§d", label: "Light Purple", labelKey: "ui.dorios.insight.option.tool_color.light_purple" }),
+    Object.freeze({ key: "§c", label: "Red", labelKey: "ui.dorios.insight.option.tool_color.red" })
 ]);
 
 export const InsightComponentDefinitions = Object.freeze([
@@ -347,6 +451,7 @@ export const InsightConfig = Object.freeze({
 export const InsightModePresets = Object.freeze({
     [InsightModes.Essential]: Object.freeze({
         label: "Essential",
+        labelKey: "ui.dorios.insight.mode.essential",
         runtime: Object.freeze({
             maxDistance: 7,
             updateIntervalTicks: 3,
@@ -372,6 +477,8 @@ export const InsightModePresets = Object.freeze({
             airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
+            namespaceDisplayMode: NamespaceDisplayModes.Name,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -387,7 +494,18 @@ export const InsightModePresets = Object.freeze({
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
             hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            hudDurabilityDisplayMode: HudDurabilityDisplayModes.ValuesAndPercent,
+            hudDurabilityPosition: HudDurabilityPositionModes.RightHotbar,
+            hudDurabilityShowWhenFull: false,
+            hudQuickCounterEnabled: false,
+            hudQuickCounterPrimaryMode: HudQuickCounterModes.HandStack,
+            hudQuickCounterSecondaryMode: HudQuickCounterModes.InventoryTotal,
+            hudQuickCounterShowIcon: true,
             wailaColorTheme: WailaColorThemes.Default,
+            wailaAnchor: WailaAnchorModes.TopMiddle,
+            wailaHorizontalOffset: WailaOffsetModes.Center,
+            wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaShowEntityRender: true,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -427,6 +545,7 @@ export const InsightModePresets = Object.freeze({
     }),
     [InsightModes.Detailed]: Object.freeze({
         label: "Detailed",
+        labelKey: "ui.dorios.insight.mode.detailed",
         runtime: Object.freeze({
             maxDistance: 9,
             updateIntervalTicks: 2,
@@ -452,6 +571,8 @@ export const InsightModePresets = Object.freeze({
             airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
+            namespaceDisplayMode: NamespaceDisplayModes.Name,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -467,7 +588,18 @@ export const InsightModePresets = Object.freeze({
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
             hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            hudDurabilityDisplayMode: HudDurabilityDisplayModes.ValuesAndPercent,
+            hudDurabilityPosition: HudDurabilityPositionModes.RightHotbar,
+            hudDurabilityShowWhenFull: false,
+            hudQuickCounterEnabled: false,
+            hudQuickCounterPrimaryMode: HudQuickCounterModes.HandStack,
+            hudQuickCounterSecondaryMode: HudQuickCounterModes.InventoryTotal,
+            hudQuickCounterShowIcon: true,
             wailaColorTheme: WailaColorThemes.Default,
+            wailaAnchor: WailaAnchorModes.TopMiddle,
+            wailaHorizontalOffset: WailaOffsetModes.Center,
+            wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaShowEntityRender: true,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -507,6 +639,7 @@ export const InsightModePresets = Object.freeze({
     }),
     [InsightModes.Debug]: Object.freeze({
         label: "Debug",
+        labelKey: "ui.dorios.insight.mode.debug",
         runtime: Object.freeze({
             maxDistance: 12,
             updateIntervalTicks: 1,
@@ -532,6 +665,8 @@ export const InsightModePresets = Object.freeze({
             airDisplayStyle: DisplayStyles.Icon,
             nameDisplayMode: EntityNameDisplayModes.NicknameFirst,
             nameResolveMode: EntityNameResolveModes.TranslationKeys,
+            blockNameResolveMode: EntityNameResolveModes.TranslationKeys,
+            namespaceDisplayMode: NamespaceDisplayModes.Name,
             villagerProfessionDisplay: VillagerProfessionDisplayModes.BelowName,
             toolTierIndicatorMode: ToolTierIndicatorModes.BooleanIndicator,
             toolIndicatorPlacement: ToolIndicatorPlacementModes.BeforeName,
@@ -547,7 +682,18 @@ export const InsightModePresets = Object.freeze({
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
             hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            hudDurabilityDisplayMode: HudDurabilityDisplayModes.ValuesAndPercent,
+            hudDurabilityPosition: HudDurabilityPositionModes.RightHotbar,
+            hudDurabilityShowWhenFull: false,
+            hudQuickCounterEnabled: false,
+            hudQuickCounterPrimaryMode: HudQuickCounterModes.HandStack,
+            hudQuickCounterSecondaryMode: HudQuickCounterModes.InventoryTotal,
+            hudQuickCounterShowIcon: true,
             wailaColorTheme: WailaColorThemes.Default,
+            wailaAnchor: WailaAnchorModes.TopMiddle,
+            wailaHorizontalOffset: WailaOffsetModes.Center,
+            wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaShowEntityRender: true,
             stateColumns: 2,
             tagColumns: 2,
             familyColumns: 2
@@ -753,6 +899,111 @@ export function getWailaColorThemeNumericId(theme) {
     return getWailaColorThemeIndex(theme);
 }
 
+export function normalizeHudDurabilityDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudDurabilityDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudDurabilityDisplayModes.ValuesAndPercent;
+}
+
+export function getHudDurabilityDisplayModeIndex(mode) {
+    const normalized = normalizeHudDurabilityDisplayMode(mode);
+    const index = HudDurabilityDisplayModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudDurabilityDisplayModeNumericId(mode) {
+    return getHudDurabilityDisplayModeIndex(mode);
+}
+
+export function normalizeHudDurabilityPositionMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudDurabilityPositionModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudDurabilityPositionModes.RightHotbar;
+}
+
+export function getHudDurabilityPositionModeIndex(mode) {
+    const normalized = normalizeHudDurabilityPositionMode(mode);
+    const index = HudDurabilityPositionModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudDurabilityPositionNumericId(mode) {
+    return getHudDurabilityPositionModeIndex(mode);
+}
+
+export function normalizeHudQuickCounterMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudQuickCounterModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudQuickCounterModes.Hidden;
+}
+
+export function getHudQuickCounterModeIndex(mode) {
+    const normalized = normalizeHudQuickCounterMode(mode);
+    const index = HudQuickCounterModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudQuickCounterModeNumericId(mode) {
+    return getHudQuickCounterModeIndex(mode);
+}
+
+export function normalizeWailaAnchorMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of WailaAnchorModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaAnchorModes.TopMiddle;
+}
+
+export function getWailaAnchorModeIndex(mode) {
+    const normalized = normalizeWailaAnchorMode(mode);
+    const index = WailaAnchorModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaAnchorNumericId(mode) {
+    return getWailaAnchorModeIndex(mode);
+}
+
+export function normalizeWailaOffsetMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of WailaHorizontalOffsetModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaOffsetModes.Center;
+}
+
+export function getWailaOffsetModeIndex(mode) {
+    const normalized = normalizeWailaOffsetMode(mode);
+    const index = WailaHorizontalOffsetModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaOffsetNumericId(mode) {
+    return getWailaOffsetModeIndex(mode);
+}
+
 export function normalizeModePresetSummaryMode(mode) {
     const normalized = String(mode || "").trim().toLowerCase();
     for (const option of ModePresetSummaryModeLabels) {
@@ -801,6 +1052,23 @@ export function normalizeEntityNameResolveMode(mode) {
 export function getEntityNameResolveModeIndex(mode) {
     const normalized = normalizeEntityNameResolveMode(mode);
     const index = EntityNameResolveModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function normalizeNamespaceDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of NamespaceDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return NamespaceDisplayModes.Name;
+}
+
+export function getNamespaceDisplayModeIndex(mode) {
+    const normalized = normalizeNamespaceDisplayMode(mode);
+    const index = NamespaceDisplayModeLabels.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
 }
 
@@ -1021,6 +1289,12 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         airDisplayStyle: normalizeDisplayStyle(runtime.airDisplayStyle ?? presetRuntime.airDisplayStyle),
         nameDisplayMode: normalizeEntityNameDisplayMode(runtime.nameDisplayMode ?? presetRuntime.nameDisplayMode),
         nameResolveMode: normalizeEntityNameResolveMode(runtime.nameResolveMode ?? presetRuntime.nameResolveMode),
+        blockNameResolveMode: normalizeEntityNameResolveMode(
+            runtime.blockNameResolveMode ?? presetRuntime.blockNameResolveMode ?? presetRuntime.nameResolveMode
+        ),
+        namespaceDisplayMode: normalizeNamespaceDisplayMode(
+            runtime.namespaceDisplayMode ?? presetRuntime.namespaceDisplayMode
+        ),
         villagerProfessionDisplay: normalizeVillagerProfessionDisplayMode(
             runtime.villagerProfessionDisplay ?? presetRuntime.villagerProfessionDisplay
         ),
@@ -1064,9 +1338,42 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         hudInventoryOrientation: normalizeHudElementOrientationMode(
             runtime.hudInventoryOrientation ?? presetRuntime.hudInventoryOrientation
         ),
+        hudDurabilityDisplayMode: normalizeHudDurabilityDisplayMode(
+            runtime.hudDurabilityDisplayMode ?? presetRuntime.hudDurabilityDisplayMode
+        ),
+        hudDurabilityPosition: normalizeHudDurabilityPositionMode(
+            runtime.hudDurabilityPosition ?? presetRuntime.hudDurabilityPosition
+        ),
+        hudDurabilityShowWhenFull: typeof runtime.hudDurabilityShowWhenFull === "boolean"
+            ? runtime.hudDurabilityShowWhenFull
+            : presetRuntime.hudDurabilityShowWhenFull,
+        hudQuickCounterEnabled: typeof runtime.hudQuickCounterEnabled === "boolean"
+            ? runtime.hudQuickCounterEnabled
+            : presetRuntime.hudQuickCounterEnabled,
+        hudQuickCounterPrimaryMode: normalizeHudQuickCounterMode(
+            runtime.hudQuickCounterPrimaryMode ?? presetRuntime.hudQuickCounterPrimaryMode
+        ),
+        hudQuickCounterSecondaryMode: normalizeHudQuickCounterMode(
+            runtime.hudQuickCounterSecondaryMode ?? presetRuntime.hudQuickCounterSecondaryMode
+        ),
+        hudQuickCounterShowIcon: typeof runtime.hudQuickCounterShowIcon === "boolean"
+            ? runtime.hudQuickCounterShowIcon
+            : presetRuntime.hudQuickCounterShowIcon,
         wailaColorTheme: normalizeWailaColorTheme(
             runtime.wailaColorTheme ?? presetRuntime.wailaColorTheme
         ),
+        wailaAnchor: normalizeWailaAnchorMode(
+            runtime.wailaAnchor ?? presetRuntime.wailaAnchor
+        ),
+        wailaHorizontalOffset: normalizeWailaOffsetMode(
+            runtime.wailaHorizontalOffset ?? presetRuntime.wailaHorizontalOffset
+        ),
+        wailaVerticalOffset: normalizeWailaOffsetMode(
+            runtime.wailaVerticalOffset ?? presetRuntime.wailaVerticalOffset
+        ),
+        wailaShowEntityRender: typeof runtime.wailaShowEntityRender === "boolean"
+            ? runtime.wailaShowEntityRender
+            : presetRuntime.wailaShowEntityRender,
         stateColumns: clamp(
             Number.isFinite(runtime.stateColumns) ? runtime.stateColumns : presetRuntime.stateColumns,
             1,
@@ -1538,6 +1845,8 @@ export function getPlayerDisplaySettings(player) {
         airDisplayStyle: runtime.airDisplayStyle,
         nameDisplayMode: runtime.nameDisplayMode,
         nameResolveMode: runtime.nameResolveMode,
+        blockNameResolveMode: runtime.blockNameResolveMode,
+        namespaceDisplayMode: runtime.namespaceDisplayMode,
         villagerProfessionDisplay: runtime.villagerProfessionDisplay,
         toolTierIndicatorMode: runtime.toolTierIndicatorMode,
         toolIndicatorPlacement: runtime.toolIndicatorPlacement,
@@ -1553,8 +1862,26 @@ export function getPlayerDisplaySettings(player) {
         hudInventoryPosition: runtime.hudInventoryPosition,
         hudInventoryDisplayMode: runtime.hudInventoryDisplayMode,
         hudInventoryOrientation: runtime.hudInventoryOrientation,
+        hudDurabilityDisplayMode: runtime.hudDurabilityDisplayMode,
+        hudDurabilityDisplayModeId: getHudDurabilityDisplayModeNumericId(runtime.hudDurabilityDisplayMode),
+        hudDurabilityPosition: runtime.hudDurabilityPosition,
+        hudDurabilityPositionId: getHudDurabilityPositionNumericId(runtime.hudDurabilityPosition),
+        hudDurabilityShowWhenFull: Boolean(runtime.hudDurabilityShowWhenFull),
+        hudQuickCounterEnabled: Boolean(runtime.hudQuickCounterEnabled),
+        hudQuickCounterPrimaryMode: runtime.hudQuickCounterPrimaryMode,
+        hudQuickCounterPrimaryModeId: getHudQuickCounterModeNumericId(runtime.hudQuickCounterPrimaryMode),
+        hudQuickCounterSecondaryMode: runtime.hudQuickCounterSecondaryMode,
+        hudQuickCounterSecondaryModeId: getHudQuickCounterModeNumericId(runtime.hudQuickCounterSecondaryMode),
+        hudQuickCounterShowIcon: Boolean(runtime.hudQuickCounterShowIcon),
         wailaColorTheme: runtime.wailaColorTheme,
         wailaColorThemeId: getWailaColorThemeNumericId(runtime.wailaColorTheme),
+        wailaAnchor: runtime.wailaAnchor,
+        wailaAnchorId: getWailaAnchorNumericId(runtime.wailaAnchor),
+        wailaHorizontalOffset: runtime.wailaHorizontalOffset,
+        wailaHorizontalOffsetId: getWailaOffsetNumericId(runtime.wailaHorizontalOffset),
+        wailaVerticalOffset: runtime.wailaVerticalOffset,
+        wailaVerticalOffsetId: getWailaOffsetNumericId(runtime.wailaVerticalOffset),
+        wailaShowEntityRender: Boolean(runtime.wailaShowEntityRender),
         showHudHealthInsight,
         showHudHungerInsight,
         showHudSaturationInsight,
