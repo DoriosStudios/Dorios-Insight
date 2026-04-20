@@ -38,6 +38,12 @@
 						}
 					]
 				}
+			},
+			{
+				"inventory_hud_anchor@insight_hud.inventory_hud_anchor": {}
+			},
+			{
+				"inventory_hud_stack_center@insight_hud.inventory_hud_stack_center": {}
 			}
 		]
 	},
@@ -50,7 +56,10 @@
 			{ "section_b@insight_data.hud_data_section_b": {} },
 			{ "section_c@insight_data.hud_data_section_c": {} },
 			{ "section_d@insight_data.hud_data_section_d": {} },
-			{ "section_e@insight_data.hud_data_section_e": {} }
+			{ "section_e@insight_data.hud_data_section_e": {} },
+			{ "section_f@insight_data.hud_data_section_f": {} },
+			{ "section_g@insight_data.hud_data_section_g": {} },
+			{ "section_h@insight_data.hud_data_section_h": {} }
 		]
 	},
 
@@ -94,18 +103,21 @@
 					],
 					"bindings": [
 						{
-							"binding_name": "#show_survival_ui"
+							"binding_name": "#show_survival_ui",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_control_name": "section_c",
 							"source_property_name": "(#extra_armor + #extra_armor_full)",
-							"target_property_name": "#total_extra"
+							"target_property_name": "#total_extra",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
-							"target_property_name": "#visible"
+							"target_property_name": "#visible",
+							"binding_condition": "always"
 						}
 					]
 				}
@@ -160,6 +172,20 @@
 							"binding_name": "#show_survival_ui"
 						}
 					]
+				}
+			},
+			{
+				"durability_indicator@insight_hud.durability_indicator": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [0, 80]
+				}
+			},
+			{
+				"inventory_hud_placeholder": {
+					"type": "panel",
+					"size": [0, 0],
+					"visible": false
 				}
 			}
 			// {
@@ -218,18 +244,21 @@
 					],
 					"bindings": [
 						{
-							"binding_name": "#show_survival_ui"
+							"binding_name": "#show_survival_ui",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_control_name": "section_c",
 							"source_property_name": "(#extra_armor + #extra_armor_full)",
-							"target_property_name": "#total_extra"
+							"target_property_name": "#total_extra",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
-							"target_property_name": "#visible"
+							"target_property_name": "#visible",
+							"binding_condition": "always"
 						}
 					]
 				}
@@ -285,6 +314,20 @@
 						}
 					]
 				}
+			},
+			{
+				"durability_indicator@insight_hud.durability_indicator": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [14, 80]
+				}
+			},
+			{
+				"inventory_hud_placeholder": {
+					"type": "panel",
+					"size": [0, 0],
+					"visible": false
+				}
 			}
 			// {
 			// 	"exhaustion_bar@insight_hud.exhaustion_bar": {
@@ -336,18 +379,21 @@
 					],
 					"bindings": [
 						{
-							"binding_name": "#show_survival_ui"
+							"binding_name": "#show_survival_ui",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_control_name": "section_c",
 							"source_property_name": "(#extra_armor + #extra_armor_full)",
-							"target_property_name": "#total_extra"
+							"target_property_name": "#total_extra",
+							"binding_condition": "always"
 						},
 						{
 							"binding_type": "view",
 							"source_property_name": "(#show_survival_ui and (#total_extra > 0))",
-							"target_property_name": "#visible"
+							"target_property_name": "#visible",
+							"binding_condition": "always"
 						}
 					]
 				}
@@ -402,6 +448,20 @@
 							"binding_name": "#show_survival_ui"
 						}
 					]
+				}
+			},
+			{
+				"durability_indicator@insight_hud.durability_indicator": {
+					"anchor_from": "bottom_right",
+					"anchor_to": "bottom_right",
+					"offset": [-2, 88]
+				}
+			},
+			{
+				"inventory_hud_placeholder": {
+					"type": "panel",
+					"size": [0, 0],
+					"visible": false
 				}
 			}
 			// {
@@ -480,7 +540,8 @@
 										"binding_type": "view",
 										"source_control_name": "section_a",
 										"source_property_name": "#health",
-										"target_property_name": "#text"
+										"target_property_name": "#text",
+										"binding_condition": "always"
 									}
 								]
 							}
@@ -516,7 +577,8 @@
 										"binding_type": "view",
 										"source_control_name": "section_a",
 										"source_property_name": "#max_health",
-										"target_property_name": "#text"
+										"target_property_name": "#text",
+										"binding_condition": "always"
 									}
 								]
 							}
@@ -527,24 +589,28 @@
 		],
 		"bindings": [
 			{
-				"binding_name": "#show_survival_ui"
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_control_name": "section_e",
 				"source_property_name": "(#hud_health_indicator > 0)",
-				"target_property_name": "#indicator_enabled"
+				"target_property_name": "#indicator_enabled",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_control_name": "section_a",
 				"source_property_name": "(#max_health > 0)",
-				"target_property_name": "#has_data"
+				"target_property_name": "#has_data",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_property_name": "(#show_survival_ui and #indicator_enabled and #has_data)",
-				"target_property_name": "#visible"
+				"target_property_name": "#visible",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -565,7 +631,8 @@
 							"binding_type": "view",
 							"source_control_name": "section_b",
 							"source_property_name": "#hunger",
-							"target_property_name": "#text"
+							"target_property_name": "#text",
+							"binding_condition": "always"
 						}
 					]
 				}
@@ -589,7 +656,8 @@
 							"binding_type": "view",
 							"source_control_name": "section_b",
 							"source_property_name": "#max_hunger",
-							"target_property_name": "#text"
+							"target_property_name": "#text",
+							"binding_condition": "always"
 						}
 					]
 				}
@@ -635,24 +703,28 @@
 		],
 		"bindings": [
 			{
-				"binding_name": "#show_survival_ui"
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_control_name": "section_e",
 				"source_property_name": "(#hud_hunger_indicator > 0)",
-				"target_property_name": "#indicator_enabled"
+				"target_property_name": "#indicator_enabled",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_control_name": "section_b",
 				"source_property_name": "(#max_hunger > 0)",
-				"target_property_name": "#has_data"
+				"target_property_name": "#has_data",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_property_name": "(#show_survival_ui and #indicator_enabled and #has_data)",
-				"target_property_name": "#visible"
+				"target_property_name": "#visible",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -903,7 +975,8 @@
 				"binding_type": "view",
 				"source_control_name": "section_c",
 				"source_property_name": "#extra_armor_full",
-				"target_property_name": "#collection_length"
+				"target_property_name": "#collection_length",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -922,7 +995,8 @@
 				"binding_type": "view",
 				"source_control_name": "section_a",
 				"source_property_name": "#health_gap",
-				"target_property_name": "#collection_length"
+				"target_property_name": "#collection_length",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -1041,18 +1115,21 @@
 		],
 		"bindings": [
 			{
-				"binding_name": "#show_survival_ui"
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_control_name": "section_c",
 				"source_property_name": "(#toughness > 0)",
-				"target_property_name": "#has_data"
+				"target_property_name": "#has_data",
+				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
 				"source_property_name": "(#show_survival_ui and #has_data)",
-				"target_property_name": "#visible"
+				"target_property_name": "#visible",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -1333,6 +1410,1018 @@
 		"duration": 1,
 		"from": 0.0,
 		"to": 1
+	},
+
+	"durability_indicator": {
+		"type": "stack_panel",
+		"orientation": "vertical",
+		"size": ["100%cm", "100%c"],
+		"controls": [
+			{
+				"percent_row": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
+						{
+							"value": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [0.55, 0.9, 0.55],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_e",
+										"source_property_name": "#dur_percent",
+										"target_property_name": "#text",
+										"binding_condition": "always"
+									}
+								]
+							}
+						},
+						{
+							"symbol": {
+								"type": "label",
+								"text": "%",
+								"shadow": true,
+								"color": [0.65, 0.65, 0.65]
+							}
+						}
+					]
+				}
+			},
+			{
+				"values_row": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
+						{
+							"current": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [0.75, 0.75, 0.75],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_f",
+										"source_property_name": "#dur_current",
+										"target_property_name": "#text",
+										"binding_condition": "always"
+									}
+								]
+							}
+						},
+						{
+							"slash": {
+								"type": "label",
+								"text": "/",
+								"shadow": true,
+								"color": [0.55, 0.55, 0.55]
+							}
+						},
+						{
+							"max": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [0.75, 0.75, 0.75],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_f",
+										"source_property_name": "#dur_max",
+										"target_property_name": "#text",
+										"binding_condition": "always"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "(#dur_visible > 0)",
+				"target_property_name": "#has_durability",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_durability)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"inventory_hud_item_icon@common.item_renderer": {
+		"$item_collection_name": "$item_collection_name",
+		"property_bag": {
+			"force_update": true
+		}
+	},
+
+	"inventory_hud_slot": {
+		"$item_collection_name|default": "hotbar_items",
+		"$stack_count_required": true,
+		"$durability_bar_required|default": true,
+		"$durability_bar_size": [11, 0.6],
+		"type": "panel",
+		"size": [15, 15],
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/White",
+					"size": ["100% - 1px", "100% - 1px"],
+					"color": [0.0, 0.0, 0.0],
+					"alpha": 0.35,
+					"layer": 1
+				}
+			},
+			{
+				"selected_overlay": {
+					"type": "image",
+					"texture": "textures/ui/White",
+					"size": ["100% - 1px", "100% - 1px"],
+					"color": [0.95, 0.82, 0.28],
+					"alpha": 0.25,
+					"layer": 2,
+					"bindings": [
+						{
+							"binding_name": "#slot_selected",
+							"binding_name_override": "#visible",
+							"binding_type": "collection",
+							"binding_collection_name": "$item_collection_name"
+						}
+					]
+				}
+			},
+			{
+				"item_panel": {
+					"type": "panel",
+					"size": [15, 15],
+					"layer": 3,
+					"controls": [
+						{
+							"item_renderer_panel": {
+								"type": "panel",
+								"size": [14, 14],
+								"layer": 4,
+								"controls": [
+									{
+										"item_count@common.stack_count_label": {
+											"font_scale_factor": 0.6,
+											"layer": 27
+										}
+									},
+									{
+										"item_renderer@insight_hud.inventory_hud_item_icon": {
+											"size": [14, 14],
+											"layer": 7
+										}
+									}
+								]
+							}
+						},
+						{
+							"durability_bar@common.durability_bar": {
+								"layer": 20,
+								"$item_collection_name": "$item_collection_name",
+								"$durability_bar_required": true
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+
+	"inventory_hud_indexed_slot@insight_hud.inventory_hud_slot": {
+		"$item_collection_name": "hotbar_items",
+		"anchor_from": "top_left",
+		"anchor_to": "top_left"
+	},
+
+	"inventory_hud_selected_item_icon": {
+		"$item_collection_name|default": "hotbar_items",
+		"type": "panel",
+		"size": [16, 16],
+		"controls": [
+			{
+				"item_renderer@insight_hud.inventory_hud_item_icon": {
+					"size": [16, 16],
+					"layer": 1
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#slot_selected",
+				"binding_name_override": "#visible",
+				"binding_type": "collection",
+				"binding_collection_name": "$item_collection_name"
+			}
+		]
+	},
+
+	"inventory_hud_selected_icon_panel": {
+		"type": "collection_panel",
+		"size": [16, 16],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_0@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 0, "$item_collection_name": "hotbar_items" } },
+			{ "slot_1@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 1, "$item_collection_name": "hotbar_items" } },
+			{ "slot_2@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 2, "$item_collection_name": "hotbar_items" } },
+			{ "slot_3@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 3, "$item_collection_name": "hotbar_items" } },
+			{ "slot_4@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 4, "$item_collection_name": "hotbar_items" } },
+			{ "slot_5@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 5, "$item_collection_name": "hotbar_items" } },
+			{ "slot_6@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 6, "$item_collection_name": "hotbar_items" } },
+			{ "slot_7@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 7, "$item_collection_name": "hotbar_items" } },
+			{ "slot_8@insight_hud.inventory_hud_selected_item_icon": { "collection_index": 8, "$item_collection_name": "hotbar_items" } }
+		]
+	},
+
+	"inventory_hud_stack_center": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"anchor_from": "bottom_middle",
+		"anchor_to": "bottom_middle",
+		"offset": [0, -20],
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"icon@insight_hud.inventory_hud_selected_icon_panel": {}
+			},
+			{
+				"icon_gap": {
+					"type": "panel",
+					"size": [4, 1]
+				}
+			},
+			{
+				"values": {
+					"type": "stack_panel",
+					"orientation": "vertical",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
+						{
+							"current": {
+								"type": "label",
+								"text": "#text",
+								"shadow": true,
+								"color": [0.95, 0.95, 0.95],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_h",
+										"source_property_name": "#stack_current",
+										"target_property_name": "#text",
+										"binding_condition": "always"
+									}
+								]
+							}
+						},
+						{
+							"total_row": {
+								"type": "stack_panel",
+								"orientation": "horizontal",
+								"size": ["100%cm", "100%cm"],
+								"controls": [
+									{
+										"sigma": {
+											"type": "label",
+											"text": "Σ",
+											"shadow": true,
+											"color": [0.78, 0.78, 0.78]
+										}
+									},
+									{
+										"sigma_gap": {
+											"type": "panel",
+											"size": [2, 1]
+										}
+									},
+									{
+										"total": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [0.78, 0.78, 0.78],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_h",
+													"source_property_name": "#stack_total",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												}
+											]
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_g",
+				"source_property_name": "(#hud_inventory > 0)",
+				"target_property_name": "#inventory_enabled",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_h",
+				"source_property_name": "(#stack_visible > 0)",
+				"target_property_name": "#has_stack",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #inventory_enabled and #has_stack)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"inventory_hud_slots_full_horizontal": {
+		"type": "collection_panel",
+		"size": [135, 60],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_0@insight_hud.inventory_hud_indexed_slot": { "collection_index": 0, "offset": [0, 0] } },
+			{ "slot_1@insight_hud.inventory_hud_indexed_slot": { "collection_index": 1, "offset": [15, 0] } },
+			{ "slot_2@insight_hud.inventory_hud_indexed_slot": { "collection_index": 2, "offset": [30, 0] } },
+			{ "slot_3@insight_hud.inventory_hud_indexed_slot": { "collection_index": 3, "offset": [45, 0] } },
+			{ "slot_4@insight_hud.inventory_hud_indexed_slot": { "collection_index": 4, "offset": [60, 0] } },
+			{ "slot_5@insight_hud.inventory_hud_indexed_slot": { "collection_index": 5, "offset": [75, 0] } },
+			{ "slot_6@insight_hud.inventory_hud_indexed_slot": { "collection_index": 6, "offset": [90, 0] } },
+			{ "slot_7@insight_hud.inventory_hud_indexed_slot": { "collection_index": 7, "offset": [105, 0] } },
+			{ "slot_8@insight_hud.inventory_hud_indexed_slot": { "collection_index": 8, "offset": [120, 0] } },
+			{ "slot_9@insight_hud.inventory_hud_indexed_slot": { "collection_index": 9, "offset": [0, 15] } },
+			{ "slot_10@insight_hud.inventory_hud_indexed_slot": { "collection_index": 10, "offset": [15, 15] } },
+			{ "slot_11@insight_hud.inventory_hud_indexed_slot": { "collection_index": 11, "offset": [30, 15] } },
+			{ "slot_12@insight_hud.inventory_hud_indexed_slot": { "collection_index": 12, "offset": [45, 15] } },
+			{ "slot_13@insight_hud.inventory_hud_indexed_slot": { "collection_index": 13, "offset": [60, 15] } },
+			{ "slot_14@insight_hud.inventory_hud_indexed_slot": { "collection_index": 14, "offset": [75, 15] } },
+			{ "slot_15@insight_hud.inventory_hud_indexed_slot": { "collection_index": 15, "offset": [90, 15] } },
+			{ "slot_16@insight_hud.inventory_hud_indexed_slot": { "collection_index": 16, "offset": [105, 15] } },
+			{ "slot_17@insight_hud.inventory_hud_indexed_slot": { "collection_index": 17, "offset": [120, 15] } },
+			{ "slot_18@insight_hud.inventory_hud_indexed_slot": { "collection_index": 18, "offset": [0, 30] } },
+			{ "slot_19@insight_hud.inventory_hud_indexed_slot": { "collection_index": 19, "offset": [15, 30] } },
+			{ "slot_20@insight_hud.inventory_hud_indexed_slot": { "collection_index": 20, "offset": [30, 30] } },
+			{ "slot_21@insight_hud.inventory_hud_indexed_slot": { "collection_index": 21, "offset": [45, 30] } },
+			{ "slot_22@insight_hud.inventory_hud_indexed_slot": { "collection_index": 22, "offset": [60, 30] } },
+			{ "slot_23@insight_hud.inventory_hud_indexed_slot": { "collection_index": 23, "offset": [75, 30] } },
+			{ "slot_24@insight_hud.inventory_hud_indexed_slot": { "collection_index": 24, "offset": [90, 30] } },
+			{ "slot_25@insight_hud.inventory_hud_indexed_slot": { "collection_index": 25, "offset": [105, 30] } },
+			{ "slot_26@insight_hud.inventory_hud_indexed_slot": { "collection_index": 26, "offset": [120, 30] } },
+			{ "slot_27@insight_hud.inventory_hud_indexed_slot": { "collection_index": 27, "offset": [0, 45] } },
+			{ "slot_28@insight_hud.inventory_hud_indexed_slot": { "collection_index": 28, "offset": [15, 45] } },
+			{ "slot_29@insight_hud.inventory_hud_indexed_slot": { "collection_index": 29, "offset": [30, 45] } },
+			{ "slot_30@insight_hud.inventory_hud_indexed_slot": { "collection_index": 30, "offset": [45, 45] } },
+			{ "slot_31@insight_hud.inventory_hud_indexed_slot": { "collection_index": 31, "offset": [60, 45] } },
+			{ "slot_32@insight_hud.inventory_hud_indexed_slot": { "collection_index": 32, "offset": [75, 45] } },
+			{ "slot_33@insight_hud.inventory_hud_indexed_slot": { "collection_index": 33, "offset": [90, 45] } },
+			{ "slot_34@insight_hud.inventory_hud_indexed_slot": { "collection_index": 34, "offset": [105, 45] } },
+			{ "slot_35@insight_hud.inventory_hud_indexed_slot": { "collection_index": 35, "offset": [120, 45] } }
+		]
+	},
+
+	"inventory_hud_slots_inventory_horizontal": {
+		"type": "collection_panel",
+		"size": [135, 45],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_9@insight_hud.inventory_hud_indexed_slot": { "collection_index": 9, "offset": [0, 0] } },
+			{ "slot_10@insight_hud.inventory_hud_indexed_slot": { "collection_index": 10, "offset": [15, 0] } },
+			{ "slot_11@insight_hud.inventory_hud_indexed_slot": { "collection_index": 11, "offset": [30, 0] } },
+			{ "slot_12@insight_hud.inventory_hud_indexed_slot": { "collection_index": 12, "offset": [45, 0] } },
+			{ "slot_13@insight_hud.inventory_hud_indexed_slot": { "collection_index": 13, "offset": [60, 0] } },
+			{ "slot_14@insight_hud.inventory_hud_indexed_slot": { "collection_index": 14, "offset": [75, 0] } },
+			{ "slot_15@insight_hud.inventory_hud_indexed_slot": { "collection_index": 15, "offset": [90, 0] } },
+			{ "slot_16@insight_hud.inventory_hud_indexed_slot": { "collection_index": 16, "offset": [105, 0] } },
+			{ "slot_17@insight_hud.inventory_hud_indexed_slot": { "collection_index": 17, "offset": [120, 0] } },
+			{ "slot_18@insight_hud.inventory_hud_indexed_slot": { "collection_index": 18, "offset": [0, 15] } },
+			{ "slot_19@insight_hud.inventory_hud_indexed_slot": { "collection_index": 19, "offset": [15, 15] } },
+			{ "slot_20@insight_hud.inventory_hud_indexed_slot": { "collection_index": 20, "offset": [30, 15] } },
+			{ "slot_21@insight_hud.inventory_hud_indexed_slot": { "collection_index": 21, "offset": [45, 15] } },
+			{ "slot_22@insight_hud.inventory_hud_indexed_slot": { "collection_index": 22, "offset": [60, 15] } },
+			{ "slot_23@insight_hud.inventory_hud_indexed_slot": { "collection_index": 23, "offset": [75, 15] } },
+			{ "slot_24@insight_hud.inventory_hud_indexed_slot": { "collection_index": 24, "offset": [90, 15] } },
+			{ "slot_25@insight_hud.inventory_hud_indexed_slot": { "collection_index": 25, "offset": [105, 15] } },
+			{ "slot_26@insight_hud.inventory_hud_indexed_slot": { "collection_index": 26, "offset": [120, 15] } },
+			{ "slot_27@insight_hud.inventory_hud_indexed_slot": { "collection_index": 27, "offset": [0, 30] } },
+			{ "slot_28@insight_hud.inventory_hud_indexed_slot": { "collection_index": 28, "offset": [15, 30] } },
+			{ "slot_29@insight_hud.inventory_hud_indexed_slot": { "collection_index": 29, "offset": [30, 30] } },
+			{ "slot_30@insight_hud.inventory_hud_indexed_slot": { "collection_index": 30, "offset": [45, 30] } },
+			{ "slot_31@insight_hud.inventory_hud_indexed_slot": { "collection_index": 31, "offset": [60, 30] } },
+			{ "slot_32@insight_hud.inventory_hud_indexed_slot": { "collection_index": 32, "offset": [75, 30] } },
+			{ "slot_33@insight_hud.inventory_hud_indexed_slot": { "collection_index": 33, "offset": [90, 30] } },
+			{ "slot_34@insight_hud.inventory_hud_indexed_slot": { "collection_index": 34, "offset": [105, 30] } },
+			{ "slot_35@insight_hud.inventory_hud_indexed_slot": { "collection_index": 35, "offset": [120, 30] } }
+		]
+	},
+
+	"inventory_hud_slots_hotbar_horizontal": {
+		"type": "collection_panel",
+		"size": [135, 15],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_0@insight_hud.inventory_hud_indexed_slot": { "collection_index": 0, "offset": [0, 0] } },
+			{ "slot_1@insight_hud.inventory_hud_indexed_slot": { "collection_index": 1, "offset": [15, 0] } },
+			{ "slot_2@insight_hud.inventory_hud_indexed_slot": { "collection_index": 2, "offset": [30, 0] } },
+			{ "slot_3@insight_hud.inventory_hud_indexed_slot": { "collection_index": 3, "offset": [45, 0] } },
+			{ "slot_4@insight_hud.inventory_hud_indexed_slot": { "collection_index": 4, "offset": [60, 0] } },
+			{ "slot_5@insight_hud.inventory_hud_indexed_slot": { "collection_index": 5, "offset": [75, 0] } },
+			{ "slot_6@insight_hud.inventory_hud_indexed_slot": { "collection_index": 6, "offset": [90, 0] } },
+			{ "slot_7@insight_hud.inventory_hud_indexed_slot": { "collection_index": 7, "offset": [105, 0] } },
+			{ "slot_8@insight_hud.inventory_hud_indexed_slot": { "collection_index": 8, "offset": [120, 0] } }
+		]
+	},
+
+	"inventory_hud_slots_full_vertical": {
+		"type": "collection_panel",
+		"size": [60, 135],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_0@insight_hud.inventory_hud_indexed_slot": { "collection_index": 0, "offset": [0, 0] } },
+			{ "slot_1@insight_hud.inventory_hud_indexed_slot": { "collection_index": 1, "offset": [0, 15] } },
+			{ "slot_2@insight_hud.inventory_hud_indexed_slot": { "collection_index": 2, "offset": [0, 30] } },
+			{ "slot_3@insight_hud.inventory_hud_indexed_slot": { "collection_index": 3, "offset": [0, 45] } },
+			{ "slot_4@insight_hud.inventory_hud_indexed_slot": { "collection_index": 4, "offset": [0, 60] } },
+			{ "slot_5@insight_hud.inventory_hud_indexed_slot": { "collection_index": 5, "offset": [0, 75] } },
+			{ "slot_6@insight_hud.inventory_hud_indexed_slot": { "collection_index": 6, "offset": [0, 90] } },
+			{ "slot_7@insight_hud.inventory_hud_indexed_slot": { "collection_index": 7, "offset": [0, 105] } },
+			{ "slot_8@insight_hud.inventory_hud_indexed_slot": { "collection_index": 8, "offset": [0, 120] } },
+			{ "slot_9@insight_hud.inventory_hud_indexed_slot": { "collection_index": 9, "offset": [15, 0] } },
+			{ "slot_10@insight_hud.inventory_hud_indexed_slot": { "collection_index": 10, "offset": [15, 15] } },
+			{ "slot_11@insight_hud.inventory_hud_indexed_slot": { "collection_index": 11, "offset": [15, 30] } },
+			{ "slot_12@insight_hud.inventory_hud_indexed_slot": { "collection_index": 12, "offset": [15, 45] } },
+			{ "slot_13@insight_hud.inventory_hud_indexed_slot": { "collection_index": 13, "offset": [15, 60] } },
+			{ "slot_14@insight_hud.inventory_hud_indexed_slot": { "collection_index": 14, "offset": [15, 75] } },
+			{ "slot_15@insight_hud.inventory_hud_indexed_slot": { "collection_index": 15, "offset": [15, 90] } },
+			{ "slot_16@insight_hud.inventory_hud_indexed_slot": { "collection_index": 16, "offset": [15, 105] } },
+			{ "slot_17@insight_hud.inventory_hud_indexed_slot": { "collection_index": 17, "offset": [15, 120] } },
+			{ "slot_18@insight_hud.inventory_hud_indexed_slot": { "collection_index": 18, "offset": [30, 0] } },
+			{ "slot_19@insight_hud.inventory_hud_indexed_slot": { "collection_index": 19, "offset": [30, 15] } },
+			{ "slot_20@insight_hud.inventory_hud_indexed_slot": { "collection_index": 20, "offset": [30, 30] } },
+			{ "slot_21@insight_hud.inventory_hud_indexed_slot": { "collection_index": 21, "offset": [30, 45] } },
+			{ "slot_22@insight_hud.inventory_hud_indexed_slot": { "collection_index": 22, "offset": [30, 60] } },
+			{ "slot_23@insight_hud.inventory_hud_indexed_slot": { "collection_index": 23, "offset": [30, 75] } },
+			{ "slot_24@insight_hud.inventory_hud_indexed_slot": { "collection_index": 24, "offset": [30, 90] } },
+			{ "slot_25@insight_hud.inventory_hud_indexed_slot": { "collection_index": 25, "offset": [30, 105] } },
+			{ "slot_26@insight_hud.inventory_hud_indexed_slot": { "collection_index": 26, "offset": [30, 120] } },
+			{ "slot_27@insight_hud.inventory_hud_indexed_slot": { "collection_index": 27, "offset": [45, 0] } },
+			{ "slot_28@insight_hud.inventory_hud_indexed_slot": { "collection_index": 28, "offset": [45, 15] } },
+			{ "slot_29@insight_hud.inventory_hud_indexed_slot": { "collection_index": 29, "offset": [45, 30] } },
+			{ "slot_30@insight_hud.inventory_hud_indexed_slot": { "collection_index": 30, "offset": [45, 45] } },
+			{ "slot_31@insight_hud.inventory_hud_indexed_slot": { "collection_index": 31, "offset": [45, 60] } },
+			{ "slot_32@insight_hud.inventory_hud_indexed_slot": { "collection_index": 32, "offset": [45, 75] } },
+			{ "slot_33@insight_hud.inventory_hud_indexed_slot": { "collection_index": 33, "offset": [45, 90] } },
+			{ "slot_34@insight_hud.inventory_hud_indexed_slot": { "collection_index": 34, "offset": [45, 105] } },
+			{ "slot_35@insight_hud.inventory_hud_indexed_slot": { "collection_index": 35, "offset": [45, 120] } }
+		]
+	},
+
+	"inventory_hud_slots_inventory_vertical": {
+		"type": "collection_panel",
+		"size": [45, 135],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_9@insight_hud.inventory_hud_indexed_slot": { "collection_index": 9, "offset": [0, 0] } },
+			{ "slot_10@insight_hud.inventory_hud_indexed_slot": { "collection_index": 10, "offset": [0, 15] } },
+			{ "slot_11@insight_hud.inventory_hud_indexed_slot": { "collection_index": 11, "offset": [0, 30] } },
+			{ "slot_12@insight_hud.inventory_hud_indexed_slot": { "collection_index": 12, "offset": [0, 45] } },
+			{ "slot_13@insight_hud.inventory_hud_indexed_slot": { "collection_index": 13, "offset": [0, 60] } },
+			{ "slot_14@insight_hud.inventory_hud_indexed_slot": { "collection_index": 14, "offset": [0, 75] } },
+			{ "slot_15@insight_hud.inventory_hud_indexed_slot": { "collection_index": 15, "offset": [0, 90] } },
+			{ "slot_16@insight_hud.inventory_hud_indexed_slot": { "collection_index": 16, "offset": [0, 105] } },
+			{ "slot_17@insight_hud.inventory_hud_indexed_slot": { "collection_index": 17, "offset": [0, 120] } },
+			{ "slot_18@insight_hud.inventory_hud_indexed_slot": { "collection_index": 18, "offset": [15, 0] } },
+			{ "slot_19@insight_hud.inventory_hud_indexed_slot": { "collection_index": 19, "offset": [15, 15] } },
+			{ "slot_20@insight_hud.inventory_hud_indexed_slot": { "collection_index": 20, "offset": [15, 30] } },
+			{ "slot_21@insight_hud.inventory_hud_indexed_slot": { "collection_index": 21, "offset": [15, 45] } },
+			{ "slot_22@insight_hud.inventory_hud_indexed_slot": { "collection_index": 22, "offset": [15, 60] } },
+			{ "slot_23@insight_hud.inventory_hud_indexed_slot": { "collection_index": 23, "offset": [15, 75] } },
+			{ "slot_24@insight_hud.inventory_hud_indexed_slot": { "collection_index": 24, "offset": [15, 90] } },
+			{ "slot_25@insight_hud.inventory_hud_indexed_slot": { "collection_index": 25, "offset": [15, 105] } },
+			{ "slot_26@insight_hud.inventory_hud_indexed_slot": { "collection_index": 26, "offset": [15, 120] } },
+			{ "slot_27@insight_hud.inventory_hud_indexed_slot": { "collection_index": 27, "offset": [30, 0] } },
+			{ "slot_28@insight_hud.inventory_hud_indexed_slot": { "collection_index": 28, "offset": [30, 15] } },
+			{ "slot_29@insight_hud.inventory_hud_indexed_slot": { "collection_index": 29, "offset": [30, 30] } },
+			{ "slot_30@insight_hud.inventory_hud_indexed_slot": { "collection_index": 30, "offset": [30, 45] } },
+			{ "slot_31@insight_hud.inventory_hud_indexed_slot": { "collection_index": 31, "offset": [30, 60] } },
+			{ "slot_32@insight_hud.inventory_hud_indexed_slot": { "collection_index": 32, "offset": [30, 75] } },
+			{ "slot_33@insight_hud.inventory_hud_indexed_slot": { "collection_index": 33, "offset": [30, 90] } },
+			{ "slot_34@insight_hud.inventory_hud_indexed_slot": { "collection_index": 34, "offset": [30, 105] } },
+			{ "slot_35@insight_hud.inventory_hud_indexed_slot": { "collection_index": 35, "offset": [30, 120] } }
+		]
+	},
+
+	"inventory_hud_slots_hotbar_vertical": {
+		"type": "collection_panel",
+		"size": [15, 135],
+		"collection_name": "hotbar_items",
+		"controls": [
+			{ "slot_0@insight_hud.inventory_hud_indexed_slot": { "collection_index": 0, "offset": [0, 0] } },
+			{ "slot_1@insight_hud.inventory_hud_indexed_slot": { "collection_index": 1, "offset": [0, 15] } },
+			{ "slot_2@insight_hud.inventory_hud_indexed_slot": { "collection_index": 2, "offset": [0, 30] } },
+			{ "slot_3@insight_hud.inventory_hud_indexed_slot": { "collection_index": 3, "offset": [0, 45] } },
+			{ "slot_4@insight_hud.inventory_hud_indexed_slot": { "collection_index": 4, "offset": [0, 60] } },
+			{ "slot_5@insight_hud.inventory_hud_indexed_slot": { "collection_index": 5, "offset": [0, 75] } },
+			{ "slot_6@insight_hud.inventory_hud_indexed_slot": { "collection_index": 6, "offset": [0, 90] } },
+			{ "slot_7@insight_hud.inventory_hud_indexed_slot": { "collection_index": 7, "offset": [0, 105] } },
+			{ "slot_8@insight_hud.inventory_hud_indexed_slot": { "collection_index": 8, "offset": [0, 120] } }
+		]
+	},
+
+	"inventory_hud_panel_full_horizontal": {
+		"type": "panel",
+		"size": [135, 60],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_full_horizontal": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_panel_inventory_horizontal": {
+		"type": "panel",
+		"size": [135, 45],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_inventory_horizontal": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_panel_hotbar_horizontal": {
+		"type": "panel",
+		"size": [135, 15],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_hotbar_horizontal": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_panel_full_vertical": {
+		"type": "panel",
+		"size": [60, 135],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_full_vertical": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_panel_inventory_vertical": {
+		"type": "panel",
+		"size": [45, 135],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_inventory_vertical": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_panel_hotbar_vertical": {
+		"type": "panel",
+		"size": [15, 135],
+		"layer": 12,
+		"clips_children": false,
+		"controls": [
+			{
+				"background": {
+					"type": "image",
+					"texture": "textures/ui/hud_tip_text_background",
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"size": ["100% + 6px", "100% + 6px"],
+					"alpha": 0.55,
+					"layer": 1
+				}
+			},
+			{
+				"slots@insight_hud.inventory_hud_slots_hotbar_vertical": {
+					"anchor_from": "center",
+					"anchor_to": "center",
+					"layer": 2
+				}
+			}
+		]
+	},
+
+	"inventory_hud_positioned_panel": {
+		"$position_index|default": 0,
+		"$anchor_from|default": "bottom_middle",
+		"$anchor_to|default": "bottom_middle",
+		"$offset|default": [0, -88],
+		"type": "panel",
+		"size": ["100%", "100%"],
+		"controls": [
+			{
+				"full_horizontal": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_full_horizontal": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 0)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 0)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"hotbar_horizontal": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_hotbar_horizontal": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 1)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 0)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"inventory_horizontal": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_inventory_horizontal": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 2)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 0)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"full_vertical": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_full_vertical": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 0)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 1)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"hotbar_vertical": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_hotbar_vertical": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 1)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 1)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"inventory_vertical": {
+					"type": "panel",
+					"size": ["100%", "100%"],
+					"controls": [
+						{
+							"panel@insight_hud.inventory_hud_panel_inventory_vertical": {
+								"anchor_from": "$anchor_from",
+								"anchor_to": "$anchor_to",
+								"offset": "$offset"
+							}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_display_mode = 2)",
+							"target_property_name": "#display_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_control_name": "section_g",
+							"source_property_name": "(#hud_inventory_orientation = 1)",
+							"target_property_name": "#orientation_selected",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "(#display_selected and #orientation_selected)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_g",
+				"source_property_name": "(#hud_inventory > 0)",
+				"target_property_name": "#inventory_enabled",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_g",
+				"source_property_name": "(#hud_inventory_position = $position_index)",
+				"target_property_name": "#position_selected",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #inventory_enabled and #position_selected)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"inventory_hud_anchor": {
+		"type": "panel",
+		"size": ["100%", "100%"],
+		"controls": [
+			{
+				"center@insight_hud.inventory_hud_positioned_panel": {
+					"$position_index": 0,
+					"$anchor_from": "bottom_middle",
+					"$anchor_to": "bottom_middle",
+					"$offset": [0, -88]
+				}
+			},
+			{
+				"top_right@insight_hud.inventory_hud_positioned_panel": {
+					"$position_index": 1,
+					"$anchor_from": "top_right",
+					"$anchor_to": "top_right",
+					"$offset": ["2%", 0]
+				}
+			},
+			{
+				"middle_right@insight_hud.inventory_hud_positioned_panel": {
+					"$position_index": 2,
+					"$anchor_from": "right_middle",
+					"$anchor_to": "right_middle",
+					"$offset": ["2%", 0]
+				}
+			},
+			{
+				"bottom_right@insight_hud.inventory_hud_positioned_panel": {
+					"$position_index": 3,
+					"$anchor_from": "bottom_right",
+					"$anchor_to": "bottom_right",
+					"$offset": ["2%", 0]
+				}
+			},
+			{
+				"bottom_left@insight_hud.inventory_hud_positioned_panel": {
+					"$position_index": 4,
+					"$anchor_from": "bottom_left",
+					"$anchor_to": "bottom_left",
+					"$offset": [-72, -88]
+				}
+			}
+		]
 	}
 }
 

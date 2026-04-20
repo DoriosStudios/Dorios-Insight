@@ -2,9 +2,9 @@
 
 Este documento descreve, com o máximo de transparência possível, as mudanças recentes do addon **Dorios’ Insight**. Ele começa pelo que você percebe jogando e vai, aos poucos, para os detalhes técnicos (UI, comandos, persistência e arquitetura interna).
 
-> Data deste registro: **2026-02-22**
+> Data deste registro: **2026-04-19**
 
-## [Unreleased] — Manifest v3 + posição configurável do display
+## [Unreleased] — Manifest v3 + posição configurável do display + indicador de durabilidade + inventário no HUD estilizado + HUD Elements
 
 ### O que mudou
 - O `RP/manifest.json` foi atualizado para **format_version 3** (semver em `version` e `min_engine_version`).
@@ -16,14 +16,61 @@ Este documento descreve, com o máximo de transparência possível, as mudanças
   - `anchor_to`
   - `offset`
 
+### Novo: Indicador de Durabilidade
+- Exibe a durabilidade da ferramenta equipada no lado direito da hotbar.
+- Mostra porcentagem (ex: `75%`) e valor absoluto (ex: `1200/1600`).
+- Aparece automaticamente quando o item na mão principal possui durabilidade e já sofreu dano.
+- Suporta os três modos de layout: Desktop, Touch e Pocket.
+
+### Novo: Inventário no HUD
+- Foi adicionada uma opção para exibir o inventário do jogador diretamente no HUD.
+- O painel mostra os itens em uma visualização compacta, com pilhas e barras de durabilidade.
+- A visualização pode ser ativada ou desativada pelo novo menu **HUD Elements** do Dorios' Insight.
+- Agora a quantidade das pilhas aparece corretamente em cada slot.
+- O inventário no HUD agora pode alternar entre os modos **Full**, **Hotbar Only** e **Inventory Only**.
+- O painel também pode alternar entre as orientações **Horizontal** e **Vertical**.
+- Um novo stack central mostra o item selecionado, a quantidade atual na mão e o total disponível desse item em todo o inventário.
+- O painel ganhou opções de posição: **Centro (padrão)**, **Superior Direito**, **Meio Direito**, **Inferior Direito** e **Inferior Esquerdo**.
+- O painel acompanha os três modos de layout: Desktop, Touch e Pocket.
+
+### Novo: HUD Elements
+- As opções do **Inventário no HUD** e da **exibição de ferramentas** foram agrupadas em uma nova categoria localizada chamada **HUD Elements**.
+- A categoria reúne o toggle do inventário, a posição do painel, o modo de exibição, a orientação e os ajustes do modo de ferramenta no HUD.
+
+### Novo: WAILA Configurável
+- O painel WAILA agora pode alternar entre os temas **Default**, **Dark**, **Copper**, **Magenta**, **Cyan**, **Blood** e **Ascane**.
+- O WAILA voltou para a posição original no topo da tela, removendo os presets de ancoragem para manter a leitura mais consistente.
+- A nova personalização visual continua integrada ao próprio menu do addon.
+
+### Correções de HUD
+- A exibição da durabilidade da ferramenta equipada ficou mais confiável, evitando casos em que o indicador não aparecia corretamente.
+- A porcentagem da durabilidade deixou de arredondar para cima perto do valor máximo, evitando números inconsistentes em ferramentas quase novas.
+- O indicador de durabilidade voltou a renderizar os números corretamente, evitando o caso em que só a barra `/` aparecia.
+- Os indicadores numéricos de vida e fome agora reaparecem corretamente quando habilitados.
+- A barra de armadura extra volta a acompanhar o crescimento das linhas de vida.
+- A quantidade dos itens do inventário no HUD voltou a aparecer corretamente.
+- A exibição das ferramentas ganhou melhor separação visual no modo com ícones.
+
 ### Arquivos alterados
 - `RP/manifest.json`
 - `RP/subpacks/default/ui/hud_screen.json`
 - `RP/subpacks/dark/ui/hud_screen.json`
 - `RP/subpacks/copper/ui/hud_screen.json`
+- `BP/scripts/display/hudDataCollector.js`
+- `BP/scripts/display/config.js`
+- `BP/scripts/display/menu.js`
+- `BP/scripts/display/uiChannels.js`
+- `RP/ui/insight_hud_data.json`
+- `RP/ui/insight_hud_bars.json`
+- `RP/ui/insight_waila.json`
+- `RP/texts/*.lang`
 
 ### Resultado prático
 - Jogadores podem reposicionar o display do Dorios' Insight diretamente nas configurações do pack, sem precisar trocar subpack ou editar arquivo manualmente.
+- Jogadores também podem habilitar um inventário compacto no HUD para acompanhar itens, pilhas e durabilidade sem abrir a mochila.
+- Agora também dá para escolher se esse inventário aparece completo, só com a hotbar ou só com a mochila, além de alternar entre layout horizontal e vertical.
+- O stack central ajuda a saber rapidamente quanto do item selecionado ainda existe no inventário inteiro.
+- Os ajustes de inventário no HUD e de ferramentas ficam reunidos em **HUD Elements**, deixando a configuração mais fácil de encontrar.
 
 ## [1.1.0] — States/Traits Injection + Conditions/System + Display Expansion
 

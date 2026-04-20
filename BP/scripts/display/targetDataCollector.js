@@ -9,7 +9,7 @@
  *
  * Title payload format (RawMessage):
  *   rawtext: [
- *     { text: prefix(1) + tools(6) + height(2) + "b" + currentHP(3) + maxHP(3) + "00" + key(48~) },
+ *     { text: prefix(1) + tools(6) + height(2) + "b" + currentHP(3) + maxHP(3) + wailaTheme(1) + reserved(1) + key(48~) },
  *     ...detail rawtext (health text, effects, inventory, states, tags, custom fields),
  *     { text: "insight_target" }
  *   ]
@@ -172,6 +172,15 @@ function normalizeHeaderKey(value, fallback = "unknown") {
         .trim();
 
     return normalized.length ? normalized : fallback;
+}
+
+function clampSingleDigitValue(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+        return 0;
+    }
+
+    return Math.max(0, Math.min(9, Math.floor(numeric)));
 }
 
 function getEntityHeaderKey(entity) {
@@ -596,6 +605,7 @@ export function collectAndSendTargetData(player, settings) {
             key: "",
             renderAux: "",
             currentHealth: 0, maxHealth: 0,
+            wailaTheme: clampSingleDigitValue(settings?.wailaColorThemeId),
             acceptSword: 0, acceptPickaxe: 0, acceptAxe: 0,
             acceptShovel: 0, acceptHoe: 0, acceptShears: 0,
             entityHeight: 0,
@@ -763,7 +773,7 @@ export function collectAndSendTargetData(player, settings) {
         }
 
         // --- Encode title payload ---
-        // data_2 format: currentHealth(3) + maxHealth(3) + "00"
+        // data_2 format: currentHealth(3) + maxHealth(3) + wailaTheme(1) + reserved(1)
         const exportUi =
             screenData.prefix +
             screenData.acceptShears.toString() +
@@ -776,7 +786,8 @@ export function collectAndSendTargetData(player, settings) {
             "b" +
             screenData.currentHealth.toString().padStart(3, "0") +
             screenData.maxHealth.toString().padStart(3, "0") +
-            "00" +
+            screenData.wailaTheme.toString() +
+            "0" +
             screenData.key.slice(0, 48).padStart(48, "~");
 
         const rawMessage = {

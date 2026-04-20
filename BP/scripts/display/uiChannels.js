@@ -19,9 +19,15 @@
  * │   b: hunger(2) maxHunger(2) saturation(2) exhaustion(2)          │
  * │   c: armor(2) toughness(2) extraArmor(2) extraArmorFull(2)       │
  * │   d: hungerPreview(2) airSupply(2) maxAir(2) flags(2)            │
- * │   e: hudHealthIndicator(2) hudHungerIndicator(2) reserved(4)      │
+ * │   e: hudHealthIndicator(2) hudHungerIndicator(2)                  │
+ * │      durPercent(2) durVisible(2)                                  │
+ * │   f: durCurHi(2) durCurLo(2) durMaxHi(2) durMaxLo(2)              │
+ * │   g: hudInventory(2) hudInventoryPosition(2)                      │
+ * │      hudInventoryDisplayMode(2) hudInventoryOrientation(2)        │
+ * │   h: stackCurrent(3) stackVisible(1)                              │
+ * │      stackTotalHi(2) stackTotalLo(2)                              │
  * │                                                                  │
- * │ Total: 11 + (4 × 9) = 47 chars + suffix                          │
+ * │ Total: 11 + (7 × 9) = 74 chars + suffix                          │
  * └──────────────────────────────────────────────────────────────────┘
  *
  * ┌──────────────────────────────────────────────────────────────────┐
@@ -87,11 +93,32 @@ const HUD_SECTION_D = defineSchema("d", [
 const HUD_SECTION_E = defineSchema("e", [
     { name: "hudHealthIndicator", digits: 2 },
     { name: "hudHungerIndicator", digits: 2 },
-    { name: "hudReserved1",       digits: 2 },
-    { name: "hudReserved2",       digits: 2 }
+    { name: "durPercent",         digits: 2 },
+    { name: "durVisible",         digits: 2 }
 ]);
 
-const HUD_SCHEMAS = [HUD_SECTION_A, HUD_SECTION_B, HUD_SECTION_C, HUD_SECTION_D, HUD_SECTION_E];
+const HUD_SECTION_F = defineSchema("f", [
+    { name: "durCurHi",  digits: 2 },
+    { name: "durCurLo",  digits: 2 },
+    { name: "durMaxHi",  digits: 2 },
+    { name: "durMaxLo",  digits: 2 }
+]);
+
+const HUD_SECTION_G = defineSchema("g", [
+    { name: "hudInventory",          digits: 2 },
+    { name: "hudInventoryPosition",  digits: 2 },
+    { name: "hudInventoryDisplayMode", digits: 2 },
+    { name: "hudInventoryOrientation", digits: 2 }
+]);
+
+const HUD_SECTION_H = defineSchema("h", [
+    { name: "stackCurrent", digits: 3 },
+    { name: "stackVisible", digits: 1 },
+    { name: "stackTotalHi", digits: 2 },
+    { name: "stackTotalLo", digits: 2 }
+]);
+
+const HUD_SCHEMAS = [HUD_SECTION_A, HUD_SECTION_B, HUD_SECTION_C, HUD_SECTION_D, HUD_SECTION_E, HUD_SECTION_F, HUD_SECTION_G, HUD_SECTION_H];
 
 /** @readonly */
 export const CHANNEL_HUD = "insight_hud";

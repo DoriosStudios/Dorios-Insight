@@ -5,6 +5,9 @@ import {
     EntityNameResolveModeLabels,
     EffectDisplayModeLabels,
     HudDisplayModeLabels,
+    HudElementOrientationModeLabels,
+    HudElementPositionModeLabels,
+    HudInventoryDisplayModeLabels,
     HudIndicatorModeLabels,
     InsightComponentDefinitions,
     InsightConfig,
@@ -14,6 +17,7 @@ import {
     ToolIndicatorPlacementModeLabels,
     ToolTierIndicatorModeLabels,
     VisibilityPolicyLabels,
+    WailaColorThemeLabels,
     VillagerProfessionDisplayModeLabels,
     getCurrentMode,
     getDisplayStyleIndex,
@@ -21,10 +25,14 @@ import {
     getEntityNameResolveModeIndex,
     getEffectDisplayModeIndex,
     getHudDisplayModeIndex,
+    getHudElementOrientationModeIndex,
+    getHudElementPositionModeIndex,
+    getHudInventoryDisplayModeIndex,
     getHudIndicatorModeIndex,
     getModePreset,
     getModePresetSummaryModeIndex,
     getPlayerDisplaySettings,
+    getWailaColorThemeIndex,
     isAdminPlayer,
     getToolIndicatorColorIndex,
     getToolIndicatorPlacementModeIndex,
@@ -159,6 +167,30 @@ function getHudIndicatorModeLabel(mode) {
     const normalized = String(mode || "").toLowerCase();
     const option = HudIndicatorModeLabels.find((entry) => entry.key === normalized);
     return option?.label || HudIndicatorModeLabels[0].label;
+}
+
+function getHudElementPositionModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudElementPositionModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudElementPositionModeLabels[0].label;
+}
+
+function getHudInventoryDisplayModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudInventoryDisplayModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudInventoryDisplayModeLabels[0].label;
+}
+
+function getHudElementOrientationModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudElementOrientationModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudElementOrientationModeLabels[0].label;
+}
+
+function getWailaColorThemeLabel(theme) {
+    const normalized = String(theme || "").toLowerCase();
+    const option = WailaColorThemeLabels.find((entry) => entry.key === normalized);
+    return option?.label || WailaColorThemeLabels[0].label;
 }
 
 function getStateLabel(isEnabled, enabledLabel = "Enabled", disabledLabel = "Disabled") {
@@ -813,6 +845,122 @@ async function showHudBarsMenu(player) {
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_updated"));
 }
 
+async function showHudElementsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+
+    const hudElementPositionOptions = HudElementPositionModeLabels.map((option) => option.label);
+    const hudInventoryDisplayOptions = HudInventoryDisplayModeLabels.map((option) => option.label);
+    const hudElementOrientationOptions = HudElementOrientationModeLabels.map((option) => option.label);
+    const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
+    const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
+    const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+        .toggle(
+            tr("ui.dorios.insight.hud_menu.inventory_hud", [getStateLabel(runtime.hudInventoryEnabled, "Enabled", "Disabled")]),
+            { defaultValue: Boolean(runtime.hudInventoryEnabled) }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.inventory_position", [getHudElementPositionModeLabel(runtime.hudInventoryPosition)]),
+            hudElementPositionOptions,
+            {
+                defaultValueIndex: getHudElementPositionModeIndex(runtime.hudInventoryPosition)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.inventory_display_mode", [getHudInventoryDisplayModeLabel(runtime.hudInventoryDisplayMode)]),
+            hudInventoryDisplayOptions,
+            {
+                defaultValueIndex: getHudInventoryDisplayModeIndex(runtime.hudInventoryDisplayMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.inventory_orientation", [getHudElementOrientationModeLabel(runtime.hudInventoryOrientation)]),
+            hudElementOrientationOptions,
+            {
+                defaultValueIndex: getHudElementOrientationModeIndex(runtime.hudInventoryOrientation)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
+            tierIndicatorOptions,
+            {
+                defaultValueIndex: getToolTierIndicatorModeIndex(runtime.toolTierIndicatorMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_position", [getToolIndicatorPlacementModeLabel(runtime.toolIndicatorPlacement)]),
+            toolIndicatorPlacementOptions,
+            {
+                defaultValueIndex: getToolIndicatorPlacementModeIndex(runtime.toolIndicatorPlacement)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_color", [getToolIndicatorColorLabel(runtime.toolIndicatorColor)]),
+            toolIndicatorColorOptions,
+            {
+                defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
+            }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            hudInventoryEnabled: Boolean(result.formValues[0] ?? runtime.hudInventoryEnabled),
+            hudInventoryPosition: HudElementPositionModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.hudInventoryPosition,
+            hudInventoryDisplayMode: HudInventoryDisplayModeLabels[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.hudInventoryDisplayMode,
+            hudInventoryOrientation: HudElementOrientationModeLabels[Number(result.formValues[3] ?? 0)]?.key
+                ?? runtime.hudInventoryOrientation,
+            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[4] ?? 0)]?.key
+                ?? runtime.toolTierIndicatorMode,
+            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[5] ?? 0)]?.key
+                ?? runtime.toolIndicatorPlacement,
+            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[6] ?? 0)]?.key
+                ?? runtime.toolIndicatorColor
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_elements_updated"));
+}
+
+async function showWailaMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const wailaColorOptions = WailaColorThemeLabels.map((option) => option.label);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.waila_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.waila_menu.color_theme", [getWailaColorThemeLabel(runtime.wailaColorTheme)]),
+            wailaColorOptions,
+            {
+                defaultValueIndex: getWailaColorThemeIndex(runtime.wailaColorTheme)
+            }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            wailaColorTheme: WailaColorThemeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.wailaColorTheme
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.waila_updated"));
+}
+
 async function showConditionsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
@@ -866,34 +1014,10 @@ async function showSystemSettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
-    const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
-    const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
     const modeSummaryOptions = ModePresetSummaryModeLabels.map((option) => option.label);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.system_menu.title"))
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
-            tierIndicatorOptions,
-            {
-                defaultValueIndex: getToolTierIndicatorModeIndex(runtime.toolTierIndicatorMode)
-            }
-        )
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tool_position", [getToolIndicatorPlacementModeLabel(runtime.toolIndicatorPlacement)]),
-            toolIndicatorPlacementOptions,
-            {
-                defaultValueIndex: getToolIndicatorPlacementModeIndex(runtime.toolIndicatorPlacement)
-            }
-        )
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tool_color", [getToolIndicatorColorLabel(runtime.toolIndicatorColor)]),
-            toolIndicatorColorOptions,
-            {
-                defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
-            }
-        )
         .dropdown(
             tr("ui.dorios.insight.system_menu.mode_summary", [getModePresetSummaryModeLabel(runtime.modePresetSummaryMode)]),
             modeSummaryOptions,
@@ -927,28 +1051,22 @@ async function showSystemSettingsMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
-            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[0] ?? 0)]?.key
-                ?? runtime.toolTierIndicatorMode,
-            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[1] ?? 0)]?.key
-                ?? runtime.toolIndicatorPlacement,
-            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[2] ?? 0)]?.key
-                ?? runtime.toolIndicatorColor,
-            modePresetSummaryMode: ModePresetSummaryModeLabels[Number(result.formValues[3] ?? 0)]?.key
+            modePresetSummaryMode: ModePresetSummaryModeLabels[Number(result.formValues[0] ?? 0)]?.key
                 ?? runtime.modePresetSummaryMode,
             stateColumns: resolveCustomNumberInput(
-                result.formValues[4],
+                result.formValues[1],
                 runtime.stateColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             tagColumns: resolveCustomNumberInput(
-                result.formValues[5],
+                result.formValues[2],
                 runtime.tagColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             familyColumns: resolveCustomNumberInput(
-                result.formValues[6],
+                result.formValues[3],
                 runtime.familyColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
@@ -1336,6 +1454,8 @@ async function showDisplayMenu(player) {
         ]))
         .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
         .button(tr("ui.dorios.insight.display_root.hud_button"))
+        .button(tr("ui.dorios.insight.display_root.hud_elements_button"))
+        .button(tr("ui.dorios.insight.display_root.waila_button"))
         .button(tr("ui.dorios.insight.display_root.conditions_button"))
         .button(tr("ui.dorios.insight.display_root.system_button"))
         .button(tr("ui.dorios.insight.display_root.runtime_button"));
@@ -1353,12 +1473,18 @@ async function showDisplayMenu(player) {
             await showHudBarsMenu(player);
             break;
         case 2:
-            await showConditionsMenu(player);
+            await showHudElementsMenu(player);
             break;
         case 3:
-            await showSystemSettingsMenu(player);
+            await showWailaMenu(player);
             break;
         case 4:
+            await showConditionsMenu(player);
+            break;
+        case 5:
+            await showSystemSettingsMenu(player);
+            break;
+        case 6:
             await showRuntimeMenu(player);
             break;
     }

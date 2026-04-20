@@ -26,6 +26,11 @@
 import { HudElement, HudVisibility } from "@minecraft/server";
 import * as uiQueue from "./uiQueue.js";
 import {
+    getHudElementOrientationNumericId,
+    getHudElementPositionNumericId,
+    getHudInventoryDisplayNumericId
+} from "./config.js";
+import {
     CHANNEL_HUD,
     encodeHudData,
     packHudFlags
@@ -170,6 +175,186 @@ function getMainhandItem(player) {
         // Ignore.
     }
     return undefined;
+}
+
+/**
+ * Resolve the player's inventory container, if available.
+ *
+ * @param {import("@minecraft/server").Player} player
+ * @returns {import("@minecraft/server").Container|undefined}
+ */
+function getInventoryContainer(player) {
+    const componentIds = ["minecraft:inventory", "inventory"];
+
+    for (const componentId of componentIds) {
+        try {
+            const inventory = player.getComponent(componentId);
+            if (inventory?.container) {
+                return inventory.container;
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Get the selected hotbar slot index for a player.
+ *
+ * @param {import("@minecraft/server").Player} player
+ * @returns {number}
+ */
+function getSelectedHotbarSlotIndex(player) {
+    try {
+        const selectedSlotIndex = Number(player.selectedSlotIndex);
+        if (Number.isFinite(selectedSlotIndex)) {
+            return Math.max(0, Math.min(8, Math.floor(selectedSlotIndex)));
+        }
+    } catch {
+        // Ignore API read errors.
+    }
+
+    return 0;
+}
+
+/**
+ * Compare two item stacks conservatively for total-count aggregation.
+ *
+ * @param {import("@minecraft/server").ItemStack|undefined} referenceItem
+ * @param {import("@minecraft/server").ItemStack|undefined} otherItem
+ * @returns {boolean}
+ */
+function areEquivalentInventoryItems(referenceItem, otherItem) {
+    if (!referenceItem || !otherItem) {
+        return false;
+    }
+
+    try {
+        if (typeof referenceItem.isStackableWith === "function" && referenceItem.isStackableWith(otherItem)) {
+            return true;
+        }
+    } catch {
+        // Fall back to type identifier matching below.
+    }
+
+    return referenceItem.typeId === otherItem.typeId;
+}
+
+/**
+ * Collect a safe summary for the currently selected inventory item.
+ *
+ * @param {import("@minecraft/server").Player} player
+ * @returns {{current: number, total: number, visible: boolean}}
+ */
+function getSelectedInventoryStackSummary(player) {
+    const container = getInventoryContainer(player);
+    if (!container) {
+        return { current: 0, total: 0, visible: false };
+    }
+
+    const selectedSlotIndex = getSelectedHotbarSlotIndex(player);
+    let selectedItem;
+
+    try {
+        selectedItem = container.getItem(selectedSlotIndex);
+    } catch {
+        selectedItem = undefined;
+    }
+
+    if (!selectedItem) {
+        return { current: 0, total: 0, visible: false };
+    }
+
+    const current = Math.max(0, Math.min(255, Math.round(Number(selectedItem.amount) || 0)));
+    const containerSize = Number.isFinite(container.size) ? container.size : 0;
+    let total = 0;
+
+    for (let slotIndex = 0; slotIndex < containerSize; slotIndex++) {
+        try {
+            const slotItem = container.getItem(slotIndex);
+            if (!areEquivalentInventoryItems(selectedItem, slotItem)) {
+                continue;
+            }
+
+            total += Math.max(0, Math.round(Number(slotItem?.amount) || 0));
+        } catch {
+            continue;
+        }
+    }
+
+    return {
+        current: Math.max(1, current),
+        total: Math.max(1, Math.min(9999, total || current)),
+        visible: true
+    };
+}
+
+/**
+ * Resolve durability information for an item stack.
+ *
+ * Prefers the DoriosAPI helper already loaded into the project and falls back
+ * to direct component reads for compatibility with different runtime builds.
+ *
+ * @param {import("@minecraft/server").ItemStack|undefined} itemStack
+ * @returns {{max: number, current: number, damage: number, hasDurability: boolean}}
+ */
+function getItemDurabilityInfo(itemStack) {
+    if (!itemStack) {
+        return { max: 0, current: 0, damage: 0, hasDurability: false };
+    }
+
+    try {
+        const durabilityApi = itemStack.durability;
+        if (
+            durabilityApi
+            && typeof durabilityApi.getMax === "function"
+            && typeof durabilityApi.getDamage === "function"
+            && typeof durabilityApi.getRemaining === "function"
+        ) {
+            const max = Math.max(0, Math.round(Number(durabilityApi.getMax()) || 0));
+            const damage = Math.max(0, Math.round(Number(durabilityApi.getDamage()) || 0));
+            const current = Math.max(0, Math.round(Number(durabilityApi.getRemaining()) || (max - damage)));
+
+            if (max > 0) {
+                return {
+                    max,
+                    current: Math.min(max, current),
+                    damage: Math.min(max, damage),
+                    hasDurability: true
+                };
+            }
+        }
+    } catch {
+        // Ignore helper lookup failures and fall back to direct component reads.
+    }
+
+    const componentIds = ["durability", "minecraft:durability"];
+    for (const componentId of componentIds) {
+        try {
+            const durabilityComponent = itemStack.getComponent(componentId);
+            if (!durabilityComponent) {
+                continue;
+            }
+
+            const max = Math.max(0, Math.round(Number(durabilityComponent.maxDurability) || 0));
+            const damage = Math.max(0, Math.round(Number(durabilityComponent.damage) || 0));
+
+            if (max > 0) {
+                return {
+                    max,
+                    current: Math.max(0, max - Math.min(max, damage)),
+                    damage: Math.min(max, damage),
+                    hasDurability: true
+                };
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    return { max: 0, current: 0, damage: 0, hasDurability: false };
 }
 
 /**
@@ -405,14 +590,29 @@ export function collectAndSendHudData(player, settings) {
         const extraArmor = Math.max(0, totalArmor - 20) % 20;
         const extraArmorFull = Math.floor(Math.max(0, totalArmor - 20) / 20);
 
+        // -- Mainhand Item --
+        const mainhand = getMainhandItem(player);
+
         // -- Hunger Preview --
         let hungerPreview = 0;
         if (hunger < 20) {
-            const mainhand = getMainhandItem(player);
             const nutrition = getFoodNutrition(mainhand);
             if (nutrition > 0) {
                 hungerPreview = Math.min(nutrition + hunger, 20);
             }
+        }
+
+        // -- Durability --
+        let durPercent = 0;
+        let durCurrent = 0;
+        let durMax = 0;
+        let durVisible = 0;
+        const durabilityInfo = getItemDurabilityInfo(mainhand);
+        if (durabilityInfo.hasDurability && durabilityInfo.damage > 0) {
+            durMax = durabilityInfo.max;
+            durCurrent = durabilityInfo.current;
+            durPercent = Math.max(0, Math.min(99, Math.floor((durCurrent / Math.max(1, durMax)) * 100)));
+            durVisible = 1;
         }
 
         // -- Air Supply --
@@ -428,6 +628,17 @@ export function collectAndSendHudData(player, settings) {
             hungerEffect:  hasEffect(player, "hunger"),
             hungerPreview: hasHungerPreview
         });
+        const hudInventoryEnabled = Boolean(settings?.hudInventoryEnabled ?? settings?.runtime?.hudInventoryEnabled);
+        const hudInventoryPosition = getHudElementPositionNumericId(
+            settings?.hudInventoryPosition ?? settings?.runtime?.hudInventoryPosition
+        );
+        const hudInventoryDisplayMode = getHudInventoryDisplayNumericId(
+            settings?.hudInventoryDisplayMode ?? settings?.runtime?.hudInventoryDisplayMode
+        );
+        const hudInventoryOrientation = getHudElementOrientationNumericId(
+            settings?.hudInventoryOrientation ?? settings?.runtime?.hudInventoryOrientation
+        );
+        const selectedStackSummary = getSelectedInventoryStackSummary(player);
 
         // -- Encode and send --
         const data = {
@@ -449,8 +660,20 @@ export function collectAndSendHudData(player, settings) {
             flags,
             hudHealthIndicator: hudHealthIndicatorEnabled ? 1 : 0,
             hudHungerIndicator: hudHungerIndicatorEnabled ? 1 : 0,
-            hudReserved1: 0,
-            hudReserved2: 0
+            hudInventory: hudInventoryEnabled ? 1 : 0,
+            hudInventoryPosition,
+            hudInventoryDisplayMode,
+            hudInventoryOrientation,
+            stackCurrent: selectedStackSummary.current,
+            stackVisible: hudInventoryEnabled && selectedStackSummary.visible ? 1 : 0,
+            stackTotalHi: Math.floor(Math.min(9999, selectedStackSummary.total) / 100),
+            stackTotalLo: Math.min(9999, selectedStackSummary.total) % 100,
+            durPercent,
+            durVisible,
+            durCurHi: Math.floor(Math.min(9999, durCurrent) / 100),
+            durCurLo: Math.min(9999, durCurrent) % 100,
+            durMaxHi: Math.floor(Math.min(9999, durMax) / 100),
+            durMaxLo: Math.min(9999, durMax) % 100
         };
 
         const encoded = encodeHudData(data);

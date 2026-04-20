@@ -31,6 +31,16 @@
 			},
 			{
 				"binding_type": "view",
+				"source_property_name": "(#data_2 - ((#data_2 / 100) * 100))",
+				"target_property_name": "#waila_style_data"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#waila_style_data / 10)",
+				"target_property_name": "#waila_theme"
+			},
+			{
+				"binding_type": "view",
 				"source_property_name": "(#data / 10000000)",
 				"target_property_name": "#shears_tool"
 			},
@@ -225,10 +235,13 @@
 	},
 
 	"view_indicator_renderer": {
+		"$theme_index|default": 0,
+		"$panel_texture|default": "textures/insight/style_default",
+		"$detail_color|default": [0.7, 0.7, 0.7],
 		"type": "image",
-		"texture": "textures/insight/style_default",
+		"texture": "$panel_texture",
 		"alpha": 0.5,
-		"offset": [0, -54],
+		"offset": [0, -52],
 		"size": ["100%c + 20px", "100%cm + 10px"],
 		"nineslice_size": 4,
 		"$alpha_visibility": 0.85,
@@ -390,6 +403,12 @@
 													}
 												},
 												{
+													"tool_gap": {
+														"type": "panel",
+														"size": [4, 1]
+													}
+												},
+												{
 													"shears_tool@insight_waila.tool_required_panel": {
 														"$texture": "textures/items/shears",
 														"$control_source": "target_data_control_1",
@@ -445,7 +464,7 @@
 														"type": "label",
 														"text": "#text",
 														"shadow": true,
-														"color": [0.7, 0.7, 0.7],
+														"color": "$detail_color",
 														"bindings": [
 															{
 																"binding_type": "view",
@@ -477,6 +496,17 @@
 				"binding_type": "view",
 				"source_control_name": "target_data_control_1",
 				"source_property_name": "(not(#stored_text = ''))",
+				"target_property_name": "#has_target"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "target_data_control_1",
+				"source_property_name": "(#waila_theme = $theme_index)",
+				"target_property_name": "#theme_selected"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#has_target and #theme_selected)",
 				"target_property_name": "#visible"
 			},
 			{
@@ -496,7 +526,72 @@
 		"offset": [0, "20%"],
 		"controls": [
 			{
-				"renderer@insight_waila.view_indicator_renderer": {}
+				"default_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 0,
+					"$panel_texture": "textures/insight/style_default",
+					"$detail_color": [0.7, 0.7, 0.7]
+				}
+			},
+			{
+				"dark_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 1,
+					"$panel_texture": "textures/insight/style_dark",
+					"$detail_color": [0.82, 0.82, 0.82]
+				}
+			},
+			{
+				"copper_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 2,
+					"$panel_texture": "textures/insight/style_copper",
+					"$detail_color": [0.86, 0.68, 0.48]
+				}
+			},
+			{
+				"magenta_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 3,
+					"$panel_texture": "textures/insight/style_magenta",
+					"$detail_color": [0.92, 0.62, 0.92]
+				}
+			},
+			{
+				"cyan_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 4,
+					"$panel_texture": "textures/insight/style_cyan",
+					"$detail_color": [0.56, 0.92, 0.95]
+				}
+			},
+			{
+				"blood_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 5,
+					"$panel_texture": "textures/insight/style_blood",
+					"$detail_color": [0.9, 0.48, 0.48]
+				}
+			},
+			{
+				"ascane_theme@insight_waila.view_indicator_renderer": {
+					"$theme_index": 6,
+					"$panel_texture": "textures/insight/style_ascane",
+					"$detail_color": [0.74, 0.7, 0.97]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "target_data_control_1",
+				"source_property_name": "(not(#stored_text = ''))",
+				"target_property_name": "#has_target",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_target)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
 			}
 		]
 	},
@@ -507,45 +602,45 @@
 		"size": ["100%cm", "100%c"],
 		"offset": "@insight_waila.title_drop_offset",
 		"controls": [
-            {
-                "biome_name": {
-                    "type": "panel",
-                    "size": [384, 24],
-                    "controls": [
-                        {
-                            "text": {
-                                "type": "label",
-                                "text": "#text",
-                                "font_type": "MinecraftTen",
-                                "font_size": "large",
-                                "anchor_from": "top_left",
-                                "anchor_to": "top_left",
-                                "alpha": "@insight_waila.title_drop_start",
-                                "bindings": [
-                                    {
-                                        "binding_type": "view",
-                                        "source_control_name": "biome_data_control",
-                                        "source_property_name": "#biome_name",
-                                        "target_property_name": "#text"
-                                    }
-                                ],
-                                "controls": [
-                                    {
-                                        "flash": {
-                                            "type": "image",
-                                            "keep_ratio": false,
-                                            "texture": "textures/gui/text_flash",
-                                            "size": ["100% + 64px", "100% - 12px"],
-                                            "offset": [0, 2],
-                                            "alpha": "@insight_waila.title_drop_flash_start"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
+			{
+				"biome_name": {
+					"type": "panel",
+					"size": [384, 24],
+					"controls": [
+						{
+							"text": {
+								"type": "label",
+								"text": "#text",
+								"font_type": "MinecraftTen",
+								"font_size": "large",
+								"anchor_from": "top_left",
+								"anchor_to": "top_left",
+								"alpha": "@insight_waila.title_drop_start",
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "biome_data_control",
+										"source_property_name": "#biome_name",
+										"target_property_name": "#text"
+									}
+								],
+								"controls": [
+									{
+										"flash": {
+											"type": "image",
+											"keep_ratio": false,
+											"texture": "textures/gui/text_flash",
+											"size": ["100% + 64px", "100% - 12px"],
+											"offset": [0, 2],
+											"alpha": "@insight_waila.title_drop_flash_start"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
 			{
 				"dimension_name": {
 					"type": "panel",
@@ -557,7 +652,7 @@
 								"text": "#text",
 								"anchor_from": "top_left",
 								"anchor_to": "top_left",
-                                "offset": [56, -28],
+								"offset": [56, -28],
 								"shadow": true,
 								"alpha": "@insight_waila.title_drop_start",
 								"bindings": [

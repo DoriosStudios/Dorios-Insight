@@ -94,7 +94,7 @@ ui.dorios.insight.feedback.channels_updated=§aDefinições dos canais do HUD at
 ui.dorios.insight.feedback.style_updated=§aDefinições de estilo de apresentação atualizadas.
 ui.dorios.insight.feedback.runtime_updated=§aDefinições de parâmetros atualizadas.
 ui.dorios.insight.feedback.conditions_updated=§aDefinições de nomes de entidade atualizadas.
-ui.dorios.insight.feedback.system_updated=§aDefinições de blocos e ferramentas atualizadas.
+ui.dorios.insight.feedback.system_updated=§aDefinições de layout e resumo atualizadas.
 ui.dorios.insight.feedback.local_enabled=§aDorios' Insight ativado para o seu jogador.
 ui.dorios.insight.feedback.local_disabled=§eDorios' Insight desativado para o seu jogador.
 ui.dorios.insight.feedback.global_enabled=§aDorios' Insight ativado globalmente.
@@ -218,7 +218,7 @@ ui.dorios.insight.conditions_menu.name_method=Método do Nome da Entidade\n§3At
 ui.dorios.insight.conditions_menu.villager_profession=Profissão do Aldeão\n§3Atual: %1
 
 ## Menu - Apresentação > Blocos e Ferramentas
-ui.dorios.insight.system_menu.title=Insight - Blocos e Ferramentas
+ui.dorios.insight.system_menu.title=Insight - Layout e Resumo
 ui.dorios.insight.system_menu.block_name_method=Método do Nome de Bloco\n§3Atual: %1
 ui.dorios.insight.system_menu.tier_indicator=Indicador de Nível da Ferramenta\n§3Atual: %1
 ui.dorios.insight.system_menu.tool_position=Posição da Ferramenta/Nível\n§3Atual: %1
@@ -267,7 +267,7 @@ ui.dorios.insight.components.entity.title=Insight - Entity Components
 ui.dorios.insight.display_root.body=Current style: %1\nTool mode: %2
 ui.dorios.insight.display_root.conditions_button=Entity Names
 ui.dorios.insight.display_root.runtime_button=Advanced Runtime
-ui.dorios.insight.display_root.system_button=Blocks & Tools
+ui.dorios.insight.display_root.system_button=Layout e Resumo
 ui.dorios.insight.display_root.title=Insight - Display & Layout
 ui.dorios.insight.menu.display_root_button=Display & Layout\n§7Style, names, tools and runtime
 ui.dorios.insight.menu.target_insight_button=Target Insight\n§7Entities, blocks, tags and families
@@ -285,6 +285,8 @@ ui.dorios.insight.target_menu.title=Insight - Target Insight
 
 ## Insight - Barras do HUD
 ui.dorios.insight.display_root.hud_button=Barras do HUD
+ui.dorios.insight.display_root.hud_elements_button=Elementos do HUD
+ui.dorios.insight.display_root.waila_button=WAILA\n§7Temas visuais
 ui.dorios.insight.hud_menu.title=Insight - Barras do HUD
 ui.dorios.insight.hud_menu.health_visibility=Exibição de Vida\n§3Atual: %1
 ui.dorios.insight.hud_menu.health_indicator=Indicador de Vida\n§3Atual: %1
@@ -292,7 +294,17 @@ ui.dorios.insight.hud_menu.hunger_visibility=Exibição de Fome\n§3Atual: %1
 ui.dorios.insight.hud_menu.hunger_indicator=Indicador de Fome\n§3Atual: %1
 ui.dorios.insight.hud_menu.saturation_visibility=Exibição de Saturação\n§3Atual: %1
 ui.dorios.insight.hud_menu.toughness_visibility=Exibição de Tenacidade\n§3Atual: %1
+ui.dorios.insight.hud_menu.inventory_hud=Inventário no HUD\n§3Atual: %1
+ui.dorios.insight.hud_elements_menu.title=Insight - Elementos do HUD
+ui.dorios.insight.hud_elements_menu.inventory_position=Posição do Inventário\n§3Atual: %1
+ui.dorios.insight.hud_elements_menu.inventory_display_mode=Modo de Exibição do Inventário\n§3Atual: %1
+ui.dorios.insight.hud_elements_menu.inventory_orientation=Orientação do Inventário\n§3Atual: %1
 ui.dorios.insight.feedback.hud_updated=§aDefinições de exibição do HUD atualizadas.
+ui.dorios.insight.feedback.hud_elements_updated=§aDefinições dos elementos do HUD atualizadas.
+ui.dorios.insight.waila_menu.title=Insight - WAILA
+ui.dorios.insight.waila_menu.color_theme=Tema de Cor do WAILA\n§3Atual: %1
+ui.dorios.insight.waila_menu.anchor=Ancoragem do WAILA\n§3Atual: %1
+ui.dorios.insight.feedback.waila_updated=§aDefinições visuais do WAILA atualizadas.
 
 ui.dorios.insight.menu.admin_only_button=Admin Only (Aplicar Para Todos)\n§3Atual: %1\n§jFonte: %2
 ui.dorios.insight.feedback.admin_only_denied=§cApenas admins podem alterar esta opção.

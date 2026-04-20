@@ -91,6 +91,64 @@ export const HudIndicatorModeLabels = Object.freeze([
     Object.freeze({ key: HudIndicatorModes.IconAndIndicator, label: "Icon + Indicator" })
 ]);
 
+export const HudElementPositionModes = Object.freeze({
+    Center: "center",
+    TopRight: "top_right",
+    MiddleRight: "middle_right",
+    BottomRight: "bottom_right",
+    BottomLeft: "bottom_left"
+});
+
+export const HudElementPositionModeLabels = Object.freeze([
+    Object.freeze({ key: HudElementPositionModes.Center, label: "Center (Default) / Centro (Padrão)" }),
+    Object.freeze({ key: HudElementPositionModes.TopRight, label: "Top Right / Superior Direito" }),
+    Object.freeze({ key: HudElementPositionModes.MiddleRight, label: "Middle Right / Meio Direito" }),
+    Object.freeze({ key: HudElementPositionModes.BottomRight, label: "Bottom Right / Inferior Direito" }),
+    Object.freeze({ key: HudElementPositionModes.BottomLeft, label: "Bottom Left / Inferior Esquerdo" })
+]);
+
+export const HudInventoryDisplayModes = Object.freeze({
+    Full: "full",
+    HotbarOnly: "hotbar_only",
+    InventoryOnly: "inventory_only"
+});
+
+export const HudInventoryDisplayModeLabels = Object.freeze([
+    Object.freeze({ key: HudInventoryDisplayModes.Full, label: "Full / Completo" }),
+    Object.freeze({ key: HudInventoryDisplayModes.HotbarOnly, label: "Hotbar Only / Apenas Hotbar" }),
+    Object.freeze({ key: HudInventoryDisplayModes.InventoryOnly, label: "Inventory Only / Apenas Inventário" })
+]);
+
+export const HudElementOrientationModes = Object.freeze({
+    Horizontal: "horizontal",
+    Vertical: "vertical"
+});
+
+export const HudElementOrientationModeLabels = Object.freeze([
+    Object.freeze({ key: HudElementOrientationModes.Horizontal, label: "Horizontal" }),
+    Object.freeze({ key: HudElementOrientationModes.Vertical, label: "Vertical" })
+]);
+
+export const WailaColorThemes = Object.freeze({
+    Default: "default",
+    Dark: "dark",
+    Copper: "copper",
+    Magenta: "magenta",
+    Cyan: "cyan",
+    Blood: "blood",
+    Ascane: "ascane"
+});
+
+export const WailaColorThemeLabels = Object.freeze([
+    Object.freeze({ key: WailaColorThemes.Default, label: "Default (Dark Blue) / Padrão (Azul Escuro)" }),
+    Object.freeze({ key: WailaColorThemes.Dark, label: "Dark / Escuro" }),
+    Object.freeze({ key: WailaColorThemes.Copper, label: "Copper / Cobre" }),
+    Object.freeze({ key: WailaColorThemes.Magenta, label: "Magenta" }),
+    Object.freeze({ key: WailaColorThemes.Cyan, label: "Cyan / Ciano" }),
+    Object.freeze({ key: WailaColorThemes.Blood, label: "Blood / Sangue" }),
+    Object.freeze({ key: WailaColorThemes.Ascane, label: "Ascane" })
+]);
+
 export const ModePresetSummaryModes = Object.freeze({
     Hidden: "hidden",
     Summary: "summary",
@@ -160,7 +218,7 @@ export const ToolTierIndicatorModeLabels = Object.freeze([
     Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorColor, label: "Tier Indicator (Color)" }),
     Object.freeze({ key: ToolTierIndicatorModes.TierIndicatorOre, label: "Tier Indicator (Ore)" }),
     Object.freeze({ key: ToolTierIndicatorModes.TextIndicator, label: "Text Indicator (Diamond)" }),
-    Object.freeze({ key: ToolTierIndicatorModes.IconAndIndicator, label: "Tool + Indicator" })
+    Object.freeze({ key: ToolTierIndicatorModes.IconAndIndicator, label: "Tool Icons + Indicator" })
 ]);
 
 export const ToolIndicatorPlacementModes = Object.freeze({
@@ -325,6 +383,11 @@ export const InsightModePresets = Object.freeze({
             hudToughnessVisibilityMode: HudDisplayModes.ShowVanilla,
             hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
             hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudInventoryEnabled: false,
+            hudInventoryPosition: HudElementPositionModes.Center,
+            hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
+            hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            wailaColorTheme: WailaColorThemes.Default,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -400,6 +463,11 @@ export const InsightModePresets = Object.freeze({
             hudToughnessVisibilityMode: HudDisplayModes.Both,
             hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
             hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudInventoryEnabled: false,
+            hudInventoryPosition: HudElementPositionModes.Center,
+            hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
+            hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            wailaColorTheme: WailaColorThemes.Default,
             stateColumns: 1,
             tagColumns: 1,
             familyColumns: 1
@@ -475,6 +543,11 @@ export const InsightModePresets = Object.freeze({
             hudToughnessVisibilityMode: HudDisplayModes.Both,
             hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
             hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudInventoryEnabled: false,
+            hudInventoryPosition: HudElementPositionModes.Center,
+            hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
+            hudInventoryOrientation: HudElementOrientationModes.Horizontal,
+            wailaColorTheme: WailaColorThemes.Default,
             stateColumns: 2,
             tagColumns: 2,
             familyColumns: 2
@@ -594,6 +667,90 @@ export function getHudIndicatorModeIndex(mode) {
     const normalized = normalizeHudIndicatorMode(mode);
     const index = HudIndicatorModeLabels.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
+}
+
+export function normalizeHudElementPositionMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudElementPositionModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudElementPositionModes.Center;
+}
+
+export function getHudElementPositionModeIndex(mode) {
+    const normalized = normalizeHudElementPositionMode(mode);
+    const index = HudElementPositionModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudElementPositionNumericId(mode) {
+    return getHudElementPositionModeIndex(mode);
+}
+
+export function normalizeHudInventoryDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudInventoryDisplayModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudInventoryDisplayModes.Full;
+}
+
+export function getHudInventoryDisplayModeIndex(mode) {
+    const normalized = normalizeHudInventoryDisplayMode(mode);
+    const index = HudInventoryDisplayModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudInventoryDisplayNumericId(mode) {
+    return getHudInventoryDisplayModeIndex(mode);
+}
+
+export function normalizeHudElementOrientationMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of HudElementOrientationModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return HudElementOrientationModes.Horizontal;
+}
+
+export function getHudElementOrientationModeIndex(mode) {
+    const normalized = normalizeHudElementOrientationMode(mode);
+    const index = HudElementOrientationModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getHudElementOrientationNumericId(mode) {
+    return getHudElementOrientationModeIndex(mode);
+}
+
+export function normalizeWailaColorTheme(theme) {
+    const normalized = String(theme || "").trim().toLowerCase();
+    for (const option of WailaColorThemeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaColorThemes.Default;
+}
+
+export function getWailaColorThemeIndex(theme) {
+    const normalized = normalizeWailaColorTheme(theme);
+    const index = WailaColorThemeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaColorThemeNumericId(theme) {
+    return getWailaColorThemeIndex(theme);
 }
 
 export function normalizeModePresetSummaryMode(mode) {
@@ -894,6 +1051,21 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         ),
         hudHungerIndicatorMode: normalizeHudIndicatorMode(
             runtime.hudHungerIndicatorMode ?? presetRuntime.hudHungerIndicatorMode
+        ),
+        hudInventoryEnabled: typeof runtime.hudInventoryEnabled === "boolean"
+            ? runtime.hudInventoryEnabled
+            : presetRuntime.hudInventoryEnabled,
+        hudInventoryPosition: normalizeHudElementPositionMode(
+            runtime.hudInventoryPosition ?? presetRuntime.hudInventoryPosition
+        ),
+        hudInventoryDisplayMode: normalizeHudInventoryDisplayMode(
+            runtime.hudInventoryDisplayMode ?? presetRuntime.hudInventoryDisplayMode
+        ),
+        hudInventoryOrientation: normalizeHudElementOrientationMode(
+            runtime.hudInventoryOrientation ?? presetRuntime.hudInventoryOrientation
+        ),
+        wailaColorTheme: normalizeWailaColorTheme(
+            runtime.wailaColorTheme ?? presetRuntime.wailaColorTheme
         ),
         stateColumns: clamp(
             Number.isFinite(runtime.stateColumns) ? runtime.stateColumns : presetRuntime.stateColumns,
@@ -1304,6 +1476,7 @@ export function getPlayerDisplaySettings(player) {
         && runtime.hudHealthIndicatorMode === HudIndicatorModes.IconAndIndicator;
     const hudHungerIndicatorEnabled = showHudHungerInsight
         && runtime.hudHungerIndicatorMode === HudIndicatorModes.IconAndIndicator;
+    const hudInventoryEnabled = Boolean(runtime.hudInventoryEnabled);
 
     // Legacy compatibility via tags.
     if (tags.has(InsightConfig.playerTags.hideNamespace)) {
@@ -1376,6 +1549,12 @@ export function getPlayerDisplaySettings(player) {
         hudToughnessVisibilityMode: runtime.hudToughnessVisibilityMode,
         hudHealthIndicatorMode: runtime.hudHealthIndicatorMode,
         hudHungerIndicatorMode: runtime.hudHungerIndicatorMode,
+        hudInventoryEnabled,
+        hudInventoryPosition: runtime.hudInventoryPosition,
+        hudInventoryDisplayMode: runtime.hudInventoryDisplayMode,
+        hudInventoryOrientation: runtime.hudInventoryOrientation,
+        wailaColorTheme: runtime.wailaColorTheme,
+        wailaColorThemeId: getWailaColorThemeNumericId(runtime.wailaColorTheme),
         showHudHealthInsight,
         showHudHungerInsight,
         showHudSaturationInsight,
