@@ -1757,7 +1757,7 @@
 			},
 			{
 				"binding_type": "view",
-				"source_property_name": "(#show_survival_ui and #inventory_enabled and #has_stack)",
+				"source_property_name": "(#inventory_enabled and #has_stack)",
 				"target_property_name": "#visible",
 				"binding_condition": "always"
 			}
@@ -2370,7 +2370,7 @@
 			},
 			{
 				"binding_type": "view",
-				"source_property_name": "(#show_survival_ui and #inventory_enabled and #position_selected)",
+				"source_property_name": "(#inventory_enabled and #position_selected)",
 				"target_property_name": "#visible",
 				"binding_condition": "always"
 			}
