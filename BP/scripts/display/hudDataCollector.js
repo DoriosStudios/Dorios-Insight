@@ -27,6 +27,7 @@ import { HudElement, HudVisibility } from "@minecraft/server";
 import * as uiQueue from "./uiQueue.js";
 import { collectHudDurabilityState } from "./hudDurabilityCollector.js";
 import { collectHudInventoryState } from "./hudInventoryCollector.js";
+import { collectHudQuickCounterState } from "./hudQuickCounterCollector.js";
 import {
     CHANNEL_HUD,
     encodeHudData,
@@ -420,7 +421,7 @@ export function collectAndSendHudData(player, settings) {
         }
 
         // -- Durability --
-        const durabilityData = collectHudDurabilityState(mainhand);
+        const durabilityData = collectHudDurabilityState(mainhand, settings);
 
         // -- Air Supply --
         const airData = getAirSupply(player);
@@ -436,6 +437,7 @@ export function collectAndSendHudData(player, settings) {
             hungerPreview: hasHungerPreview
         });
         const inventoryData = collectHudInventoryState(player, settings);
+        const quickCounterData = collectHudQuickCounterState(player, mainhand, settings);
 
         // -- Encode and send --
         const data = {
@@ -458,7 +460,8 @@ export function collectAndSendHudData(player, settings) {
             hudHealthIndicator: hudHealthIndicatorEnabled ? 1 : 0,
             hudHungerIndicator: hudHungerIndicatorEnabled ? 1 : 0,
             ...inventoryData,
-            ...durabilityData
+            ...durabilityData,
+            ...quickCounterData
         };
 
         const encoded = encodeHudData(data);

@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'SilentlyContinue'
 
-function Collect-IdentifiersFromText($raw, $set) {
+function Update-IdentifierSetFromText($raw, $set) {
     if ([string]::IsNullOrWhiteSpace($raw)) {
         return
     }
@@ -11,8 +11,8 @@ function Collect-IdentifiersFromText($raw, $set) {
     )
 
     foreach ($pattern in $patterns) {
-        $matches = [regex]::Matches($raw, $pattern)
-        foreach ($m in $matches) {
+        $foundEntries = [regex]::Matches($raw, $pattern)
+        foreach ($m in $foundEntries) {
             $id = [string]$m.Groups[1].Value
             $id = $id.Trim().ToLower()
 
@@ -49,7 +49,7 @@ function Get-MappableJsonFiles($bpRoot) {
     return $files
 }
 
-function Ensure-MainScriptImport($mainScriptPath, $importStatement) {
+function Add-MainScriptImportIfMissing($mainScriptPath, $importStatement) {
     if (-not (Test-Path -LiteralPath $mainScriptPath)) {
         return $false
     }
@@ -69,14 +69,16 @@ function Ensure-MainScriptImport($mainScriptPath, $importStatement) {
     return $true
 }
 
-function Build-RegistryInjectorSource($addonEntry) {
+function Build-RegistryInjectorSource($addonEntry, $dependencyCheckerImport = './DoriosAPI/dependencyChecker.js') {
     $addonJson = $addonEntry | ConvertTo-Json -Depth 8
     $marker = "__insightNamespaceRegistry_" + $addonEntry.key
 
     return @"
 import { system } from "@minecraft/server";
+import { waitForDependency } from "$dependencyCheckerImport";
 
 const REGISTRATION_MARKER = "$marker";
+const INSIGHT_DEPENDENCY_IDENTIFIER = "dorios_insight";
 const REGISTRATION_RETRY_TICKS = 20;
 const MAX_REGISTRATION_ATTEMPTS = 180;
 
@@ -107,19 +109,32 @@ function registerAddonContentWithRetry(attempt = 0) {
     }, REGISTRATION_RETRY_TICKS);
 }
 
-registerAddonContentWithRetry();
+function initializeNamespaceRegistration() {
+    if (tryRegisterAddonContent()) {
+        return;
+    }
+
+    waitForDependency(INSIGHT_DEPENDENCY_IDENTIFIER, () => {
+        registerAddonContentWithRetry();
+    }, {
+        retryTicks: REGISTRATION_RETRY_TICKS,
+        maxAttempts: MAX_REGISTRATION_ATTEMPTS
+    });
+}
+
+initializeNamespaceRegistration();
 "@
 }
 
 $addons = @(
-    @{ key = 'utilitycraft_ascendant_technology'; name = 'UtilityCraft: Ascendant Technology'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
-    @{ key = 'dorios_atelier'; name = 'Dorios'' Atelier'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
+    @{ key = 'utilitycraft_ascendant_technology'; name = 'UtilityCraft: Ascendant Technology'; identifier = 'AT'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\injectors'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\main.js'; importStatement = "import './injectors/insight_registry_injector.generated.js'"; dependencyCheckerImport = '../DoriosAPI/dependencyChecker.js' },
+    @{ key = 'dorios_atelier'; name = 'Dorios'' Atelier'; identifier = 'Atelier'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
     @{ key = 'dorios_excavate'; name = 'Dorios Excavate'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP\scripts\main.js'; importStatement = "import 'insight_registry_injector.generated.js'" },
     @{ key = 'dorios_rpg_core'; name = 'Dorios RPG Core'; type = 'core'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP\scripts\main.js'; importStatement = "import 'insight_registry_injector.generated.js'" },
     @{ key = 'dorios_trinkets'; name = 'Dorios Trinkets'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Trinkets\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Trinkets\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Trinkets\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
-    @{ key = 'utilitycraft_core'; name = 'UtilityCraft'; type = 'core'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
-    @{ key = 'utilitycraft_energy_amplified'; name = 'UtilityCraft: Energy Amplified'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
-    @{ key = 'utilitycraft_heavy_machinery'; name = 'UtilityCraft: Heavy Machinery'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" }
+    @{ key = 'utilitycraft_core'; name = 'UtilityCraft'; identifier = 'UC'; type = 'core'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
+    @{ key = 'utilitycraft_energy_amplified'; name = 'UtilityCraft: Energy Amplified'; identifier = 'EA'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Energy-Amplified\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
+    @{ key = 'utilitycraft_heavy_machinery'; name = 'UtilityCraft: Heavy Machinery'; identifier = 'HM'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\UtilityCraft-Heavy-Machinery\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" }
 )
 
 $result = @()
@@ -139,13 +154,14 @@ foreach ($addon in $addons) {
             continue
         }
 
-        Collect-IdentifiersFromText $raw $idSet
+        Update-IdentifierSetFromText $raw $idSet
     }
 
     $content = @($idSet | Sort-Object)
     $addonEntry = [PSCustomObject]@{
         key       = $addon.key
         name      = $addon.name
+        identifier = $addon.identifier
         type      = $addon.type
         namespace = $addon.namespace
         content   = $content
@@ -155,10 +171,10 @@ foreach ($addon in $addons) {
 
     if (Test-Path -LiteralPath $addon.scriptsRoot) {
         $injectorPath = Join-Path $addon.scriptsRoot 'insight_registry_injector.generated.js'
-        $injectorSource = Build-RegistryInjectorSource $addonEntry
+        $injectorSource = Build-RegistryInjectorSource $addonEntry $addon.dependencyCheckerImport
         Set-Content -LiteralPath $injectorPath -Value $injectorSource -Encoding UTF8
 
-        $importAdded = Ensure-MainScriptImport $addon.mainScript $addon.importStatement
+        $importAdded = Add-MainScriptImportIfMissing $addon.mainScript $addon.importStatement
 
         $injectorResults += [PSCustomObject]@{
             key = $addon.key

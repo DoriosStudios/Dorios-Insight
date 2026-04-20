@@ -13,7 +13,12 @@ import {
     setPlayerActivation,
     updatePlayerOverrides
 } from "./config.js";
-import { registerNamespaceAlias } from "./namespaceInjection.js";
+import {
+    NamespaceRegistrationSources,
+    getRegisteredNamespaceEntries,
+    registerNamespaceAlias,
+    resetRegisteredNamespaceEntries
+} from "./namespaceInjection.js";
 import { openInsightMenu } from "./menu.js";
 import { resetVanillaHud, resetAllPlayersHud } from "./hudDataCollector.js";
 
@@ -88,7 +93,9 @@ function getUsage() {
         "§e/utilitycraft:insight activate <component> <show|sneak|creative|sneak_creative|hide> §7- Set component visibility",
         "§e/utilitycraft:insight global <on|off|toggle|status> §7- Toggle Insight globally",
         "§e/utilitycraft:insightglobal <on|off|toggle|status> §7- Toggle Insight globally",
-        "§e/utilitycraft:insight namespace add <namespace> <displayName> §7- Map a namespace to an addon name",
+        "§e/utilitycraft:insight namespace add <namespace|identifier> <displayName> §7- Map a namespace or type identifier to an addon name",
+        "§e/utilitycraft:insight namespace list [scripts|commands|all] §7- List namespace registrations",
+        "§e/utilitycraft:insight namespace reset [commands|scripts|all] §7- Reset namespace registrations",
         "§e/utilitycraft:insight reset §7- Reset vanilla HUD for yourself",
         "§e/utilitycraft:insight reset all §7- Reset vanilla HUD for all players",
         "§e/utilitycraft:insightreset §7- Reset vanilla HUD for all players"
@@ -220,11 +227,136 @@ function handleGlobalCommand(player, primaryValue) {
     sendMessage(player, "§cUsage: /utilitycraft:insight global <on|off|toggle|status>");
 }
 
+function normalizeNamespaceRegistrationSourceScope(value, allowAll = true) {
+    const normalized = String(value || "").trim().toLowerCase();
+
+    if (!normalized) {
+        return allowAll ? "all" : undefined;
+    }
+
+    if (allowAll && normalized === "all") {
+        return "all";
+    }
+
+    if (normalized === "script" || normalized === "scripts") {
+        return NamespaceRegistrationSources.Script;
+    }
+
+    if (normalized === "command" || normalized === "commands") {
+        return NamespaceRegistrationSources.Command;
+    }
+
+    return undefined;
+}
+
+function getNamespaceRegistrationScopeLabel(scope) {
+    switch (scope) {
+        case NamespaceRegistrationSources.Script:
+            return "script";
+        case NamespaceRegistrationSources.Command:
+            return "command";
+        default:
+            return "all";
+    }
+}
+
+function buildNamespaceRegistrationLine(entry) {
+    const sourceLabel = entry.registrationSource === NamespaceRegistrationSources.Script
+        ? "script"
+        : "command";
+    const identifierPart = entry.identifier ? ` | identifier: ${entry.identifier}` : "";
+    const targetPart = entry.typeId ? ` | target: ${entry.typeId}` : "";
+    const contentPart = entry.type === "identifier" || entry.type === "namespace"
+        ? ""
+        : ` | tracked: ${entry.contentCount}`;
+
+    return `§7[${sourceLabel}] §b${entry.name}§r §8(${entry.namespace})§r${identifierPart}${targetPart}${contentPart}`;
+}
+
+function sendNamespaceRegistrationList(player, sourceScope) {
+    if (sourceScope === "all") {
+        const scriptEntries = getRegisteredNamespaceEntries(NamespaceRegistrationSources.Script);
+        const commandEntries = getRegisteredNamespaceEntries(NamespaceRegistrationSources.Command);
+
+        if (!scriptEntries.length && !commandEntries.length) {
+            sendMessage(player, "§eNo namespace registrations found.");
+            return;
+        }
+
+        sendMessage(player, `§6Namespace registrations | scripts: ${scriptEntries.length} | commands: ${commandEntries.length}`);
+
+        if (scriptEntries.length) {
+            sendMessage(player, "§bScripts:");
+            for (const entry of scriptEntries) {
+                sendMessage(player, buildNamespaceRegistrationLine(entry));
+            }
+        }
+
+        if (commandEntries.length) {
+            sendMessage(player, "§dCommands:");
+            for (const entry of commandEntries) {
+                sendMessage(player, buildNamespaceRegistrationLine(entry));
+            }
+        }
+
+        return;
+    }
+
+    const entries = getRegisteredNamespaceEntries(sourceScope);
+    if (!entries.length) {
+        sendMessage(player, `§eNo ${getNamespaceRegistrationScopeLabel(sourceScope)} namespace registrations found.`);
+        return;
+    }
+
+    sendMessage(player, `§6${getNamespaceRegistrationScopeLabel(sourceScope)} namespace registrations: ${entries.length}`);
+    for (const entry of entries) {
+        sendMessage(player, buildNamespaceRegistrationLine(entry));
+    }
+}
+
+function resetNamespaceRegistrationsForScope(player, sourceScope) {
+    const resetResult = sourceScope === "all"
+        ? resetRegisteredNamespaceEntries()
+        : resetRegisteredNamespaceEntries({ source: sourceScope });
+
+    if (!resetResult.ok) {
+        sendMessage(player, `§eNo ${getNamespaceRegistrationScopeLabel(sourceScope)} namespace registrations found.`);
+        return;
+    }
+
+    sendMessage(
+        player,
+        `§aReset ${resetResult.count} ${getNamespaceRegistrationScopeLabel(sourceScope)} namespace registration${resetResult.count === 1 ? "" : "s"}.`
+    );
+}
+
 function handleNamespaceCommand(player, primaryValue, secondaryValue, tertiaryValue) {
     const action = String(primaryValue || "").trim().toLowerCase();
 
     if (!action) {
-        sendMessage(player, "§cUsage: /utilitycraft:insight namespace add <namespace> <displayName>");
+        sendMessage(player, "§cUsage: /utilitycraft:insight namespace <add|set|list|reset> ...");
+        return;
+    }
+
+    if (action === "list") {
+        const sourceScope = normalizeNamespaceRegistrationSourceScope(secondaryValue, true);
+        if (!sourceScope) {
+            sendMessage(player, "§cUsage: /utilitycraft:insight namespace list [scripts|commands|all]");
+            return;
+        }
+
+        sendNamespaceRegistrationList(player, sourceScope);
+        return;
+    }
+
+    if (action === "reset") {
+        const sourceScope = normalizeNamespaceRegistrationSourceScope(secondaryValue || "commands", true);
+        if (!sourceScope) {
+            sendMessage(player, "§cUsage: /utilitycraft:insight namespace reset [commands|scripts|all]");
+            return;
+        }
+
+        resetNamespaceRegistrationsForScope(player, sourceScope);
         return;
     }
 
@@ -243,17 +375,17 @@ function handleNamespaceCommand(player, primaryValue, secondaryValue, tertiaryVa
     const displayNameValue = typeof displayNameArg === "string" ? displayNameArg.trim() : "";
 
     if (!namespaceValue || !displayNameValue) {
-        sendMessage(player, "§cUsage: /utilitycraft:insight namespace add <namespace> <displayName>");
+        sendMessage(player, "§cUsage: /utilitycraft:insight namespace add <namespace|identifier> <displayName>");
         return;
     }
 
     const result = registerNamespaceAlias(namespaceValue, displayNameValue, true);
     if (!result?.ok) {
-        sendMessage(player, "§cInvalid namespace or display name.");
+        sendMessage(player, "§cInvalid namespace, identifier or display name.");
             return; // Stop execution after invalid input
     }
 
-    sendMessage(player, `§aNamespace ${result.namespace} mapped to ${result.name}.`);
+    sendMessage(player, `§aMapping ${result.target} set to ${result.name}.`);
 }
 
 function handleResetCommand(player, primaryValue) {

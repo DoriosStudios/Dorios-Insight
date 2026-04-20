@@ -2,6 +2,7 @@ import { system, world } from "@minecraft/server";
 import { InsightConfig, getPlayerDisplaySettings } from "./config.js";
 import { collectAndSendHudData, cleanupPlayer as cleanupHudPlayer } from "./hudDataCollector.js";
 import { collectAndSendTargetData, cleanupPlayer as cleanupTargetPlayer } from "./targetDataCollector.js";
+import { collectAndSendWailaConfig } from "./wailaConfigCollector.js";
 import { CHANNEL_TARGET } from "./uiChannels.js";
 import * as biomeDataCollector from "./biomeDataCollector.js";
 import * as uiQueue from "./uiQueue.js";
@@ -66,6 +67,7 @@ function processPlayer(player, settings) {
     suppressedPlayers.delete(playerKey);
     collectAndSendHudData(player, settings);
     collectAndSendTargetData(player, settings);
+    collectAndSendWailaConfig(player, settings);
 }
 
 function processEntityHit(data) {

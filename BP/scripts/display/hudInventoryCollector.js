@@ -16,7 +16,7 @@ import {
  * @param {import("@minecraft/server").Player} player
  * @returns {import("@minecraft/server").Container|undefined}
  */
-function getInventoryContainer(player) {
+export function getInventoryContainer(player) {
     const componentIds = ["minecraft:inventory", "inventory"];
 
     for (const componentId of componentIds) {
@@ -39,7 +39,7 @@ function getInventoryContainer(player) {
  * @param {import("@minecraft/server").Player} player
  * @returns {number}
  */
-function getSelectedHotbarSlotIndex(player) {
+export function getSelectedHotbarSlotIndex(player) {
     try {
         const selectedSlotIndex = Number(player.selectedSlotIndex);
         if (Number.isFinite(selectedSlotIndex)) {
@@ -59,7 +59,7 @@ function getSelectedHotbarSlotIndex(player) {
  * @param {import("@minecraft/server").ItemStack|undefined} otherItem
  * @returns {boolean}
  */
-function areEquivalentInventoryItems(referenceItem, otherItem) {
+export function areEquivalentInventoryItems(referenceItem, otherItem) {
     if (!referenceItem || !otherItem) {
         return false;
     }
@@ -81,7 +81,7 @@ function areEquivalentInventoryItems(referenceItem, otherItem) {
  * @param {import("@minecraft/server").Player} player
  * @returns {{current: number, total: number, visible: boolean}}
  */
-function getSelectedInventoryStackSummary(player) {
+export function getSelectedInventoryStackSummary(player) {
     const container = getInventoryContainer(player);
     if (!container) {
         return { current: 0, total: 0, visible: false };
