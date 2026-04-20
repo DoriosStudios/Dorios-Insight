@@ -601,7 +601,7 @@ export function collectAndSendTargetData(player, settings) {
     try {
         const playerId = player.id;
         const screenData = {
-            prefix: "a",
+            prefix: "b",
             key: "",
             renderAux: "",
             currentHealth: 0, maxHealth: 0,
@@ -680,7 +680,11 @@ export function collectAndSendTargetData(player, settings) {
 
             if (isPlayer) {
                 screenData.prefix = "A";
-            } else if (!isItem) {
+            } else {
+                screenData.prefix = "a";
+            }
+
+            if (!isItem) {
                 // Measure entity height for render scaling
                 if (entityHeightCache[entity.typeId] === undefined
                     || entity.hasComponent("minecraft:scale")

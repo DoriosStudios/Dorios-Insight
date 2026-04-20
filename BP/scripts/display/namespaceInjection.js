@@ -3,10 +3,17 @@ import { splitTypeId, toTitleWords } from "./formatters.js";
 import { WorkspaceAddonContentRegistry } from "./workspaceRegistry.js";
 
 const REGISTRY_DYNAMIC_PROPERTY = "insight:namespace_registry";
+export const NamespaceRegistrationSources = Object.freeze({
+    Workspace: "workspace",
+    Script: "script",
+    Command: "command"
+});
+
+const RegistrationSources = NamespaceRegistrationSources;
 
 const DEFAULT_ADDON_LIBRARY = Object.freeze(
     WorkspaceAddonContentRegistry
-        .map((entry) => normalizeAddonDefinition(entry))
+        .map((entry) => normalizeAddonDefinition(entry, RegistrationSources.Workspace))
         .filter(Boolean)
 );
 
@@ -38,6 +45,7 @@ const RegistryState = {
 };
 
 const AddonTypePriority = Object.freeze({
+    identifier: -1,
     namespace: 0,
     expansion: 1,
     addon: 2,
@@ -50,6 +58,21 @@ function normalizeAddonKey(value) {
         .toLowerCase()
         .replace(/\s+/g, "_")
         .replace(/[^a-z0-9_.-]/g, "");
+}
+
+function normalizeRegistrationSource(value, fallback = RegistrationSources.Workspace) {
+    const normalized = typeof value === "string"
+        ? value.trim().toLowerCase()
+        : "";
+
+    switch (normalized) {
+        case RegistrationSources.Workspace:
+        case RegistrationSources.Script:
+        case RegistrationSources.Command:
+            return normalized;
+        default:
+            return fallback;
+    }
 }
 
 function normalizeNamespaceInput(value) {
@@ -76,6 +99,39 @@ function normalizeNamespaceInput(value) {
     }
 
     return normalized;
+}
+
+function normalizeTypeIdInput(value) {
+    if (typeof value !== "string") {
+        return undefined;
+    }
+
+    const trimmed = value.trim().toLowerCase();
+    const separatorIndex = trimmed.indexOf(":");
+    if (separatorIndex <= 0 || separatorIndex === trimmed.length - 1) {
+        return undefined;
+    }
+
+    const namespace = normalizeNamespaceInput(trimmed.slice(0, separatorIndex));
+    const identifierPath = trimmed.slice(separatorIndex + 1).trim();
+    if (!namespace || !identifierPath || !/^[a-z0-9_.\/-]+$/.test(identifierPath)) {
+        return undefined;
+    }
+
+    return `${namespace}:${identifierPath}`;
+}
+
+function normalizeAddonIdentifier(value) {
+    if (typeof value !== "string") {
+        return undefined;
+    }
+
+    const normalized = value
+        .trim()
+        .replace(/[\r\n\t]+/g, " ")
+        .replace(/\s+/g, " ");
+
+    return normalized.length ? normalized : undefined;
 }
 
 function decodeTagPayload(value) {
@@ -116,7 +172,7 @@ function normalizeContentList(content) {
     return [...new Set(normalized)];
 }
 
-function normalizeAddonDefinition(addonContent) {
+function normalizeAddonDefinition(addonContent, fallbackRegistrationSource = RegistrationSources.Workspace) {
     if (!addonContent || typeof addonContent !== "object") {
         return undefined;
     }
@@ -140,10 +196,17 @@ function normalizeAddonDefinition(addonContent) {
         : undefined;
 
     const content = normalizeContentList(addonContent.content);
+    const identifier = normalizeAddonIdentifier(addonContent.identifier);
+    const registrationSource = normalizeRegistrationSource(
+        addonContent.registrationSource ?? addonContent.source,
+        fallbackRegistrationSource
+    );
 
     return {
         key,
         name,
+        identifier,
+        registrationSource,
         type,
         namespace,
         content
@@ -158,6 +221,11 @@ function mergeAddonDefinitions(baseAddon, overrideAddon) {
     return {
         key: baseAddon.key,
         name: overrideAddon.name || baseAddon.name,
+        identifier: overrideAddon.identifier || baseAddon.identifier,
+        registrationSource: normalizeRegistrationSource(
+            overrideAddon.registrationSource,
+            baseAddon.registrationSource
+        ),
         type: overrideAddon.type || baseAddon.type,
         namespace: overrideAddon.namespace || baseAddon.namespace,
         content: [...new Set([...(baseAddon.content || []), ...(overrideAddon.content || [])])]
@@ -173,6 +241,8 @@ function rebuildMergedRegistry() {
         RegistryState.mergedByKey.set(addon.key, {
             key: addon.key,
             name: addon.name,
+            identifier: addon.identifier,
+            registrationSource: addon.registrationSource,
             type: addon.type,
             namespace: addon.namespace,
             content: [...addon.content]
@@ -185,7 +255,9 @@ function rebuildMergedRegistry() {
     }
 
     for (const addon of RegistryState.mergedByKey.values()) {
-        const namespaceKey = normalizeNamespaceInput(addon.namespace);
+        const namespaceKey = addon.type === "identifier"
+            ? undefined
+            : normalizeNamespaceInput(addon.namespace);
         if (namespaceKey) {
             if (!RegistryState.namespaceToAddonKeys.has(namespaceKey)) {
                 RegistryState.namespaceToAddonKeys.set(namespaceKey, []);
@@ -307,7 +379,7 @@ function loadDynamicRegistryFromWorld() {
     }
 
     for (const addon of parsed) {
-        const normalized = normalizeAddonDefinition(addon);
+        const normalized = normalizeAddonDefinition(addon, RegistrationSources.Command);
         if (!normalized) {
             continue;
         }
@@ -318,13 +390,17 @@ function loadDynamicRegistryFromWorld() {
 }
 
 function persistDynamicRegistryToWorld() {
-    const dynamicAddons = [...RegistryState.dynamicByKey.values()].map((addon) => ({
-        key: addon.key,
-        name: addon.name,
-        type: addon.type,
-        namespace: addon.namespace,
-        content: addon.content
-    }));
+    const dynamicAddons = [...RegistryState.dynamicByKey.values()]
+        .filter((addon) => addon.registrationSource === RegistrationSources.Command)
+        .map((addon) => ({
+            key: addon.key,
+            name: addon.name,
+            identifier: addon.identifier,
+            registrationSource: addon.registrationSource,
+            type: addon.type,
+            namespace: addon.namespace,
+            content: addon.content
+        }));
 
     const serialized = JSON.stringify(dynamicAddons);
     system.run(() => {
@@ -396,7 +472,10 @@ function getAddonByNamespace(namespace) {
 function registerAddonContentInternal(addonContent, persist = true) {
     ensureRegistryInitialized();
 
-    const normalized = normalizeAddonDefinition(addonContent);
+    const normalized = normalizeAddonDefinition(
+        addonContent,
+        persist ? RegistrationSources.Command : RegistrationSources.Script
+    );
     if (!normalized) {
         return false;
     }
@@ -413,9 +492,25 @@ function registerAddonContentInternal(addonContent, persist = true) {
     return true;
 }
 
-function registerNamespaceAliasInternal(namespaceInput, displayName, persist = true) {
-    const namespace = normalizeNamespaceInput(namespaceInput);
+function resolveNamespaceAliasRegistrationArgs(identifierOrPersist, persistMaybe) {
+    if (typeof identifierOrPersist === "boolean") {
+        return {
+            identifier: undefined,
+            persist: identifierOrPersist
+        };
+    }
+
+    return {
+        identifier: normalizeAddonIdentifier(identifierOrPersist),
+        persist: typeof persistMaybe === "boolean" ? persistMaybe : true
+    };
+}
+
+function registerNamespaceAliasInternal(namespaceInput, displayName, identifierOrPersist = true, persistMaybe = true) {
+    const typeId = normalizeTypeIdInput(namespaceInput);
+    const namespace = normalizeNamespaceInput(typeId ? typeId.split(":")[0] : namespaceInput);
     const name = typeof displayName === "string" ? displayName.trim() : "";
+    const registrationArgs = resolveNamespaceAliasRegistrationArgs(identifierOrPersist, persistMaybe);
 
     if (!namespace || !name) {
         return {
@@ -424,34 +519,174 @@ function registerNamespaceAliasInternal(namespaceInput, displayName, persist = t
         };
     }
 
-    const key = normalizeAddonKey(`namespace_${namespace}`);
+    const key = typeId
+        ? normalizeAddonKey(`identifier_${typeId.replace(/[:./-]+/g, "_")}`)
+        : normalizeAddonKey(`namespace_${namespace}`);
     const didRegister = registerAddonContentInternal({
         key,
         name,
-        type: "namespace",
+        identifier: registrationArgs.identifier,
+        registrationSource: RegistrationSources.Command,
+        type: typeId ? "identifier" : "namespace",
         namespace,
-        content: []
-    }, persist);
+        content: typeId ? [typeId] : []
+    }, registrationArgs.persist);
 
     return {
         ok: didRegister,
         key,
         namespace,
+        typeId,
+        target: typeId || namespace,
+        identifier: registrationArgs.identifier,
         name
     };
 }
 
-function exposeNamespaceRegistryApi() {
-    if (globalThis.InsightNamespaceRegistry) {
-        return;
+function getDynamicRegistrationSortWeight(source) {
+    switch (source) {
+        case RegistrationSources.Script:
+            return 0;
+        case RegistrationSources.Command:
+            return 1;
+        default:
+            return 2;
+    }
+}
+
+function describeDynamicRegistration(addon) {
+    const registrationSource = normalizeRegistrationSource(
+        addon?.registrationSource,
+        RegistrationSources.Command
+    );
+    const content = Array.isArray(addon?.content) ? addon.content : [];
+    const typeId = addon?.type === "identifier"
+        ? normalizeTypeIdInput(content[0])
+        : undefined;
+
+    return {
+        key: addon?.key,
+        name: addon?.name,
+        identifier: addon?.identifier,
+        registrationSource,
+        type: addon?.type,
+        namespace: addon?.namespace,
+        typeId,
+        target: typeId || addon?.namespace || addon?.key,
+        contentCount: content.length,
+        content: [...content],
+        resettable: registrationSource === RegistrationSources.Script || registrationSource === RegistrationSources.Command
+    };
+}
+
+function getRegisteredNamespaceEntriesInternal(source) {
+    ensureRegistryInitialized();
+
+    const normalizedSource = normalizeRegistrationSource(source, undefined);
+    const entries = [...RegistryState.dynamicByKey.values()]
+        .map((addon) => describeDynamicRegistration(addon))
+        .filter((entry) => !normalizedSource || entry.registrationSource === normalizedSource);
+
+    entries.sort((left, right) => {
+        const leftWeight = getDynamicRegistrationSortWeight(left.registrationSource);
+        const rightWeight = getDynamicRegistrationSortWeight(right.registrationSource);
+
+        if (leftWeight !== rightWeight) {
+            return leftWeight - rightWeight;
+        }
+
+        const namespaceCompare = String(left.namespace || "").localeCompare(String(right.namespace || ""));
+        if (namespaceCompare !== 0) {
+            return namespaceCompare;
+        }
+
+        const nameCompare = String(left.name || "").localeCompare(String(right.name || ""));
+        if (nameCompare !== 0) {
+            return nameCompare;
+        }
+
+        return String(left.key || "").localeCompare(String(right.key || ""));
+    });
+
+    return entries;
+}
+
+function normalizeNamespaceResetFilter(filter) {
+    if (typeof filter === "string") {
+        return {
+            source: normalizeRegistrationSource(filter, undefined)
+        };
     }
 
+    if (!filter || typeof filter !== "object") {
+        return {};
+    }
+
+    return {
+        source: normalizeRegistrationSource(filter.source, undefined),
+        key: typeof filter.key === "string" && filter.key.trim()
+            ? normalizeAddonKey(filter.key)
+            : undefined
+    };
+}
+
+function matchesNamespaceResetFilter(addonKey, addon, filter) {
+    if (filter.source && addon.registrationSource !== filter.source) {
+        return false;
+    }
+
+    if (filter.key && addonKey !== filter.key) {
+        return false;
+    }
+
+    return true;
+}
+
+function resetRegisteredNamespaceEntriesInternal(filter = {}) {
+    ensureRegistryInitialized();
+
+    const normalizedFilter = normalizeNamespaceResetFilter(filter);
+    const removed = [];
+
+    for (const [addonKey, addon] of [...RegistryState.dynamicByKey.entries()]) {
+        if (!matchesNamespaceResetFilter(addonKey, addon, normalizedFilter)) {
+            continue;
+        }
+
+        RegistryState.dynamicByKey.delete(addonKey);
+        removed.push(describeDynamicRegistration(addon));
+    }
+
+    if (!removed.length) {
+        return {
+            ok: false,
+            count: 0,
+            removed: []
+        };
+    }
+
+    rebuildMergedRegistry();
+    persistDynamicRegistryToWorld();
+
+    return {
+        ok: true,
+        count: removed.length,
+        removed
+    };
+}
+
+function exposeNamespaceRegistryApi() {
+    const existingApi = globalThis.InsightNamespaceRegistry && typeof globalThis.InsightNamespaceRegistry === "object"
+        ? globalThis.InsightNamespaceRegistry
+        : {};
+
     globalThis.InsightNamespaceRegistry = {
+        ...existingApi,
         registerAddonContent(addonContent, persist = true) {
             return registerAddonContentInternal(addonContent, persist);
         },
-        registerNamespaceAlias(namespaceInput, displayName, persist = true) {
-            return registerNamespaceAliasInternal(namespaceInput, displayName, persist);
+        registerNamespaceAlias(namespaceInput, displayName, identifierOrPersist = true, persistMaybe = true) {
+            return registerNamespaceAliasInternal(namespaceInput, displayName, identifierOrPersist, persistMaybe);
         },
         registerAddonContents(addons, persist = true) {
             if (!Array.isArray(addons)) {
@@ -475,6 +710,7 @@ function exposeNamespaceRegistryApi() {
             return [...RegistryState.mergedByKey.values()].map((addon) => ({
                 key: addon.key,
                 name: addon.name,
+                identifier: addon.identifier,
                 type: addon.type,
                 namespace: addon.namespace,
                 content: [...addon.content]
@@ -497,11 +733,21 @@ function exposeNamespaceRegistryApi() {
                 aliases.push({
                     namespace,
                     name: resolved.name ?? toTitleWords(namespace.split("_")),
+                    identifier: resolved.identifier,
                     key: resolved.key
                 });
             }
 
             return aliases;
+        },
+        getRegisteredNamespaceEntries(source) {
+            return getRegisteredNamespaceEntriesInternal(source);
+        },
+        getDynamicRegistrySnapshot(source) {
+            return getRegisteredNamespaceEntriesInternal(source);
+        },
+        resetNamespaceRegistrations(filter = {}) {
+            return resetRegisteredNamespaceEntriesInternal(filter);
         },
         refreshFromDynamicProperties() {
             RegistryState.initialized = false;
@@ -566,6 +812,7 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
     let source = "default";
     let resolvedNamespace = namespace;
     let displayNamespace = DEFAULT_NAMESPACE_LABELS[namespace] ?? toTitleWords(namespace.split("_"));
+    let displayIdentifier;
     let addonKey;
     let addonName;
     let addonType;
@@ -580,12 +827,13 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
         addonKey = mappedAddon.key;
         addonName = mappedAddon.name;
         addonType = mappedAddon.type;
+        displayIdentifier = mappedAddon.identifier;
         resolvedNamespace = mappedAddon.namespace || resolvedNamespace;
         displayNamespace = mappedAddon.name;
         source = addonFromTag
             ? "tag:addon"
             : addonFromTypeId
-                ? "registry:content"
+                ? (mappedAddon.type === "identifier" ? "registry:identifier" : "registry:content")
                 : "registry:namespace";
     }
 
@@ -598,6 +846,7 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
         addonKey,
         addonName,
         addonType,
+        displayIdentifier,
         source,
         injected: source !== "default",
         originalNamespace: namespace,
@@ -606,7 +855,17 @@ export function resolveInjectedNamespace(typeId, blockTags = []) {
     };
 }
 
-export function registerNamespaceAlias(namespaceInput, displayName, persist = true) {
+export function registerNamespaceAlias(namespaceInput, displayName, identifierOrPersist = true, persistMaybe = true) {
     ensureRegistryInitialized();
-    return registerNamespaceAliasInternal(namespaceInput, displayName, persist);
+    return registerNamespaceAliasInternal(namespaceInput, displayName, identifierOrPersist, persistMaybe);
+}
+
+export function getRegisteredNamespaceEntries(source) {
+    ensureRegistryInitialized();
+    return getRegisteredNamespaceEntriesInternal(source);
+}
+
+export function resetRegisteredNamespaceEntries(filter = {}) {
+    ensureRegistryInitialized();
+    return resetRegisteredNamespaceEntriesInternal(filter);
 }

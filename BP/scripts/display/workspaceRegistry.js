@@ -2,6 +2,7 @@ export const WorkspaceAddonContentRegistry = Object.freeze([
   {
     "key": "utilitycraft_ascendant_technology",
     "name": "UtilityCraft: Ascendant Technology",
+    "identifier": "AT",
     "type": "expansion",
     "namespace": "utilitycraft",
     "content": [
@@ -439,6 +440,7 @@ export const WorkspaceAddonContentRegistry = Object.freeze([
   {
     "key": "dorios_atelier",
     "name": "Dorios' Atelier",
+    "identifier": "Atelier",
     "type": "addon",
     "namespace": "dorios",
     "content": [
@@ -995,6 +997,7 @@ export const WorkspaceAddonContentRegistry = Object.freeze([
   {
     "key": "utilitycraft_core",
     "name": "UtilityCraft",
+    "identifier": "UC",
     "type": "core",
     "namespace": "utilitycraft",
     "content": [
@@ -1923,6 +1926,7 @@ export const WorkspaceAddonContentRegistry = Object.freeze([
   {
     "key": "utilitycraft_energy_amplified",
     "name": "UtilityCraft: Energy Amplified",
+    "identifier": "EA",
     "type": "expansion",
     "namespace": "utilitycraft",
     "content": [
@@ -1963,6 +1967,7 @@ export const WorkspaceAddonContentRegistry = Object.freeze([
   {
     "key": "utilitycraft_heavy_machinery",
     "name": "UtilityCraft: Heavy Machinery",
+    "identifier": "HM",
     "type": "expansion",
     "namespace": "utilitycraft",
     "content": [

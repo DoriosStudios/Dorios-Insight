@@ -44,6 +44,12 @@
 			},
 			{
 				"inventory_hud_stack_center@insight_hud.inventory_hud_stack_center": {}
+			},
+			{
+				"durability_overlay@insight_hud.durability_overlay": {}
+			},
+			{
+				"quick_counter_panel@insight_hud.quick_counter_panel": {}
 			}
 		]
 	},
@@ -59,8 +65,17 @@
 			{ "section_e@insight_data.hud_data_section_e": {} },
 			{ "section_f@insight_data.hud_data_section_f": {} },
 			{ "section_g@insight_data.hud_data_section_g": {} },
-			{ "section_h@insight_data.hud_data_section_h": {} }
+			{ "section_h@insight_data.hud_data_section_h": {} },
+			{ "section_i@insight_data.hud_data_section_i": {} },
+			{ "section_j@insight_data.hud_data_section_j": {} },
+			{ "section_k@insight_data.hud_data_section_k": {} }
 		]
+	},
+
+	"inventory_hud_placeholder": {
+		"type": "panel",
+		"size": [0, 0],
+		"visible": false
 	},
 
 	"centered_gui_elements": {
@@ -175,11 +190,7 @@
 				}
 			},
 			{
-				"durability_indicator@insight_hud.durability_indicator": {
-					"anchor_from": "bottom_right",
-					"anchor_to": "bottom_right",
-					"offset": [0, 80]
-				}
+				"durability_placeholder@insight_hud.inventory_hud_placeholder": {}
 			},
 			{
 				"inventory_hud_placeholder": {
@@ -316,11 +327,7 @@
 				}
 			},
 			{
-				"durability_indicator@insight_hud.durability_indicator": {
-					"anchor_from": "bottom_right",
-					"anchor_to": "bottom_right",
-					"offset": [14, 80]
-				}
+				"durability_placeholder@insight_hud.inventory_hud_placeholder": {}
 			},
 			{
 				"inventory_hud_placeholder": {
@@ -451,11 +458,7 @@
 				}
 			},
 			{
-				"durability_indicator@insight_hud.durability_indicator": {
-					"anchor_from": "bottom_right",
-					"anchor_to": "bottom_right",
-					"offset": [-2, 88]
-				}
+				"durability_placeholder@insight_hud.inventory_hud_placeholder": {}
 			},
 			{
 				"inventory_hud_placeholder": {
@@ -1412,92 +1415,565 @@
 		"to": 1
 	},
 
-	"durability_indicator": {
-		"type": "stack_panel",
-		"orientation": "vertical",
-		"size": ["100%cm", "100%c"],
+	"durability_indicator_item": {
+		"$item_collection_name|default": "hotbar_items",
+		"$durability_bar_required|default": true,
+		"$durability_bar_size": [11, 0.6],
+		"type": "panel",
+		"size": ["100%c", "100%c"],
 		"controls": [
 			{
-				"percent_row": {
+				"content": {
 					"type": "stack_panel",
-					"orientation": "horizontal",
-					"size": ["100%cm", "100%cm"],
+					"orientation": "vertical",
+					"size": ["100%c", "100%cm"],
 					"controls": [
 						{
-							"value": {
-								"type": "label",
-								"text": "#text",
-								"shadow": true,
-								"color": [0.55, 0.9, 0.55],
+							"top_row": {
+								"type": "stack_panel",
+								"orientation": "horizontal",
+								"size": ["100%c", "100%cm"],
+								"controls": [
+									{
+										"icon_panel": {
+											"type": "panel",
+											"size": [16, 16],
+											"controls": [
+												{
+													"item_renderer@insight_hud.inventory_hud_item_icon": {
+														"$item_collection_name": "$item_collection_name",
+														"size": [16, 16],
+														"layer": 1
+													}
+												}
+											],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_i",
+													"source_property_name": "(#dur_icon_visible > 0)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"icon_gap": {
+											"type": "panel",
+											"size": [4, 1],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_i",
+													"source_property_name": "(#dur_icon_visible > 0)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"percent_text": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [0.55, 0.9, 0.55],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_e",
+													"source_property_name": "#dur_percent",
+													"target_property_name": "#dur_percent_value",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #dur_percent_value + '%%')",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_control_name": "section_i",
+													"source_property_name": "((#dur_display_mode = 2) or (#dur_display_mode = 3))",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									}
+								],
 								"bindings": [
 									{
 										"binding_type": "view",
-										"source_control_name": "section_e",
-										"source_property_name": "#dur_percent",
-										"target_property_name": "#text",
+										"source_control_name": "section_i",
+										"source_property_name": "(#dur_icon_visible > 0)",
+										"target_property_name": "#show_icon",
+										"binding_condition": "always"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_i",
+										"source_property_name": "#dur_display_mode",
+										"target_property_name": "#dur_mode",
+										"binding_condition": "always"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "(#show_icon or (#dur_mode = 2) or (#dur_mode = 3))",
+										"target_property_name": "#visible",
 										"binding_condition": "always"
 									}
 								]
 							}
 						},
 						{
-							"symbol": {
-								"type": "label",
-								"text": "%",
-								"shadow": true,
-								"color": [0.65, 0.65, 0.65]
-							}
-						}
-					]
-				}
-			},
-			{
-				"values_row": {
-					"type": "stack_panel",
-					"orientation": "horizontal",
-					"size": ["100%cm", "100%cm"],
-					"controls": [
-						{
-							"current": {
+							"values_text": {
 								"type": "label",
 								"text": "#text",
 								"shadow": true,
-								"color": [0.75, 0.75, 0.75],
+								"color": [0.92, 0.92, 0.92],
 								"bindings": [
 									{
 										"binding_type": "view",
 										"source_control_name": "section_f",
 										"source_property_name": "#dur_current",
-										"target_property_name": "#text",
+										"target_property_name": "#dur_current_value",
 										"binding_condition": "always"
-									}
-								]
-							}
-						},
-						{
-							"slash": {
-								"type": "label",
-								"text": "/",
-								"shadow": true,
-								"color": [0.55, 0.55, 0.55]
-							}
-						},
-						{
-							"max": {
-								"type": "label",
-								"text": "#text",
-								"shadow": true,
-								"color": [0.75, 0.75, 0.75],
-								"bindings": [
+									},
 									{
 										"binding_type": "view",
 										"source_control_name": "section_f",
 										"source_property_name": "#dur_max",
+										"target_property_name": "#dur_max_value",
+										"binding_condition": "always"
+									},
+									{
+										"binding_type": "view",
+										"source_property_name": "('§z' + #dur_current_value + '§r/' + #dur_max_value)",
 										"target_property_name": "#text",
+										"binding_condition": "always"
+									},
+									{
+										"binding_type": "view",
+										"source_control_name": "section_i",
+										"source_property_name": "((#dur_display_mode = 1) or (#dur_display_mode = 3))",
+										"target_property_name": "#visible",
 										"binding_condition": "always"
 									}
 								]
 							}
+						},
+						{
+							"bar_row": {
+								"type": "panel",
+								"size": [16, 2],
+								"controls": [
+									{
+										"durability_bar@common.durability_bar": {
+											"layer": 20,
+											"$item_collection_name": "$item_collection_name",
+											"$durability_bar_required": true
+										}
+									}
+								],
+								"bindings": [
+									{
+										"binding_type": "view",
+										"source_control_name": "section_i",
+										"source_property_name": "(#dur_display_mode = 4)",
+										"target_property_name": "#visible",
+										"binding_condition": "always"
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_name": "#slot_selected",
+				"binding_type": "collection",
+				"binding_collection_name": "$item_collection_name"
+			},
+			{
+				"binding_name": "#item_durability_total_amount",
+				"binding_type": "collection",
+				"binding_collection_name": "$item_collection_name"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(not (#item_durability_total_amount = 0))",
+				"target_property_name": "#has_native_durability",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "(#dur_visible > 0)",
+				"target_property_name": "#script_visible",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "#dur_display_mode",
+				"target_property_name": "#dur_mode",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#slot_selected and #has_native_durability and #script_visible and not(#dur_mode = 0))",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_indicator": {
+		"type": "collection_panel",
+		"size": ["100%cm", "100%cm"],
+		"collection_name": "hotbar_items",
+		"factory": {
+			"name": "durability_indicator_factory",
+			"control_name": "insight_hud.durability_indicator_item"
+		},
+		"property_bag": {
+			"#hotbar_size": 9
+		},
+		"bindings": [
+			{
+				"binding_name": "#show_survival_ui",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "#hotbar_size",
+				"target_property_name": "#collection_length",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "(#dur_visible > 0)",
+				"target_property_name": "#has_durability",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "#dur_display_mode",
+				"target_property_name": "#dur_mode",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#show_survival_ui and #has_durability and not(#dur_mode = 0))",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_position_right_hotbar": {
+		"type": "panel",
+		"anchor_from": "bottom_middle",
+		"anchor_to": "bottom_middle",
+		"offset": [140, -12],
+		"layer": 28,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"content@insight_hud.durability_indicator": {}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "(#dur_position = 0)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_position_left_hotbar": {
+		"type": "panel",
+		"anchor_from": "bottom_middle",
+		"anchor_to": "bottom_middle",
+		"offset": [-140, -12],
+		"layer": 28,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"content@insight_hud.durability_indicator": {}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "(#dur_position = 1)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_position_below_crosshair": {
+		"type": "panel",
+		"anchor_from": "center",
+		"anchor_to": "center",
+		"offset": [0, 30],
+		"layer": 28,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"content@insight_hud.durability_indicator": {}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "(#dur_position = 2)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_position_bottom_left": {
+		"type": "panel",
+		"anchor_from": "bottom_left",
+		"anchor_to": "bottom_left",
+		"offset": [14, -36],
+		"layer": 28,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"content@insight_hud.durability_indicator": {}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "(#dur_position = 3)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_position_bottom_right": {
+		"type": "panel",
+		"anchor_from": "bottom_right",
+		"anchor_to": "bottom_right",
+		"offset": [-14, -36],
+		"layer": 28,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"content@insight_hud.durability_indicator": {}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_i",
+				"source_property_name": "(#dur_position = 4)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"durability_overlay": {
+		"type": "panel",
+		"size": ["100%", "100%"],
+		"controls": [
+			{ "right_hotbar@insight_hud.durability_position_right_hotbar": {} },
+			{ "left_hotbar@insight_hud.durability_position_left_hotbar": {} },
+			{ "below_crosshair@insight_hud.durability_position_below_crosshair": {} },
+			{ "bottom_left@insight_hud.durability_position_bottom_left": {} },
+			{ "bottom_right@insight_hud.durability_position_bottom_right": {} }
+		]
+	},
+
+	"quick_counter_primary_row": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"value": {
+					"type": "label",
+					"text": "#text",
+					"shadow": true,
+					"color": [0.95, 0.95, 0.95],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_k",
+							"source_property_name": "#quick_primary_value",
+							"target_property_name": "#quick_primary_text_value",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "('§z' + #quick_primary_text_value)",
+							"target_property_name": "#text",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"suffix_percent": {
+					"type": "label",
+					"text": "%",
+					"shadow": true,
+					"color": [0.72, 0.72, 0.72],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_j",
+							"source_property_name": "(#quick_primary_mode = 5)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_j",
+				"source_property_name": "(#quick_primary_mode > 0)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"quick_counter_secondary_row": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"value": {
+					"type": "label",
+					"text": "#text",
+					"shadow": true,
+					"color": [0.76, 0.76, 0.76],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_k",
+							"source_property_name": "#quick_secondary_value",
+							"target_property_name": "#quick_secondary_text_value",
+							"binding_condition": "always"
+						},
+						{
+							"binding_type": "view",
+							"source_property_name": "('§z' + #quick_secondary_text_value)",
+							"target_property_name": "#text",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"suffix_percent": {
+					"type": "label",
+					"text": "%",
+					"shadow": true,
+					"color": [0.58, 0.58, 0.58],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_j",
+							"source_property_name": "(#quick_secondary_mode = 5)",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			}
+		],
+		"bindings": [
+			{
+				"binding_type": "view",
+				"source_control_name": "section_j",
+				"source_property_name": "(#quick_secondary_mode > 0)",
+				"target_property_name": "#visible",
+				"binding_condition": "always"
+			}
+		]
+	},
+
+	"quick_counter_panel": {
+		"type": "stack_panel",
+		"orientation": "horizontal",
+		"anchor_from": "center",
+		"anchor_to": "center",
+		"offset": [0, 20],
+		"layer": 27,
+		"size": ["100%cm", "100%cm"],
+		"controls": [
+			{
+				"icon_panel": {
+					"type": "panel",
+					"size": [16, 16],
+					"controls": [
+						{
+							"icon@insight_hud.inventory_hud_selected_icon_panel": {}
+						}
+					],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_j",
+							"source_property_name": "((#quick_show_icon > 0) and (#quick_icon_visible > 0))",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"icon_gap": {
+					"type": "panel",
+					"size": [4, 1],
+					"bindings": [
+						{
+							"binding_type": "view",
+							"source_control_name": "section_j",
+							"source_property_name": "((#quick_show_icon > 0) and (#quick_icon_visible > 0))",
+							"target_property_name": "#visible",
+							"binding_condition": "always"
+						}
+					]
+				}
+			},
+			{
+				"values": {
+					"type": "stack_panel",
+					"orientation": "vertical",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
+						{
+							"primary@insight_hud.quick_counter_primary_row": {}
+						},
+						{
+							"secondary@insight_hud.quick_counter_secondary_row": {}
 						}
 					]
 				}
@@ -1510,14 +1986,14 @@
 			},
 			{
 				"binding_type": "view",
-				"source_control_name": "section_e",
-				"source_property_name": "(#dur_visible > 0)",
-				"target_property_name": "#has_durability",
+				"source_control_name": "section_j",
+				"source_property_name": "((#quick_primary_mode > 0) or (#quick_secondary_mode > 0))",
+				"target_property_name": "#has_counter",
 				"binding_condition": "always"
 			},
 			{
 				"binding_type": "view",
-				"source_property_name": "(#show_survival_ui and #has_durability)",
+				"source_property_name": "(#show_survival_ui and #has_counter)",
 				"target_property_name": "#visible",
 				"binding_condition": "always"
 			}

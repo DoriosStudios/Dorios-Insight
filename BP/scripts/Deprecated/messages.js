@@ -1444,6 +1444,37 @@ function pushRawtextPart(rawtext, part) {
     rawtext.push(part);
 }
 
+function normalizeNamespaceDisplayMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    if (normalized === "name_identifier" || normalized === "identifier") {
+        return normalized;
+    }
+
+    return "name";
+}
+
+function buildNamespaceDisplayLineText(namespaceInfo, playerSettings) {
+    const displayName = String(namespaceInfo?.displayNamespace || "").trim();
+    const displayIdentifier = String(namespaceInfo?.displayIdentifier || "").trim();
+    const colorCode = InsightConfig.display.namespaceColor;
+    const mode = normalizeNamespaceDisplayMode(playerSettings?.namespaceDisplayMode);
+
+    if (mode === "identifier" && displayIdentifier.length) {
+        return `\n${colorCode}@${displayIdentifier}§r`;
+    }
+
+    if (
+        mode === "name_identifier"
+        && displayName.length
+        && displayIdentifier.length
+        && displayIdentifier.toLowerCase() !== displayName.toLowerCase()
+    ) {
+        return `\n${colorCode}@${displayName} §8[${displayIdentifier}]§r`;
+    }
+
+    return formatNamespaceLabel(displayName || displayIdentifier || "unknown", colorCode);
+}
+
 function appendEntityTitle(rawtext, context) {
     const {
         nickname,
@@ -3239,7 +3270,7 @@ function buildBlockActionbarPayload(block, playerSettings, context = {}) {
 
     if (playerSettings.showNamespace) {
         rawtext.push({
-            text: formatNamespaceLabel(namespaceInfo.displayNamespace, InsightConfig.display.namespaceColor)
+            text: buildNamespaceDisplayLineText(namespaceInfo, playerSettings)
         });
     }
 
@@ -3440,7 +3471,7 @@ function buildEntityActionbarPayload(entity, playerSettings, context = {}) {
 
     if (playerSettings.showNamespace) {
         rawtext.push({
-            text: formatNamespaceLabel(namespaceInfo.displayNamespace, InsightConfig.display.namespaceColor)
+            text: buildNamespaceDisplayLineText(namespaceInfo, playerSettings)
         });
     }
 

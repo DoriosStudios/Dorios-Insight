@@ -18,9 +18,22 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 
 ### Secondary Objectives:
 #### V1.2+
-- [ ] Move main system to UI Queue for a better style of display, as well as compatibility with vanilla title and actionbar.
-- [ ] Improve Insight to have more features other the "Seeing What the Player Us Looking At", like inventory display and modifiers, HUD modifications with more icons and configs and etc.
-- [ ] Make the position of the Insight's message configurable. *(Currently impossible. Needs manifest V3.)*
+- [x] Move main system to UI Queue for a better style of display, as well as compatibility with vanilla title and actionbar.
+- [x] Improve Insight to have more features other the "Seeing What Is the Player Looking At", like inventory display and modifiers, HUD modifications with more icons and configs and etc.
+  - [x] Inventory Popup
+  - [x] Crosshair Counter
+  - [x] Item Durability Viewer
+  - [ ] Configurable Styles for "Coordinates" and "Days Played"
+  - [ ] Clear Versions for elements
+- [x] Make "What Is the Player Looking At" movable, as well configurable. Changing styles should also be possible.
+  - [ ] Add a better "Custom Namespace" system, with more options for display and management.
+  - [ ] Add a "Custom Field" system, with support for custom fields added by other addons, as well as custom fields defined by the user.
+  - [ ] Add a "Custom Component" system, with support for custom components added by other addons, as well as custom components defined by the user.
+  - [ ] Add a simple "Namespace Color" for general color coding of the namespace of the entity, block or item for every minecraft color.
+  - [ ] Add "Identifiers" using for the case where the content is mapped instead of using the item/block identifier namespace as the main namespace.
+    - To better explain this: Add-ons that share the same namespace for their content (for example, UtilityCraft and UtilityCraft: Ascendant Technology) can be hard to differentiate. Addind this dedicated feature would allow users to manage namespaces sent my script, customizing color, display name and "identifier-based" display.
+  - Make the separator between fields configurable, with options for different characters and spacing.
+- [ ] Make the position of the Insight's message configurable. 
 - [ ] Fix Custom Field Injector.
 
 #### V1.1
