@@ -20,14 +20,20 @@
  * │   c: armor(2) toughness(2) extraArmor(2) extraArmorFull(2)       │
  * │   d: hungerPreview(2) airSupply(2) maxAir(2) flags(2)            │
  * │   e: hudHealthIndicator(2) hudHungerIndicator(2)                  │
- * │      durPercent(2) durVisible(2)                                  │
+ * │      durPercent(3) durVisible(1)                                  │
  * │   f: durCurHi(2) durCurLo(2) durMaxHi(2) durMaxLo(2)              │
  * │   g: hudInventory(2) hudInventoryPosition(2)                      │
  * │      hudInventoryDisplayMode(2) hudInventoryOrientation(2)        │
  * │   h: stackCurrent(3) stackVisible(1)                              │
  * │      stackTotalHi(2) stackTotalLo(2)                              │
+ * │   i: durDisplayMode(2) durPosition(2)                             │
+ * │      durIconVisible(2) durReserved(2)                             │
+ * │   j: quickPrimaryMode(2) quickSecondaryMode(2)                    │
+ * │      quickShowIcon(2) quickIconVisible(2)                         │
+ * │   k: quickPrimaryHi(2) quickPrimaryLo(2)                          │
+ * │      quickSecondaryHi(2) quickSecondaryLo(2)                      │
  * │                                                                  │
- * │ Total: 11 + (7 × 9) = 74 chars + suffix                          │
+ * │ Total: 11 + (10 × 9) = 101 chars + suffix                        │
  * └──────────────────────────────────────────────────────────────────┘
  *
  * ┌──────────────────────────────────────────────────────────────────┐
@@ -48,6 +54,19 @@
  * │ Sections:                                                        │
  * │   a: dimension(2) biomeId(2) coordX_hi(2) coordX_lo(2)           │
  * │   b: coordY(2) coordZ_hi(2) coordZ_lo(2) reserved(2)             │
+ * │                                                                  │
+ * │ Total: 2 sections × (1 delim + 8 digits) = 18 chars + suffix     │
+ * └──────────────────────────────────────────────────────────────────┘
+ *
+ * ┌──────────────────────────────────────────────────────────────────┐
+ * │ Channel: insight_waila_cfg                                       │
+ * │ Purpose: WAILA layout/runtime configuration                      │
+ * │                                                                  │
+ * │ Sections:                                                        │
+ * │   a: wailaAnchor(2) wailaHorizontalOffset(2)                     │
+ * │      wailaVerticalOffset(2) wailaReserved1(2)                    │
+ * │   b: wailaReserved2(2) wailaReserved3(2)                         │
+ * │      wailaShowEntityRender(2) wailaReserved4(2)                  │
  * │                                                                  │
  * │ Total: 2 sections × (1 delim + 8 digits) = 18 chars + suffix     │
  * └──────────────────────────────────────────────────────────────────┘
@@ -93,8 +112,8 @@ const HUD_SECTION_D = defineSchema("d", [
 const HUD_SECTION_E = defineSchema("e", [
     { name: "hudHealthIndicator", digits: 2 },
     { name: "hudHungerIndicator", digits: 2 },
-    { name: "durPercent",         digits: 2 },
-    { name: "durVisible",         digits: 2 }
+    { name: "durPercent",         digits: 3 },
+    { name: "durVisible",         digits: 1 }
 ]);
 
 const HUD_SECTION_F = defineSchema("f", [
@@ -118,7 +137,40 @@ const HUD_SECTION_H = defineSchema("h", [
     { name: "stackTotalLo", digits: 2 }
 ]);
 
-const HUD_SCHEMAS = [HUD_SECTION_A, HUD_SECTION_B, HUD_SECTION_C, HUD_SECTION_D, HUD_SECTION_E, HUD_SECTION_F, HUD_SECTION_G, HUD_SECTION_H];
+const HUD_SECTION_I = defineSchema("i", [
+    { name: "durDisplayMode", digits: 2 },
+    { name: "durPosition", digits: 2 },
+    { name: "durIconVisible", digits: 2 },
+    { name: "durReserved", digits: 2 }
+]);
+
+const HUD_SECTION_J = defineSchema("j", [
+    { name: "quickPrimaryMode", digits: 2 },
+    { name: "quickSecondaryMode", digits: 2 },
+    { name: "quickShowIcon", digits: 2 },
+    { name: "quickIconVisible", digits: 2 }
+]);
+
+const HUD_SECTION_K = defineSchema("k", [
+    { name: "quickPrimaryHi", digits: 2 },
+    { name: "quickPrimaryLo", digits: 2 },
+    { name: "quickSecondaryHi", digits: 2 },
+    { name: "quickSecondaryLo", digits: 2 }
+]);
+
+const HUD_SCHEMAS = [
+    HUD_SECTION_A,
+    HUD_SECTION_B,
+    HUD_SECTION_C,
+    HUD_SECTION_D,
+    HUD_SECTION_E,
+    HUD_SECTION_F,
+    HUD_SECTION_G,
+    HUD_SECTION_H,
+    HUD_SECTION_I,
+    HUD_SECTION_J,
+    HUD_SECTION_K
+];
 
 /** @readonly */
 export const CHANNEL_HUD = "insight_hud";
@@ -170,6 +222,42 @@ export const TARGET_PAYLOAD_LENGTH = computePayloadLength(TARGET_SCHEMAS);
  */
 export function encodeTargetData(data) {
     return encodePayload(TARGET_SCHEMAS, data, CHANNEL_TARGET);
+}
+
+// ===========================================================================
+// Channel: insight_waila_cfg
+// ===========================================================================
+
+const WAILA_CONFIG_SECTION_A = defineSchema("a", [
+    { name: "wailaAnchor", digits: 2 },
+    { name: "wailaHorizontalOffset", digits: 2 },
+    { name: "wailaVerticalOffset", digits: 2 },
+    { name: "wailaReserved1", digits: 2 }
+]);
+
+const WAILA_CONFIG_SECTION_B = defineSchema("b", [
+    { name: "wailaReserved2", digits: 2 },
+    { name: "wailaReserved3", digits: 2 },
+    { name: "wailaShowEntityRender", digits: 2 },
+    { name: "wailaReserved4", digits: 2 }
+]);
+
+const WAILA_CONFIG_SCHEMAS = [WAILA_CONFIG_SECTION_A, WAILA_CONFIG_SECTION_B];
+
+/** @readonly */
+export const CHANNEL_WAILA_CONFIG = "insight_waila_cfg";
+
+/** Total character length of WAILA config payload (excluding suffix) */
+export const WAILA_CONFIG_PAYLOAD_LENGTH = computePayloadLength(WAILA_CONFIG_SCHEMAS);
+
+/**
+ * Encode WAILA layout/configuration data into a payload string.
+ *
+ * @param {Object} data - Flat object with WAILA config field values.
+ * @returns {string} Full encoded payload with channel suffix.
+ */
+export function encodeWailaConfigData(data) {
+    return encodePayload(WAILA_CONFIG_SCHEMAS, data, CHANNEL_WAILA_CONFIG);
 }
 
 // ===========================================================================

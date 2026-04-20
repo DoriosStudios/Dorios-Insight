@@ -5,19 +5,26 @@ import {
     EntityNameResolveModeLabels,
     EffectDisplayModeLabels,
     HudDisplayModeLabels,
+    HudDurabilityDisplayModeLabels,
+    HudDurabilityPositionModeLabels,
     HudElementOrientationModeLabels,
     HudElementPositionModeLabels,
     HudInventoryDisplayModeLabels,
     HudIndicatorModeLabels,
+    HudQuickCounterModeLabels,
     InsightComponentDefinitions,
     InsightConfig,
     InsightModes,
+    NamespaceDisplayModeLabels,
     ModePresetSummaryModeLabels,
     ToolIndicatorColorOptions,
     ToolIndicatorPlacementModeLabels,
     ToolTierIndicatorModeLabels,
     VisibilityPolicyLabels,
+    WailaAnchorModeLabels,
     WailaColorThemeLabels,
+    WailaHorizontalOffsetModeLabels,
+    WailaVerticalOffsetModeLabels,
     VillagerProfessionDisplayModeLabels,
     getCurrentMode,
     getDisplayStyleIndex,
@@ -25,14 +32,20 @@ import {
     getEntityNameResolveModeIndex,
     getEffectDisplayModeIndex,
     getHudDisplayModeIndex,
+    getHudDurabilityDisplayModeIndex,
+    getHudDurabilityPositionModeIndex,
     getHudElementOrientationModeIndex,
     getHudElementPositionModeIndex,
     getHudInventoryDisplayModeIndex,
     getHudIndicatorModeIndex,
+    getHudQuickCounterModeIndex,
     getModePreset,
     getModePresetSummaryModeIndex,
+    getNamespaceDisplayModeIndex,
     getPlayerDisplaySettings,
+    getWailaAnchorModeIndex,
     getWailaColorThemeIndex,
+    getWailaOffsetModeIndex,
     isAdminPlayer,
     getToolIndicatorColorIndex,
     getToolIndicatorPlacementModeIndex,
@@ -48,7 +61,12 @@ import {
     setPlayerActivation,
     updatePlayerOverrides
 } from "./config.js";
-import { registerNamespaceAlias } from "./namespaceInjection.js";
+import {
+    NamespaceRegistrationSources,
+    getRegisteredNamespaceEntries,
+    registerNamespaceAlias,
+    resetRegisteredNamespaceEntries
+} from "./namespaceInjection.js";
 
 const modeSequence = [InsightModes.Essential, InsightModes.Detailed, InsightModes.Debug];
 
@@ -59,6 +77,18 @@ const customComponentKeySet = new Set([
     "customMachineProgress",
     "customVariantPreview"
 ]);
+
+const stateMessageFallbackLabels = Object.freeze({
+    "ui.dorios.insight.value.active": "Active",
+    "ui.dorios.insight.value.enabled": "Enabled",
+    "ui.dorios.insight.value.disabled": "Disabled"
+});
+
+const namespaceRegistrationSourceFallbackLabels = Object.freeze({
+    [NamespaceRegistrationSources.Script]: "Scripts",
+    [NamespaceRegistrationSources.Command]: "Commands",
+    all: "All"
+});
 
 const normalizeRawMessageArg = (value) => {
     if (value === undefined || value === null) {
@@ -92,6 +122,39 @@ const tr = (key, withArgs = []) => ({
     translate: key,
     with: withArgs.map(normalizeRawMessageArg)
 });
+
+function getLocalizedOption(option) {
+    if (!option) {
+        return "";
+    }
+
+    return option.labelKey ? tr(option.labelKey) : option.label || "";
+}
+
+function getLocalizedOptions(options) {
+    return options.map((option) => getLocalizedOption(option));
+}
+
+function getLocalizedOptionByValue(options, value, fallbackIndex = 0) {
+    const normalized = String(value || "").toLowerCase();
+    const option = options.find((entry) => String(entry?.key || "").toLowerCase() === normalized) || options[fallbackIndex];
+    return option?.label || "";
+}
+
+function getLocalizedToolIndicatorColor(colorCode) {
+    const normalized = String(colorCode || "").toLowerCase();
+    const option = ToolIndicatorColorOptions.find((entry) => entry.key.toLowerCase() === normalized) || ToolIndicatorColorOptions[0];
+    return option?.label || ToolIndicatorColorOptions[0].label;
+}
+
+function getStateMessage(isEnabled, enabledKey = "ui.dorios.insight.value.enabled", disabledKey = "ui.dorios.insight.value.disabled") {
+    const key = isEnabled ? enabledKey : disabledKey;
+    return stateMessageFallbackLabels[key] || String(key || "");
+}
+
+function getModeMessage(mode) {
+    return getModeLabel(mode);
+}
 
 function getModeLabel(mode) {
     return getModePreset(mode)?.label || String(mode || "");
@@ -187,14 +250,54 @@ function getHudElementOrientationModeLabel(mode) {
     return option?.label || HudElementOrientationModeLabels[0].label;
 }
 
+function getHudDurabilityDisplayModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudDurabilityDisplayModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudDurabilityDisplayModeLabels[0].label;
+}
+
+function getHudDurabilityPositionModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudDurabilityPositionModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudDurabilityPositionModeLabels[0].label;
+}
+
+function getHudQuickCounterModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = HudQuickCounterModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || HudQuickCounterModeLabels[0].label;
+}
+
 function getWailaColorThemeLabel(theme) {
     const normalized = String(theme || "").toLowerCase();
     const option = WailaColorThemeLabels.find((entry) => entry.key === normalized);
     return option?.label || WailaColorThemeLabels[0].label;
 }
 
+function getWailaAnchorModeLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = WailaAnchorModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || WailaAnchorModeLabels[0].label;
+}
+
+function getWailaHorizontalOffsetLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = WailaHorizontalOffsetModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || WailaHorizontalOffsetModeLabels[0].label;
+}
+
+function getWailaVerticalOffsetLabel(mode) {
+    const normalized = String(mode || "").toLowerCase();
+    const option = WailaVerticalOffsetModeLabels.find((entry) => entry.key === normalized);
+    return option?.label || WailaVerticalOffsetModeLabels[0].label;
+}
+
 function getStateLabel(isEnabled, enabledLabel = "Enabled", disabledLabel = "Disabled") {
     return isEnabled ? enabledLabel : disabledLabel;
+}
+
+function buildSectionLabel(labelKey) {
+    return tr(labelKey);
 }
 
 function resolveCustomNumberInput(rawValue, fallback, min, max) {
@@ -459,7 +562,7 @@ async function showModeMenu(player) {
 
     const form = new ActionFormData()
         .title(tr("ui.dorios.insight.mode_menu.title"))
-        .body(tr("ui.dorios.insight.mode_menu.body", [getModeLabel(currentMode)]));
+        .body(tr("ui.dorios.insight.mode_menu.body", [getModeMessage(currentMode)]));
 
     for (const mode of modeSequence) {
         const preset = getModePreset(mode);
@@ -468,7 +571,7 @@ async function showModeMenu(player) {
 
         form.button(
             tr("ui.dorios.insight.mode_menu.option", [
-                getModeLabel(mode),
+                getModeMessage(mode),
                 runtime.maxDistance,
                 runtime.updateIntervalTicks,
                 enabledComponentCount,
@@ -489,7 +592,7 @@ async function showModeMenu(player) {
 
     sendPlayerMessage(
         player,
-        tr("ui.dorios.insight.feedback.mode_set", [getModeLabel(appliedMode)])
+        tr("ui.dorios.insight.feedback.mode_set", [getModeMessage(appliedMode)])
     );
 
     const nextSettings = getPlayerDisplaySettings(player);
@@ -506,7 +609,7 @@ async function showModeMenu(player) {
 
 async function showComponentGroupMenu(player, componentGroup) {
     const settings = getPlayerDisplaySettings(player);
-    const visibilityLabels = VisibilityPolicyLabels.map((option) => option.label);
+    const visibilityLabels = getLocalizedOptions(VisibilityPolicyLabels);
 
     const form = new ModalFormData()
         .title(tr(componentGroup.titleKey));
@@ -515,7 +618,7 @@ async function showComponentGroupMenu(player, componentGroup) {
         const currentPolicy = settings.components[component.key];
         const componentTitle = getComponentOptionTitle(component);
         const componentDescription = buildComponentDescriptionRawtext(component);
-        const currentPolicyLabel = getPolicyLabel(currentPolicy);
+        const currentPolicyLabel = getLocalizedOptionByValue(VisibilityPolicyLabels, currentPolicy);
         const dropdownLabel = buildComponentDropdownLabel(
             componentTitle,
             componentDescription,
@@ -564,7 +667,7 @@ async function showComponentGroupMenu(player, componentGroup) {
 
 async function showComponentGroupWithRuntimeMenu(player, componentGroup) {
     const settings = getPlayerDisplaySettings(player);
-    const visibilityLabels = VisibilityPolicyLabels.map((option) => option.label);
+    const visibilityLabels = getLocalizedOptions(VisibilityPolicyLabels);
     const runtimeFieldKeys = Array.isArray(componentGroup.runtimeFields) ? componentGroup.runtimeFields : [];
 
     const runtimeFieldMap = {
@@ -616,7 +719,7 @@ async function showComponentGroupWithRuntimeMenu(player, componentGroup) {
         const currentPolicy = settings.components[component.key];
         const componentTitle = getComponentOptionTitle(component);
         const componentDescription = buildComponentDescriptionRawtext(component);
-        const currentPolicyLabel = getPolicyLabel(currentPolicy);
+        const currentPolicyLabel = getLocalizedOptionByValue(VisibilityPolicyLabels, currentPolicy);
         const dropdownLabel = buildComponentDropdownLabel(
             componentTitle,
             componentDescription,
@@ -690,55 +793,55 @@ async function showStyleMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const styleOptions = DisplayStyleLabels.map((option) => option.label);
-    const effectModeOptions = EffectDisplayModeLabels.map((option) => option.label);
+    const styleOptions = getLocalizedOptions(DisplayStyleLabels);
+    const effectModeOptions = getLocalizedOptions(EffectDisplayModeLabels);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.style_menu.title"))
         .dropdown(
-            tr("ui.dorios.insight.style_menu.display_style", [getDisplayStyleLabel(runtime.displayStyle)]),
+            tr("ui.dorios.insight.style_menu.display_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.displayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.displayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.effect_mode", [getEffectModeLabel(runtime.effectDisplayMode)]),
+            tr("ui.dorios.insight.style_menu.effect_mode", [getLocalizedOptionByValue(EffectDisplayModeLabels, runtime.effectDisplayMode)]),
             effectModeOptions,
             {
                 defaultValueIndex: getEffectDisplayModeIndex(runtime.effectDisplayMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.health_style", [getDisplayStyleLabel(runtime.healthDisplayStyle)]),
+            tr("ui.dorios.insight.style_menu.health_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.healthDisplayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.healthDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.hunger_style", [getDisplayStyleLabel(runtime.hungerDisplayStyle)]),
+            tr("ui.dorios.insight.style_menu.hunger_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.hungerDisplayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.hungerDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.armor_style", [getDisplayStyleLabel(runtime.armorDisplayStyle)]),
+            tr("ui.dorios.insight.style_menu.armor_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.armorDisplayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.armorDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.absorption_style", [getDisplayStyleLabel(runtime.absorptionDisplayStyle)]),
+            tr("ui.dorios.insight.style_menu.absorption_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.absorptionDisplayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.absorptionDisplayStyle)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.style_menu.air_style", [getDisplayStyleLabel(runtime.airDisplayStyle)]),
+            tr("ui.dorios.insight.style_menu.air_style", [getLocalizedOptionByValue(DisplayStyleLabels, runtime.airDisplayStyle)]),
             styleOptions,
             {
                 defaultValueIndex: getDisplayStyleIndex(runtime.airDisplayStyle)
@@ -770,48 +873,48 @@ async function showStyleMenu(player) {
 async function showHudBarsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
-    const hudDisplayOptions = HudDisplayModeLabels.map((option) => option.label);
-    const hudIndicatorOptions = HudIndicatorModeLabels.map((option) => option.label);
+    const hudDisplayOptions = getLocalizedOptions(HudDisplayModeLabels);
+    const hudIndicatorOptions = getLocalizedOptions(HudIndicatorModeLabels);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.hud_menu.title"))
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.health_visibility", [getHudDisplayModeLabel(runtime.hudHealthVisibilityMode)]),
+            tr("ui.dorios.insight.hud_menu.health_visibility", [getLocalizedOptionByValue(HudDisplayModeLabels, runtime.hudHealthVisibilityMode)]),
             hudDisplayOptions,
             {
                 defaultValueIndex: getHudDisplayModeIndex(runtime.hudHealthVisibilityMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.health_indicator", [getHudIndicatorModeLabel(runtime.hudHealthIndicatorMode)]),
+            tr("ui.dorios.insight.hud_menu.health_indicator", [getLocalizedOptionByValue(HudIndicatorModeLabels, runtime.hudHealthIndicatorMode)]),
             hudIndicatorOptions,
             {
                 defaultValueIndex: getHudIndicatorModeIndex(runtime.hudHealthIndicatorMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.hunger_visibility", [getHudDisplayModeLabel(runtime.hudHungerVisibilityMode)]),
+            tr("ui.dorios.insight.hud_menu.hunger_visibility", [getLocalizedOptionByValue(HudDisplayModeLabels, runtime.hudHungerVisibilityMode)]),
             hudDisplayOptions,
             {
                 defaultValueIndex: getHudDisplayModeIndex(runtime.hudHungerVisibilityMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.hunger_indicator", [getHudIndicatorModeLabel(runtime.hudHungerIndicatorMode)]),
+            tr("ui.dorios.insight.hud_menu.hunger_indicator", [getLocalizedOptionByValue(HudIndicatorModeLabels, runtime.hudHungerIndicatorMode)]),
             hudIndicatorOptions,
             {
                 defaultValueIndex: getHudIndicatorModeIndex(runtime.hudHungerIndicatorMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.saturation_visibility", [getHudDisplayModeLabel(runtime.hudSaturationVisibilityMode)]),
+            tr("ui.dorios.insight.hud_menu.saturation_visibility", [getLocalizedOptionByValue(HudDisplayModeLabels, runtime.hudSaturationVisibilityMode)]),
             hudDisplayOptions,
             {
                 defaultValueIndex: getHudDisplayModeIndex(runtime.hudSaturationVisibilityMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_menu.toughness_visibility", [getHudDisplayModeLabel(runtime.hudToughnessVisibilityMode)]),
+            tr("ui.dorios.insight.hud_menu.toughness_visibility", [getLocalizedOptionByValue(HudDisplayModeLabels, runtime.hudToughnessVisibilityMode)]),
             hudDisplayOptions,
             {
                 defaultValueIndex: getHudDisplayModeIndex(runtime.hudToughnessVisibilityMode)
@@ -845,63 +948,40 @@ async function showHudBarsMenu(player) {
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_updated"));
 }
 
-async function showHudElementsMenu(player) {
+async function showHudInventorySettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const hudElementPositionOptions = HudElementPositionModeLabels.map((option) => option.label);
-    const hudInventoryDisplayOptions = HudInventoryDisplayModeLabels.map((option) => option.label);
-    const hudElementOrientationOptions = HudElementOrientationModeLabels.map((option) => option.label);
-    const tierIndicatorOptions = ToolTierIndicatorModeLabels.map((option) => option.label);
-    const toolIndicatorPlacementOptions = ToolIndicatorPlacementModeLabels.map((option) => option.label);
-    const toolIndicatorColorOptions = ToolIndicatorColorOptions.map((option) => option.label);
+    const hudElementPositionOptions = getLocalizedOptions(HudElementPositionModeLabels);
+    const hudInventoryDisplayOptions = getLocalizedOptions(HudInventoryDisplayModeLabels);
+    const hudElementOrientationOptions = getLocalizedOptions(HudElementOrientationModeLabels);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.hud_elements_menu.section.inventory"))
         .toggle(
-            tr("ui.dorios.insight.hud_menu.inventory_hud", [getStateLabel(runtime.hudInventoryEnabled, "Enabled", "Disabled")]),
+            tr("ui.dorios.insight.hud_menu.inventory_hud", [getStateMessage(runtime.hudInventoryEnabled)]),
             { defaultValue: Boolean(runtime.hudInventoryEnabled) }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_elements_menu.inventory_position", [getHudElementPositionModeLabel(runtime.hudInventoryPosition)]),
+            tr("ui.dorios.insight.hud_elements_menu.inventory_position", [getLocalizedOptionByValue(HudElementPositionModeLabels, runtime.hudInventoryPosition)]),
             hudElementPositionOptions,
             {
                 defaultValueIndex: getHudElementPositionModeIndex(runtime.hudInventoryPosition)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_elements_menu.inventory_display_mode", [getHudInventoryDisplayModeLabel(runtime.hudInventoryDisplayMode)]),
+            tr("ui.dorios.insight.hud_elements_menu.inventory_display_mode", [getLocalizedOptionByValue(HudInventoryDisplayModeLabels, runtime.hudInventoryDisplayMode)]),
             hudInventoryDisplayOptions,
             {
                 defaultValueIndex: getHudInventoryDisplayModeIndex(runtime.hudInventoryDisplayMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.hud_elements_menu.inventory_orientation", [getHudElementOrientationModeLabel(runtime.hudInventoryOrientation)]),
+            tr("ui.dorios.insight.hud_elements_menu.inventory_orientation", [getLocalizedOptionByValue(HudElementOrientationModeLabels, runtime.hudInventoryOrientation)]),
             hudElementOrientationOptions,
             {
                 defaultValueIndex: getHudElementOrientationModeIndex(runtime.hudInventoryOrientation)
-            }
-        )
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tier_indicator", [getToolTierIndicatorModeLabel(runtime.toolTierIndicatorMode)]),
-            tierIndicatorOptions,
-            {
-                defaultValueIndex: getToolTierIndicatorModeIndex(runtime.toolTierIndicatorMode)
-            }
-        )
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tool_position", [getToolIndicatorPlacementModeLabel(runtime.toolIndicatorPlacement)]),
-            toolIndicatorPlacementOptions,
-            {
-                defaultValueIndex: getToolIndicatorPlacementModeIndex(runtime.toolIndicatorPlacement)
-            }
-        )
-        .dropdown(
-            tr("ui.dorios.insight.system_menu.tool_color", [getToolIndicatorColorLabel(runtime.toolIndicatorColor)]),
-            toolIndicatorColorOptions,
-            {
-                defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
             }
         );
 
@@ -918,31 +998,43 @@ async function showHudElementsMenu(player) {
             hudInventoryDisplayMode: HudInventoryDisplayModeLabels[Number(result.formValues[2] ?? 0)]?.key
                 ?? runtime.hudInventoryDisplayMode,
             hudInventoryOrientation: HudElementOrientationModeLabels[Number(result.formValues[3] ?? 0)]?.key
-                ?? runtime.hudInventoryOrientation,
-            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[4] ?? 0)]?.key
-                ?? runtime.toolTierIndicatorMode,
-            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[5] ?? 0)]?.key
-                ?? runtime.toolIndicatorPlacement,
-            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[6] ?? 0)]?.key
-                ?? runtime.toolIndicatorColor
+                ?? runtime.hudInventoryOrientation
         }
     });
 
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_elements_updated"));
 }
 
-async function showWailaMenu(player) {
+async function showToolIndicatorSettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
-    const wailaColorOptions = WailaColorThemeLabels.map((option) => option.label);
+
+    const tierIndicatorOptions = getLocalizedOptions(ToolTierIndicatorModeLabels);
+    const toolIndicatorPlacementOptions = getLocalizedOptions(ToolIndicatorPlacementModeLabels);
+    const toolIndicatorColorOptions = getLocalizedOptions(ToolIndicatorColorOptions);
 
     const form = new ModalFormData()
-        .title(tr("ui.dorios.insight.waila_menu.title"))
+        .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.hud_elements_menu.section.tool_indicator"))
         .dropdown(
-            tr("ui.dorios.insight.waila_menu.color_theme", [getWailaColorThemeLabel(runtime.wailaColorTheme)]),
-            wailaColorOptions,
+            tr("ui.dorios.insight.system_menu.tier_indicator", [getLocalizedOptionByValue(ToolTierIndicatorModeLabels, runtime.toolTierIndicatorMode)]),
+            tierIndicatorOptions,
             {
-                defaultValueIndex: getWailaColorThemeIndex(runtime.wailaColorTheme)
+                defaultValueIndex: getToolTierIndicatorModeIndex(runtime.toolTierIndicatorMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_position", [getLocalizedOptionByValue(ToolIndicatorPlacementModeLabels, runtime.toolIndicatorPlacement)]),
+            toolIndicatorPlacementOptions,
+            {
+                defaultValueIndex: getToolIndicatorPlacementModeIndex(runtime.toolIndicatorPlacement)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.tool_color", [getLocalizedToolIndicatorColor(runtime.toolIndicatorColor)]),
+            toolIndicatorColorOptions,
+            {
+                defaultValueIndex: getToolIndicatorColorIndex(runtime.toolIndicatorColor)
             }
         );
 
@@ -953,8 +1045,221 @@ async function showWailaMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
+            toolTierIndicatorMode: ToolTierIndicatorModeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.toolTierIndicatorMode,
+            toolIndicatorPlacement: ToolIndicatorPlacementModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.toolIndicatorPlacement,
+            toolIndicatorColor: ToolIndicatorColorOptions[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.toolIndicatorColor
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_elements_updated"));
+}
+
+async function showHudDurabilitySettingsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+
+    const hudDurabilityDisplayOptions = getLocalizedOptions(HudDurabilityDisplayModeLabels);
+    const hudDurabilityPositionOptions = getLocalizedOptions(HudDurabilityPositionModeLabels);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.hud_elements_menu.section.durability"))
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.durability_display", [getLocalizedOptionByValue(HudDurabilityDisplayModeLabels, runtime.hudDurabilityDisplayMode)]),
+            hudDurabilityDisplayOptions,
+            {
+                defaultValueIndex: getHudDurabilityDisplayModeIndex(runtime.hudDurabilityDisplayMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.durability_position", [getLocalizedOptionByValue(HudDurabilityPositionModeLabels, runtime.hudDurabilityPosition)]),
+            hudDurabilityPositionOptions,
+            {
+                defaultValueIndex: getHudDurabilityPositionModeIndex(runtime.hudDurabilityPosition)
+            }
+        )
+        .toggle(
+            tr("ui.dorios.insight.hud_elements_menu.show_full_durability", [getStateMessage(runtime.hudDurabilityShowWhenFull)]),
+            { defaultValue: Boolean(runtime.hudDurabilityShowWhenFull) }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            hudDurabilityDisplayMode: HudDurabilityDisplayModeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.hudDurabilityDisplayMode,
+            hudDurabilityPosition: HudDurabilityPositionModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.hudDurabilityPosition,
+            hudDurabilityShowWhenFull: Boolean(result.formValues[2] ?? runtime.hudDurabilityShowWhenFull)
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_elements_updated"));
+}
+
+async function showHudQuickCounterSettingsMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+
+    const hudQuickCounterOptions = getLocalizedOptions(HudQuickCounterModeLabels);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.hud_elements_menu.section.quick_counter"))
+        .toggle(
+            tr("ui.dorios.insight.hud_elements_menu.quick_counter_toggle", [getStateMessage(runtime.hudQuickCounterEnabled)]),
+            { defaultValue: Boolean(runtime.hudQuickCounterEnabled) }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.primary_counter", [getLocalizedOptionByValue(HudQuickCounterModeLabels, runtime.hudQuickCounterPrimaryMode)]),
+            hudQuickCounterOptions,
+            {
+                defaultValueIndex: getHudQuickCounterModeIndex(runtime.hudQuickCounterPrimaryMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.hud_elements_menu.secondary_counter", [getLocalizedOptionByValue(HudQuickCounterModeLabels, runtime.hudQuickCounterSecondaryMode)]),
+            hudQuickCounterOptions,
+            {
+                defaultValueIndex: getHudQuickCounterModeIndex(runtime.hudQuickCounterSecondaryMode)
+            }
+        )
+        .toggle(
+            tr("ui.dorios.insight.hud_elements_menu.quick_counter_icon", [getStateMessage(runtime.hudQuickCounterShowIcon)]),
+            { defaultValue: Boolean(runtime.hudQuickCounterShowIcon) }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            hudQuickCounterEnabled: Boolean(result.formValues[0] ?? runtime.hudQuickCounterEnabled),
+            hudQuickCounterPrimaryMode: HudQuickCounterModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.hudQuickCounterPrimaryMode,
+            hudQuickCounterSecondaryMode: HudQuickCounterModeLabels[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.hudQuickCounterSecondaryMode,
+            hudQuickCounterShowIcon: Boolean(result.formValues[3] ?? runtime.hudQuickCounterShowIcon)
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.hud_elements_updated"));
+}
+
+async function showHudElementsMenu(player) {
+    while (true) {
+        const settings = getPlayerDisplaySettings(player);
+        const runtime = settings.runtime;
+
+        const form = new ActionFormData()
+            .title(tr("ui.dorios.insight.hud_elements_menu.title"))
+            .body(tr("ui.dorios.insight.hud_elements_menu.group_body", [
+                getStateMessage(runtime.hudInventoryEnabled),
+                getLocalizedOptionByValue(HudInventoryDisplayModeLabels, runtime.hudInventoryDisplayMode),
+                getLocalizedOptionByValue(ToolTierIndicatorModeLabels, runtime.toolTierIndicatorMode),
+                getLocalizedOptionByValue(ToolIndicatorPlacementModeLabels, runtime.toolIndicatorPlacement),
+                getLocalizedOptionByValue(HudDurabilityDisplayModeLabels, runtime.hudDurabilityDisplayMode),
+                getLocalizedOptionByValue(HudDurabilityPositionModeLabels, runtime.hudDurabilityPosition),
+                getStateMessage(runtime.hudQuickCounterEnabled),
+                getLocalizedOptionByValue(HudQuickCounterModeLabels, runtime.hudQuickCounterPrimaryMode)
+            ]))
+            .button(tr("ui.dorios.insight.hud_elements_menu.group.inventory_button"))
+            .button(tr("ui.dorios.insight.hud_elements_menu.group.tool_indicator_button"))
+            .button(tr("ui.dorios.insight.hud_elements_menu.group.durability_button"))
+            .button(tr("ui.dorios.insight.hud_elements_menu.group.quick_counter_button"));
+
+        const result = await form.show(player);
+        if (result.canceled) {
+            return;
+        }
+
+        switch (result.selection) {
+            case 0:
+                await showHudInventorySettingsMenu(player);
+                break;
+            case 1:
+                await showToolIndicatorSettingsMenu(player);
+                break;
+            case 2:
+                await showHudDurabilitySettingsMenu(player);
+                break;
+            case 3:
+                await showHudQuickCounterSettingsMenu(player);
+                break;
+            default:
+                return;
+        }
+    }
+}
+
+async function showWailaMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const wailaColorOptions = getLocalizedOptions(WailaColorThemeLabels);
+    const wailaAnchorOptions = getLocalizedOptions(WailaAnchorModeLabels);
+    const wailaHorizontalOffsetOptions = getLocalizedOptions(WailaHorizontalOffsetModeLabels);
+    const wailaVerticalOffsetOptions = getLocalizedOptions(WailaVerticalOffsetModeLabels);
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.waila_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.waila_menu.color_theme", [getLocalizedOptionByValue(WailaColorThemeLabels, runtime.wailaColorTheme)]),
+            wailaColorOptions,
+            {
+                defaultValueIndex: getWailaColorThemeIndex(runtime.wailaColorTheme)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.waila_menu.anchor", [getLocalizedOptionByValue(WailaAnchorModeLabels, runtime.wailaAnchor)]),
+            wailaAnchorOptions,
+            {
+                defaultValueIndex: getWailaAnchorModeIndex(runtime.wailaAnchor)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.waila_menu.horizontal_offset", [getLocalizedOptionByValue(WailaHorizontalOffsetModeLabels, runtime.wailaHorizontalOffset)]),
+            wailaHorizontalOffsetOptions,
+            {
+                defaultValueIndex: getWailaOffsetModeIndex(runtime.wailaHorizontalOffset)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.waila_menu.vertical_offset", [getLocalizedOptionByValue(WailaVerticalOffsetModeLabels, runtime.wailaVerticalOffset)]),
+            wailaVerticalOffsetOptions,
+            {
+                defaultValueIndex: getWailaOffsetModeIndex(runtime.wailaVerticalOffset)
+            }
+        )
+        .toggle(
+            tr("ui.dorios.insight.waila_menu.show_entity_render", [getStateMessage(runtime.wailaShowEntityRender)]),
+            { defaultValue: Boolean(runtime.wailaShowEntityRender) }
+        );
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
             wailaColorTheme: WailaColorThemeLabels[Number(result.formValues[0] ?? 0)]?.key
-                ?? runtime.wailaColorTheme
+                ?? runtime.wailaColorTheme,
+            wailaAnchor: WailaAnchorModeLabels[Number(result.formValues[1] ?? 0)]?.key
+                ?? runtime.wailaAnchor,
+            wailaHorizontalOffset: WailaHorizontalOffsetModeLabels[Number(result.formValues[2] ?? 0)]?.key
+                ?? runtime.wailaHorizontalOffset,
+            wailaVerticalOffset: WailaVerticalOffsetModeLabels[Number(result.formValues[3] ?? 0)]?.key
+                ?? runtime.wailaVerticalOffset,
+            wailaShowEntityRender: Boolean(result.formValues[4] ?? runtime.wailaShowEntityRender)
         }
     });
 
@@ -965,28 +1270,28 @@ async function showConditionsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const displayModeOptions = EntityNameDisplayModeLabels.map((option) => option.label);
-    const resolveModeOptions = EntityNameResolveModeLabels.map((option) => option.label);
-    const villagerProfessionOptions = VillagerProfessionDisplayModeLabels.map((option) => option.label);
+    const displayModeOptions = getLocalizedOptions(EntityNameDisplayModeLabels);
+    const resolveModeOptions = getLocalizedOptions(EntityNameResolveModeLabels);
+    const villagerProfessionOptions = getLocalizedOptions(VillagerProfessionDisplayModeLabels);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.conditions_menu.title"))
         .dropdown(
-            tr("ui.dorios.insight.conditions_menu.name_order", [getEntityNameDisplayModeLabel(runtime.nameDisplayMode)]),
+            tr("ui.dorios.insight.conditions_menu.name_order", [getLocalizedOptionByValue(EntityNameDisplayModeLabels, runtime.nameDisplayMode)]),
             displayModeOptions,
             {
                 defaultValueIndex: getEntityNameDisplayModeIndex(runtime.nameDisplayMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.conditions_menu.name_method", [getEntityNameResolveModeLabel(runtime.nameResolveMode)]),
+            tr("ui.dorios.insight.conditions_menu.name_method", [getLocalizedOptionByValue(EntityNameResolveModeLabels, runtime.nameResolveMode)]),
             resolveModeOptions,
             {
                 defaultValueIndex: getEntityNameResolveModeIndex(runtime.nameResolveMode)
             }
         )
         .dropdown(
-            tr("ui.dorios.insight.conditions_menu.villager_profession", [getVillagerProfessionDisplayModeLabel(runtime.villagerProfessionDisplay)]),
+            tr("ui.dorios.insight.conditions_menu.villager_profession", [getLocalizedOptionByValue(VillagerProfessionDisplayModeLabels, runtime.villagerProfessionDisplay)]),
             villagerProfessionOptions,
             {
                 defaultValueIndex: getVillagerProfessionDisplayModeIndex(runtime.villagerProfessionDisplay)
@@ -1014,12 +1319,20 @@ async function showSystemSettingsMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
 
-    const modeSummaryOptions = ModePresetSummaryModeLabels.map((option) => option.label);
+    const modeSummaryOptions = getLocalizedOptions(ModePresetSummaryModeLabels);
+    const resolveModeOptions = getLocalizedOptions(EntityNameResolveModeLabels);
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.system_menu.title"))
         .dropdown(
-            tr("ui.dorios.insight.system_menu.mode_summary", [getModePresetSummaryModeLabel(runtime.modePresetSummaryMode)]),
+            tr("ui.dorios.insight.system_menu.block_name_method", [getLocalizedOptionByValue(EntityNameResolveModeLabels, runtime.blockNameResolveMode)]),
+            resolveModeOptions,
+            {
+                defaultValueIndex: getEntityNameResolveModeIndex(runtime.blockNameResolveMode)
+            }
+        )
+        .dropdown(
+            tr("ui.dorios.insight.system_menu.mode_summary", [getLocalizedOptionByValue(ModePresetSummaryModeLabels, runtime.modePresetSummaryMode)]),
             modeSummaryOptions,
             {
                 defaultValueIndex: getModePresetSummaryModeIndex(runtime.modePresetSummaryMode)
@@ -1051,22 +1364,24 @@ async function showSystemSettingsMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
-            modePresetSummaryMode: ModePresetSummaryModeLabels[Number(result.formValues[0] ?? 0)]?.key
+            blockNameResolveMode: EntityNameResolveModeLabels[Number(result.formValues[0] ?? 0)]?.key
+                ?? runtime.blockNameResolveMode,
+            modePresetSummaryMode: ModePresetSummaryModeLabels[Number(result.formValues[1] ?? 0)]?.key
                 ?? runtime.modePresetSummaryMode,
             stateColumns: resolveCustomNumberInput(
-                result.formValues[1],
+                result.formValues[2],
                 runtime.stateColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             tagColumns: resolveCustomNumberInput(
-                result.formValues[2],
+                result.formValues[3],
                 runtime.tagColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
             ),
             familyColumns: resolveCustomNumberInput(
-                result.formValues[3],
+                result.formValues[4],
                 runtime.familyColumns,
                 1,
                 InsightConfig.system.maxLayoutColumns
@@ -1077,7 +1392,7 @@ async function showSystemSettingsMenu(player) {
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.system_updated"));
 }
 
-async function showRuntimeMenu(player) {
+async function showRuntimeTimingMenu(player) {
     const settings = getPlayerDisplaySettings(player);
     const runtime = settings.runtime;
     const customValueHint = tr("ui.dorios.insight.runtime.custom_hint");
@@ -1085,6 +1400,7 @@ async function showRuntimeMenu(player) {
 
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.runtime_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.runtime_menu.section.scan_refresh"))
         .slider(
             tr("ui.dorios.insight.runtime.range", [runtime.maxDistance]),
             InsightConfig.system.minMaxDistance,
@@ -1112,7 +1428,54 @@ async function showRuntimeMenu(player) {
             InsightConfig.system.maxClearAfterNoTargetTicks,
             { defaultValue: runtime.clearAfterNoTargetTicks }
         )
-        .textField(customValueLabel, customValueHint)
+        .textField(customValueLabel, customValueHint);
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            maxDistance: resolveCustomNumberInput(
+                result.formValues[1],
+                Number(result.formValues[0] ?? runtime.maxDistance),
+                InsightConfig.system.minMaxDistance,
+                InsightConfig.system.maxMaxDistance
+            ),
+            updateIntervalTicks: resolveCustomNumberInput(
+                result.formValues[3],
+                Number(result.formValues[2] ?? runtime.updateIntervalTicks),
+                InsightConfig.system.minUpdateIntervalTicks,
+                InsightConfig.system.maxUpdateIntervalTicks
+            ),
+            unchangedTargetRefreshTicks: resolveCustomNumberInput(
+                result.formValues[5],
+                Number(result.formValues[4] ?? runtime.unchangedTargetRefreshTicks),
+                InsightConfig.system.minUnchangedTargetRefreshTicks,
+                InsightConfig.system.maxUnchangedTargetRefreshTicks
+            ),
+            clearAfterNoTargetTicks: resolveCustomNumberInput(
+                result.formValues[7],
+                Number(result.formValues[6] ?? runtime.clearAfterNoTargetTicks),
+                InsightConfig.system.minClearAfterNoTargetTicks,
+                InsightConfig.system.maxClearAfterNoTargetTicks
+            )
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.runtime_updated"));
+}
+
+async function showRuntimeVisibilityMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const customValueHint = tr("ui.dorios.insight.runtime.custom_hint");
+    const customValueLabel = "";
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.runtime_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.runtime_menu.section.visibility_caps"))
         .slider(
             tr("ui.dorios.insight.runtime.visible_block_states", [runtime.maxVisibleStates]),
             0,
@@ -1154,35 +1517,95 @@ async function showRuntimeMenu(player) {
             InsightConfig.system.maxMaxHeartDisplayHealth,
             { defaultValue: runtime.maxHeartDisplayHealth }
         )
-        .textField(customValueLabel, customValueHint)
+        .textField(customValueLabel, customValueHint);
+
+    const result = await form.show(player);
+    if (result.canceled || !result.formValues) {
+        return;
+    }
+
+    updatePlayerOverrides(player, {
+        runtime: {
+            maxVisibleStates: resolveCustomNumberInput(
+                result.formValues[1],
+                Number(result.formValues[0] ?? runtime.maxVisibleStates),
+                0,
+                InsightConfig.system.maxVisibleStatesCap
+            ),
+            maxVisibleBlockTags: resolveCustomNumberInput(
+                result.formValues[3],
+                Number(result.formValues[2] ?? runtime.maxVisibleBlockTags),
+                0,
+                InsightConfig.system.maxVisibleTagsCap
+            ),
+            maxVisibleEntityTags: resolveCustomNumberInput(
+                result.formValues[5],
+                Number(result.formValues[4] ?? runtime.maxVisibleEntityTags),
+                0,
+                InsightConfig.system.maxVisibleTagsCap
+            ),
+            maxVisibleEntityFamilies: resolveCustomNumberInput(
+                result.formValues[7],
+                Number(result.formValues[6] ?? runtime.maxVisibleEntityFamilies),
+                0,
+                InsightConfig.system.maxVisibleFamiliesCap
+            ),
+            maxVisibleEffects: resolveCustomNumberInput(
+                result.formValues[9],
+                Number(result.formValues[8] ?? runtime.maxVisibleEffects),
+                0,
+                InsightConfig.system.maxVisibleEffectsCap
+            ),
+            maxHeartDisplayHealth: resolveCustomNumberInput(
+                result.formValues[11],
+                Number(result.formValues[10] ?? runtime.maxHeartDisplayHealth),
+                InsightConfig.system.minMaxHeartDisplayHealth,
+                InsightConfig.system.maxMaxHeartDisplayHealth
+            )
+        }
+    });
+
+    sendPlayerMessage(player, tr("ui.dorios.insight.feedback.runtime_updated"));
+}
+
+async function showRuntimeLinkingMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const customValueHint = tr("ui.dorios.insight.runtime.custom_hint");
+    const customValueLabel = "";
+
+    const form = new ModalFormData()
+        .title(tr("ui.dorios.insight.runtime_menu.title"))
+        .label(buildSectionLabel("ui.dorios.insight.runtime_menu.section.target_filters"))
         .toggle(
             tr("ui.dorios.insight.runtime.include_invisible", [
-                getStateLabel(runtime.includeInvisibleEntities)
+                getStateMessage(runtime.includeInvisibleEntities)
             ]),
             { defaultValue: runtime.includeInvisibleEntities }
         )
         .toggle(
             tr("ui.dorios.insight.runtime.include_liquids", [
-                getStateLabel(runtime.includeLiquidBlocks)
+                getStateMessage(runtime.includeLiquidBlocks)
             ]),
             { defaultValue: runtime.includeLiquidBlocks }
         )
+        .label(buildSectionLabel("ui.dorios.insight.runtime_menu.section.linked_entity_scan"))
         .slider(
-            `Linked Entity Scan Interval (ticks): ${runtime.linkedEntityScanIntervalTicks}`,
+            tr("ui.dorios.insight.runtime_menu.linked_scan_interval", [runtime.linkedEntityScanIntervalTicks]),
             InsightConfig.system.minLinkedEntityScanIntervalTicks,
             InsightConfig.system.maxLinkedEntityScanIntervalTicks,
             { defaultValue: runtime.linkedEntityScanIntervalTicks }
         )
         .textField(customValueLabel, customValueHint)
         .slider(
-            `Linked Entity Scan Distance: ${runtime.linkedEntityScanMaxDistance}`,
+            tr("ui.dorios.insight.runtime_menu.linked_scan_distance", [runtime.linkedEntityScanMaxDistance]),
             InsightConfig.system.minLinkedEntityScanMaxDistance,
             InsightConfig.system.maxLinkedEntityScanMaxDistance,
             { defaultValue: runtime.linkedEntityScanMaxDistance }
         )
         .textField(customValueLabel, customValueHint)
         .toggle(
-            `Ignore Machine Helper Entities: ${getStateLabel(runtime.ignoreMachineHelperEntities)}`,
+            tr("ui.dorios.insight.runtime_menu.ignore_machine_helpers", [getStateMessage(runtime.ignoreMachineHelperEntities)]),
             { defaultValue: runtime.ignoreMachineHelperEntities }
         );
 
@@ -1193,90 +1616,220 @@ async function showRuntimeMenu(player) {
 
     updatePlayerOverrides(player, {
         runtime: {
-            maxDistance: resolveCustomNumberInput(
-                result.formValues[1],
-                Number(result.formValues[0] ?? runtime.maxDistance),
-                InsightConfig.system.minMaxDistance,
-                InsightConfig.system.maxMaxDistance
-            ),
-            updateIntervalTicks: resolveCustomNumberInput(
-                result.formValues[3],
-                Number(result.formValues[2] ?? runtime.updateIntervalTicks),
-                InsightConfig.system.minUpdateIntervalTicks,
-                InsightConfig.system.maxUpdateIntervalTicks
-            ),
-            unchangedTargetRefreshTicks: resolveCustomNumberInput(
-                result.formValues[5],
-                Number(result.formValues[4] ?? runtime.unchangedTargetRefreshTicks),
-                InsightConfig.system.minUnchangedTargetRefreshTicks,
-                InsightConfig.system.maxUnchangedTargetRefreshTicks
-            ),
-            clearAfterNoTargetTicks: resolveCustomNumberInput(
-                result.formValues[7],
-                Number(result.formValues[6] ?? runtime.clearAfterNoTargetTicks),
-                InsightConfig.system.minClearAfterNoTargetTicks,
-                InsightConfig.system.maxClearAfterNoTargetTicks
-            ),
-            maxVisibleStates: resolveCustomNumberInput(
-                result.formValues[9],
-                Number(result.formValues[8] ?? runtime.maxVisibleStates),
-                0,
-                InsightConfig.system.maxVisibleStatesCap
-            ),
-            maxVisibleBlockTags: resolveCustomNumberInput(
-                result.formValues[11],
-                Number(result.formValues[10] ?? runtime.maxVisibleBlockTags),
-                0,
-                InsightConfig.system.maxVisibleTagsCap
-            ),
-            maxVisibleEntityTags: resolveCustomNumberInput(
-                result.formValues[13],
-                Number(result.formValues[12] ?? runtime.maxVisibleEntityTags),
-                0,
-                InsightConfig.system.maxVisibleTagsCap
-            ),
-            maxVisibleEntityFamilies: resolveCustomNumberInput(
-                result.formValues[15],
-                Number(result.formValues[14] ?? runtime.maxVisibleEntityFamilies),
-                0,
-                InsightConfig.system.maxVisibleFamiliesCap
-            ),
-            maxVisibleEffects: resolveCustomNumberInput(
-                result.formValues[17],
-                Number(result.formValues[16] ?? runtime.maxVisibleEffects),
-                0,
-                InsightConfig.system.maxVisibleEffectsCap
-            ),
-            maxHeartDisplayHealth: resolveCustomNumberInput(
-                result.formValues[19],
-                Number(result.formValues[18] ?? runtime.maxHeartDisplayHealth),
-                InsightConfig.system.minMaxHeartDisplayHealth,
-                InsightConfig.system.maxMaxHeartDisplayHealth
-            ),
-            includeInvisibleEntities: Boolean(result.formValues[20] ?? runtime.includeInvisibleEntities),
-            includeLiquidBlocks: Boolean(result.formValues[21] ?? runtime.includeLiquidBlocks),
+            includeInvisibleEntities: Boolean(result.formValues[0] ?? runtime.includeInvisibleEntities),
+            includeLiquidBlocks: Boolean(result.formValues[1] ?? runtime.includeLiquidBlocks),
             linkedEntityScanIntervalTicks: resolveCustomNumberInput(
-                result.formValues[23],
-                Number(result.formValues[22] ?? runtime.linkedEntityScanIntervalTicks),
+                result.formValues[3],
+                Number(result.formValues[2] ?? runtime.linkedEntityScanIntervalTicks),
                 InsightConfig.system.minLinkedEntityScanIntervalTicks,
                 InsightConfig.system.maxLinkedEntityScanIntervalTicks
             ),
             linkedEntityScanMaxDistance: resolveCustomNumberInput(
-                result.formValues[25],
-                Number(result.formValues[24] ?? runtime.linkedEntityScanMaxDistance),
+                result.formValues[5],
+                Number(result.formValues[4] ?? runtime.linkedEntityScanMaxDistance),
                 InsightConfig.system.minLinkedEntityScanMaxDistance,
                 InsightConfig.system.maxLinkedEntityScanMaxDistance
             ),
-            ignoreMachineHelperEntities: Boolean(result.formValues[26] ?? runtime.ignoreMachineHelperEntities)
+            ignoreMachineHelperEntities: Boolean(result.formValues[6] ?? runtime.ignoreMachineHelperEntities)
         }
     });
 
     sendPlayerMessage(player, tr("ui.dorios.insight.feedback.runtime_updated"));
 }
 
-async function showNamespaceMenu(player) {
+async function showRuntimeMenu(player) {
+    while (true) {
+        const settings = getPlayerDisplaySettings(player);
+        const runtime = settings.runtime;
+
+        const form = new ActionFormData()
+            .title(tr("ui.dorios.insight.runtime_menu.title"))
+            .body(tr("ui.dorios.insight.runtime_menu.group_body", [
+                runtime.maxDistance,
+                runtime.updateIntervalTicks,
+                runtime.maxVisibleStates,
+                runtime.maxVisibleBlockTags,
+                runtime.maxVisibleEntityTags,
+                runtime.linkedEntityScanIntervalTicks,
+                runtime.linkedEntityScanMaxDistance,
+                getStateMessage(runtime.ignoreMachineHelperEntities)
+            ]))
+            .button(tr("ui.dorios.insight.runtime_menu.group.scan_refresh_button"))
+            .button(tr("ui.dorios.insight.runtime_menu.group.visibility_caps_button"))
+            .button(tr("ui.dorios.insight.runtime_menu.group.target_filters_button"));
+
+        const result = await form.show(player);
+        if (result.canceled) {
+            return;
+        }
+
+        switch (result.selection) {
+            case 0:
+                await showRuntimeTimingMenu(player);
+                break;
+            case 1:
+                await showRuntimeVisibilityMenu(player);
+                break;
+            case 2:
+                await showRuntimeLinkingMenu(player);
+                break;
+            default:
+                return;
+        }
+    }
+}
+
+function getNamespaceRegistrationSourceLabel(source) {
+    return namespaceRegistrationSourceFallbackLabels[source] || namespaceRegistrationSourceFallbackLabels.all;
+}
+
+function buildNamespaceRegistrationButtonLabel(entry) {
+    const details = [entry.namespace || "-"];
+
+    if (entry.identifier) {
+        details.push(`id: ${entry.identifier}`);
+    }
+
+    if (entry.typeId) {
+        details.push(`target: ${entry.typeId}`);
+    } else if (entry.contentCount > 0) {
+        details.push(`tracked: ${entry.contentCount}`);
+    }
+
+    return `${entry.name || entry.target || entry.key || "Unnamed"}\n§7${details.join(" | ")}`;
+}
+
+function buildNamespaceRegistrationSamplesText(entry) {
+    if (!Array.isArray(entry?.content) || !entry.content.length) {
+        return "";
+    }
+
+    const rows = [];
+    appendLimitedRows(rows, entry.content.map((value) => `- ${value}`), 6);
+    return rows.join("\n");
+}
+
+function buildNamespaceRegistrationDetailBody(entry) {
+    const samplesText = buildNamespaceRegistrationSamplesText(entry);
+    const rawtext = [
+        {
+            translate: "ui.dorios.insight.namespace_menu.detail_body",
+            with: [
+                String(entry?.name || entry?.target || entry?.key || "-"),
+                getNamespaceRegistrationSourceLabel(entry?.registrationSource),
+                String(entry?.namespace || "-"),
+                String(entry?.identifier || "-"),
+                String(entry?.target || "-"),
+                String(entry?.type || "addon"),
+                String(entry?.contentCount || 0)
+            ]
+        }
+    ];
+
+    if (samplesText) {
+        rawtext.push({ text: "\n\n" });
+        rawtext.push({
+            translate: "ui.dorios.insight.namespace_menu.detail_samples",
+            with: [samplesText]
+        });
+    }
+
+    return { rawtext };
+}
+
+function sendNamespaceResetScopeFeedback(player, sourceScope, resetResult) {
+    if (!resetResult?.ok) {
+        sendPlayerMessage(
+            player,
+            tr("ui.dorios.insight.feedback.namespace_reset_empty", [getNamespaceRegistrationSourceLabel(sourceScope)])
+        );
+        return false;
+    }
+
+    sendPlayerMessage(
+        player,
+        tr("ui.dorios.insight.feedback.namespace_reset_scope", [resetResult.count, getNamespaceRegistrationSourceLabel(sourceScope)])
+    );
+    return true;
+}
+
+async function showNamespaceRegistrationDetailMenu(player, entry) {
+    const form = new ActionFormData()
+        .title(tr("ui.dorios.insight.namespace_menu.detail_title"))
+        .body(buildNamespaceRegistrationDetailBody(entry))
+        .button(tr("ui.dorios.insight.namespace_menu.reset_entry_button"))
+        .button(tr("ui.dorios.insight.namespace_menu.back_button"));
+
+    const result = await form.show(player);
+    if (result.canceled || result.selection !== 0) {
+        return false;
+    }
+
+    const resetResult = resetRegisteredNamespaceEntries({
+        key: entry.key,
+        source: entry.registrationSource
+    });
+
+    if (!resetResult?.ok) {
+        sendPlayerMessage(
+            player,
+            tr("ui.dorios.insight.feedback.namespace_reset_empty", [getNamespaceRegistrationSourceLabel(entry.registrationSource)])
+        );
+        return false;
+    }
+
+    sendPlayerMessage(
+        player,
+        tr("ui.dorios.insight.feedback.namespace_reset_entry", [entry.name || entry.target || entry.key || "-"])
+    );
+    return true;
+}
+
+async function showNamespaceRegistrationListMenu(player, source) {
+    while (true) {
+        const entries = getRegisteredNamespaceEntries(source);
+        const sourceLabel = getNamespaceRegistrationSourceLabel(source);
+        const form = new ActionFormData()
+            .title(tr("ui.dorios.insight.namespace_menu.list_title", [sourceLabel]))
+            .body(tr("ui.dorios.insight.namespace_menu.list_body", [sourceLabel, entries.length]));
+
+        for (const entry of entries) {
+            form.button(buildNamespaceRegistrationButtonLabel(entry));
+        }
+
+        form.button(tr("ui.dorios.insight.namespace_menu.back_button"));
+
+        const result = await form.show(player);
+        if (result.canceled || result.selection === entries.length) {
+            return;
+        }
+
+        const selectedEntry = entries[result.selection];
+        if (!selectedEntry) {
+            return;
+        }
+
+        const didReset = await showNamespaceRegistrationDetailMenu(player, selectedEntry);
+        if (!didReset && !entries.length) {
+            return;
+        }
+    }
+}
+
+async function showNamespaceSettingsEditorMenu(player) {
+    const settings = getPlayerDisplaySettings(player);
+    const runtime = settings.runtime;
+    const namespaceDisplayOptions = getLocalizedOptions(NamespaceDisplayModeLabels);
+
     const form = new ModalFormData()
         .title(tr("ui.dorios.insight.namespace_menu.title"))
+        .dropdown(
+            tr("ui.dorios.insight.namespace_menu.display_mode", [getLocalizedOptionByValue(NamespaceDisplayModeLabels, runtime.namespaceDisplayMode)]),
+            namespaceDisplayOptions,
+            {
+                defaultValueIndex: getNamespaceDisplayModeIndex(runtime.namespaceDisplayMode)
+            }
+        )
         .textField(
             tr("ui.dorios.insight.namespace_menu.namespace_label"),
             tr("ui.dorios.insight.namespace_menu.namespace_hint")
@@ -1284,6 +1837,10 @@ async function showNamespaceMenu(player) {
         .textField(
             tr("ui.dorios.insight.namespace_menu.display_label"),
             tr("ui.dorios.insight.namespace_menu.display_hint")
+        )
+        .textField(
+            tr("ui.dorios.insight.namespace_menu.identifier_label"),
+            tr("ui.dorios.insight.namespace_menu.identifier_hint")
         );
 
     const result = await form.show(player);
@@ -1291,24 +1848,110 @@ async function showNamespaceMenu(player) {
         return;
     }
 
-    const namespaceInput = String(result.formValues[0] ?? "").trim();
-    const displayName = String(result.formValues[1] ?? "").trim();
+    const nextNamespaceDisplayMode = NamespaceDisplayModeLabels[Number(result.formValues[0] ?? 0)]?.key
+        ?? runtime.namespaceDisplayMode;
+    const namespaceInput = String(result.formValues[1] ?? "").trim();
+    const displayName = String(result.formValues[2] ?? "").trim();
+    const identifier = String(result.formValues[3] ?? "").trim();
+
+    const hasMappingInput = namespaceInput.length > 0 || displayName.length > 0 || identifier.length > 0;
+
+    if (!hasMappingInput) {
+        updatePlayerOverrides(player, {
+            runtime: {
+                namespaceDisplayMode: nextNamespaceDisplayMode
+            }
+        });
+        sendPlayerMessage(player, tr("ui.dorios.insight.feedback.namespace_updated"));
+        return;
+    }
 
     if (!namespaceInput || !displayName) {
         sendPlayerMessage(player, tr("ui.dorios.insight.namespace_menu.error_required"));
         return;
     }
 
-    const registration = registerNamespaceAlias(namespaceInput, displayName, true);
+    const registration = registerNamespaceAlias(namespaceInput, displayName, identifier, true);
     if (!registration?.ok) {
         sendPlayerMessage(player, tr("ui.dorios.insight.namespace_menu.error_invalid"));
         return;
     }
 
+    updatePlayerOverrides(player, {
+        runtime: {
+            namespaceDisplayMode: nextNamespaceDisplayMode
+        }
+    });
+
     sendPlayerMessage(
         player,
-        tr("ui.dorios.insight.namespace_menu.success", [registration.namespace, registration.name])
+        tr("ui.dorios.insight.feedback.namespace_mapping_updated", [registration.target, registration.name])
     );
+
+    if (registration.identifier) {
+        sendPlayerMessage(
+            player,
+            tr("ui.dorios.insight.feedback.namespace_identifier_updated", [registration.identifier])
+        );
+    }
+}
+
+async function showNamespaceMenu(player) {
+    while (true) {
+        const settings = getPlayerDisplaySettings(player);
+        const runtime = settings.runtime;
+        const scriptEntries = getRegisteredNamespaceEntries(NamespaceRegistrationSources.Script);
+        const commandEntries = getRegisteredNamespaceEntries(NamespaceRegistrationSources.Command);
+        const form = new ActionFormData()
+            .title(tr("ui.dorios.insight.namespace_menu.title"))
+            .body(tr("ui.dorios.insight.namespace_menu.manager_body", [
+                getLocalizedOptionByValue(NamespaceDisplayModeLabels, runtime.namespaceDisplayMode),
+                scriptEntries.length,
+                commandEntries.length
+            ]))
+            .button(tr("ui.dorios.insight.namespace_menu.configure_button"))
+            .button(tr("ui.dorios.insight.namespace_menu.script_list_button", [scriptEntries.length]))
+            .button(tr("ui.dorios.insight.namespace_menu.command_list_button", [commandEntries.length]))
+            .button(tr("ui.dorios.insight.namespace_menu.reset_scripts_button"))
+            .button(tr("ui.dorios.insight.namespace_menu.reset_commands_button"))
+            .button(tr("ui.dorios.insight.namespace_menu.reset_all_button"));
+
+        const result = await form.show(player);
+        if (result.canceled) {
+            return;
+        }
+
+        switch (result.selection) {
+            case 0:
+                await showNamespaceSettingsEditorMenu(player);
+                break;
+            case 1:
+                await showNamespaceRegistrationListMenu(player, NamespaceRegistrationSources.Script);
+                break;
+            case 2:
+                await showNamespaceRegistrationListMenu(player, NamespaceRegistrationSources.Command);
+                break;
+            case 3:
+                sendNamespaceResetScopeFeedback(
+                    player,
+                    NamespaceRegistrationSources.Script,
+                    resetRegisteredNamespaceEntries({ source: NamespaceRegistrationSources.Script })
+                );
+                break;
+            case 4:
+                sendNamespaceResetScopeFeedback(
+                    player,
+                    NamespaceRegistrationSources.Command,
+                    resetRegisteredNamespaceEntries({ source: NamespaceRegistrationSources.Command })
+                );
+                break;
+            case 5:
+                sendNamespaceResetScopeFeedback(player, "all", resetRegisteredNamespaceEntries());
+                break;
+            default:
+                return;
+        }
+    }
 }
 
 function getComponentGroups() {
@@ -1414,9 +2057,9 @@ function toggleAdminOnlyGlobalProfile(player, settings) {
 
 async function showActivationMenu(player) {
     const settings = getPlayerDisplaySettings(player);
-    const localStateLabel = getStateLabel(!settings.disabled, "Active", "Disabled");
-    const globalStateLabel = getStateLabel(settings.globalEnabled, "Enabled", "Disabled");
-    const adminOnlyStateLabel = getStateLabel(settings.adminOnlyGlobalProfile, "Enabled", "Disabled");
+    const localStateLabel = getStateMessage(!settings.disabled, "ui.dorios.insight.value.active", "ui.dorios.insight.value.disabled");
+    const globalStateLabel = getStateMessage(settings.globalEnabled);
+    const adminOnlyStateLabel = getStateMessage(settings.adminOnlyGlobalProfile);
     const adminSourceLabel = settings.adminGlobalProfileSourceName || "-";
 
     const form = new ActionFormData()
@@ -1449,10 +2092,10 @@ async function showDisplayMenu(player) {
     const form = new ActionFormData()
         .title(tr("ui.dorios.insight.display_root.title"))
         .body(tr("ui.dorios.insight.display_root.body", [
-            getDisplayStyleLabel(settings.displayStyle),
-            getToolTierIndicatorModeLabel(settings.toolTierIndicatorMode)
+            getLocalizedOptionByValue(DisplayStyleLabels, settings.displayStyle),
+            getLocalizedOptionByValue(ToolTierIndicatorModeLabels, settings.toolTierIndicatorMode)
         ]))
-        .button(tr("ui.dorios.insight.menu.style_button", [getDisplayStyleLabel(settings.displayStyle)]))
+        .button(tr("ui.dorios.insight.menu.style_button", [getLocalizedOptionByValue(DisplayStyleLabels, settings.displayStyle)]))
         .button(tr("ui.dorios.insight.display_root.hud_button"))
         .button(tr("ui.dorios.insight.display_root.hud_elements_button"))
         .button(tr("ui.dorios.insight.display_root.waila_button"))
@@ -1544,9 +2187,9 @@ async function showComponentsMenu(player) {
 export async function openInsightMenu(player) {
     const settings = getPlayerDisplaySettings(player);
 
-    const modeLabel = getModeLabel(settings.mode);
-    const localStateLabel = getStateLabel(!settings.disabled, "Active", "Disabled");
-    const globalStateLabel = getStateLabel(settings.globalEnabled, "Enabled", "Disabled");
+    const modeLabel = getModeMessage(settings.mode);
+    const localStateLabel = getStateMessage(!settings.disabled, "ui.dorios.insight.value.active", "ui.dorios.insight.value.disabled");
+    const globalStateLabel = getStateMessage(settings.globalEnabled);
 
     const form = new ActionFormData()
         .title(tr("ui.dorios.insight.menu.title"))
