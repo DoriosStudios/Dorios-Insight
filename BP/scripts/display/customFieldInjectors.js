@@ -456,10 +456,44 @@ function unregisterInjector(list, injector) {
     return true;
 }
 
+function toSettingKeyFromComponentKey(componentKey) {
+    if (typeof componentKey !== "string" || !componentKey.length) {
+        return "";
+    }
+
+    return `show${componentKey.charAt(0).toUpperCase()}${componentKey.slice(1)}`;
+}
+
+function isInjectorEnabledBySettings(entry, playerSettings) {
+    const components = entry?.metadata?.components;
+    if (!Array.isArray(components) || components.length === 0) {
+        return true;
+    }
+
+    for (const componentKey of components) {
+        const settingKey = toSettingKeyFromComponentKey(componentKey);
+        if (!settingKey.length) {
+            continue;
+        }
+
+        const settingValue = playerSettings?.[settingKey];
+        if (typeof settingValue === "boolean" && !settingValue) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function runInjectors(list, context) {
     const lines = [];
+    const playerSettings = context?.playerSettings;
 
     for (const entry of list) {
+        if (!isInjectorEnabledBySettings(entry, playerSettings)) {
+            continue;
+        }
+
         try {
             const result = entry.injector(context);
             lines.push(...normalizeInjectorResult(result));

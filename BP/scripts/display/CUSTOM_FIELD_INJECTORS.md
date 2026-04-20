@@ -14,6 +14,11 @@ Methods:
 - `clearEntityFieldInjectors()`
 - `getRegisteredCounts()`
 
+Both register methods accept an optional second argument:
+- `{ provider?: string, components?: string[] }`
+
+When `components` is provided, Insight automatically skips that injector when any mapped `show...` setting for those component keys is disabled (for example, `customVariantPreview` → `showCustomVariantPreview`).
+
 ## Block injector context
 
 Block injectors receive an object with:
