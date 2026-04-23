@@ -5,7 +5,11 @@ const WORLD_ENABLED_DYNAMIC_PROPERTY = "insight:enabled";
 const WORLD_ADMIN_ONLY_DYNAMIC_PROPERTY = "insight:admin_only";
 const WORLD_ADMIN_SOURCE_ID_DYNAMIC_PROPERTY = "insight:admin_source_id";
 const WORLD_ADMIN_SOURCE_NAME_DYNAMIC_PROPERTY = "insight:admin_source_name";
+const WORLD_HOST_ID_DYNAMIC_PROPERTY = "insight:host_id";
+const WORLD_HOST_NAME_DYNAMIC_PROPERTY = "insight:host_name";
 const PLAYER_SETTINGS_DYNAMIC_PROPERTY = "insight:player_settings";
+const ADMIN_PLAYER_TAG = "admin";
+const LEGACY_ADMIN_PLAYER_TAG = "insight:admin";
 
 const memoryFallback = {
     mode: "essential",
@@ -13,6 +17,8 @@ const memoryFallback = {
     adminOnly: false,
     adminSourceId: "",
     adminSourceName: "",
+    hostId: "",
+    hostName: "",
     playerSettings: new Map()
 };
 
@@ -83,12 +89,17 @@ export const HudDisplayModeLabels = Object.freeze([
 
 export const HudIndicatorModes = Object.freeze({
     Hidden: "hidden",
-    IconAndIndicator: "icon_and_indicator"
+    IconAndHeartCount: "icon_and_heart_count",
+    IconAndVanillaAmount: "icon_and_heart_count",
+    IconAndHealthAmount: "icon_and_points",
+    IconAndIndicator: "icon_and_points",
+    IconAndPoints: "icon_and_points"
 });
 
 export const HudIndicatorModeLabels = Object.freeze([
     Object.freeze({ key: HudIndicatorModes.Hidden, label: "Hidden", labelKey: "ui.dorios.insight.option.hud_indicator.hidden" }),
-    Object.freeze({ key: HudIndicatorModes.IconAndIndicator, label: "Icon + Indicator", labelKey: "ui.dorios.insight.option.hud_indicator.icon_and_indicator" })
+    Object.freeze({ key: HudIndicatorModes.IconAndHeartCount, label: "Icon + Heart Count", labelKey: "ui.dorios.insight.option.hud_indicator.icon_and_heart_count" }),
+    Object.freeze({ key: HudIndicatorModes.IconAndHealthAmount, label: "Icon + Health Amount", labelKey: "ui.dorios.insight.option.hud_indicator.icon_and_health_amount" })
 ]);
 
 export const HudElementPositionModes = Object.freeze({
@@ -239,6 +250,48 @@ export const WailaVerticalOffsetModeLabels = Object.freeze([
     Object.freeze({ key: WailaOffsetModes.Negative, label: "Up", labelKey: "ui.dorios.insight.option.waila_vertical_offset.up" }),
     Object.freeze({ key: WailaOffsetModes.Center, label: "Center", labelKey: "ui.dorios.insight.option.waila_vertical_offset.center" }),
     Object.freeze({ key: WailaOffsetModes.Positive, label: "Down", labelKey: "ui.dorios.insight.option.waila_vertical_offset.down" })
+]);
+
+export const WailaSizePresets = Object.freeze({
+    Compact: "compact",
+    Normal: "normal",
+    Large: "large",
+    Huge: "huge"
+});
+
+export const WailaSizePresetLabels = Object.freeze([
+    Object.freeze({ key: WailaSizePresets.Compact, label: "Compact", labelKey: "ui.dorios.insight.option.waila_size.compact" }),
+    Object.freeze({ key: WailaSizePresets.Normal, label: "Normal", labelKey: "ui.dorios.insight.option.waila_size.normal" }),
+    Object.freeze({ key: WailaSizePresets.Large, label: "Large", labelKey: "ui.dorios.insight.option.waila_size.large" }),
+    Object.freeze({ key: WailaSizePresets.Huge, label: "Huge", labelKey: "ui.dorios.insight.option.waila_size.huge" })
+]);
+
+export const WailaWidthModes = Object.freeze({
+    Normal: "normal",
+    Wide: "wide",
+    Wider: "wider",
+    Widest: "widest"
+});
+
+export const WailaWidthModeLabels = Object.freeze([
+    Object.freeze({ key: WailaWidthModes.Normal, label: "Normal", labelKey: "ui.dorios.insight.option.waila_width.normal" }),
+    Object.freeze({ key: WailaWidthModes.Wide, label: "Wide", labelKey: "ui.dorios.insight.option.waila_width.wide" }),
+    Object.freeze({ key: WailaWidthModes.Wider, label: "Wider", labelKey: "ui.dorios.insight.option.waila_width.wider" }),
+    Object.freeze({ key: WailaWidthModes.Widest, label: "Widest", labelKey: "ui.dorios.insight.option.waila_width.widest" })
+]);
+
+export const WailaHeightModes = Object.freeze({
+    Normal: "normal",
+    Tall: "tall",
+    Taller: "taller",
+    Tallest: "tallest"
+});
+
+export const WailaHeightModeLabels = Object.freeze([
+    Object.freeze({ key: WailaHeightModes.Normal, label: "Normal", labelKey: "ui.dorios.insight.option.waila_height.normal" }),
+    Object.freeze({ key: WailaHeightModes.Tall, label: "Tall", labelKey: "ui.dorios.insight.option.waila_height.tall" }),
+    Object.freeze({ key: WailaHeightModes.Taller, label: "Taller", labelKey: "ui.dorios.insight.option.waila_height.taller" }),
+    Object.freeze({ key: WailaHeightModes.Tallest, label: "Tallest", labelKey: "ui.dorios.insight.option.waila_height.tallest" })
 ]);
 
 export const ModePresetSummaryModes = Object.freeze({
@@ -488,8 +541,8 @@ export const InsightModePresets = Object.freeze({
             hudHungerVisibilityMode: HudDisplayModes.ShowVanilla,
             hudSaturationVisibilityMode: HudDisplayModes.ShowVanilla,
             hudToughnessVisibilityMode: HudDisplayModes.ShowVanilla,
-            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
-            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndPoints,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndPoints,
             hudInventoryEnabled: false,
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
@@ -505,6 +558,9 @@ export const InsightModePresets = Object.freeze({
             wailaAnchor: WailaAnchorModes.TopMiddle,
             wailaHorizontalOffset: WailaOffsetModes.Center,
             wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaSizePreset: WailaSizePresets.Normal,
+            wailaWidthMode: WailaWidthModes.Normal,
+            wailaHeightMode: WailaHeightModes.Normal,
             wailaShowEntityRender: true,
             stateColumns: 1,
             tagColumns: 1,
@@ -582,8 +638,8 @@ export const InsightModePresets = Object.freeze({
             hudHungerVisibilityMode: HudDisplayModes.ShowVanilla,
             hudSaturationVisibilityMode: HudDisplayModes.Both,
             hudToughnessVisibilityMode: HudDisplayModes.Both,
-            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
-            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndPoints,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndPoints,
             hudInventoryEnabled: false,
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
@@ -599,6 +655,9 @@ export const InsightModePresets = Object.freeze({
             wailaAnchor: WailaAnchorModes.TopMiddle,
             wailaHorizontalOffset: WailaOffsetModes.Center,
             wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaSizePreset: WailaSizePresets.Normal,
+            wailaWidthMode: WailaWidthModes.Normal,
+            wailaHeightMode: WailaHeightModes.Normal,
             wailaShowEntityRender: true,
             stateColumns: 1,
             tagColumns: 1,
@@ -676,8 +735,8 @@ export const InsightModePresets = Object.freeze({
             hudHungerVisibilityMode: HudDisplayModes.Both,
             hudSaturationVisibilityMode: HudDisplayModes.Both,
             hudToughnessVisibilityMode: HudDisplayModes.Both,
-            hudHealthIndicatorMode: HudIndicatorModes.IconAndIndicator,
-            hudHungerIndicatorMode: HudIndicatorModes.IconAndIndicator,
+            hudHealthIndicatorMode: HudIndicatorModes.IconAndPoints,
+            hudHungerIndicatorMode: HudIndicatorModes.IconAndPoints,
             hudInventoryEnabled: false,
             hudInventoryPosition: HudElementPositionModes.Center,
             hudInventoryDisplayMode: HudInventoryDisplayModes.Full,
@@ -693,6 +752,9 @@ export const InsightModePresets = Object.freeze({
             wailaAnchor: WailaAnchorModes.TopMiddle,
             wailaHorizontalOffset: WailaOffsetModes.Center,
             wailaVerticalOffset: WailaOffsetModes.Center,
+            wailaSizePreset: WailaSizePresets.Normal,
+            wailaWidthMode: WailaWidthModes.Normal,
+            wailaHeightMode: WailaHeightModes.Normal,
             wailaShowEntityRender: true,
             stateColumns: 2,
             tagColumns: 2,
@@ -800,19 +862,32 @@ export function getHudDisplayModeIndex(mode) {
 
 export function normalizeHudIndicatorMode(mode) {
     const normalized = String(mode || "").trim().toLowerCase();
+
+    if (normalized === "icon_and_indicator") {
+        return HudIndicatorModes.IconAndHealthAmount;
+    }
+
+    if (normalized === "icon_and_vanilla_amount") {
+        return HudIndicatorModes.IconAndHeartCount;
+    }
+
     for (const option of HudIndicatorModeLabels) {
         if (option.key === normalized) {
             return normalized;
         }
     }
 
-    return HudIndicatorModes.IconAndIndicator;
+    return HudIndicatorModes.IconAndHealthAmount;
 }
 
 export function getHudIndicatorModeIndex(mode) {
     const normalized = normalizeHudIndicatorMode(mode);
     const index = HudIndicatorModeLabels.findIndex((option) => option.key === normalized);
     return index === -1 ? 0 : index;
+}
+
+export function getHudIndicatorModeNumericId(mode) {
+    return getHudIndicatorModeIndex(mode);
 }
 
 export function normalizeHudElementPositionMode(mode) {
@@ -1002,6 +1077,69 @@ export function getWailaOffsetModeIndex(mode) {
 
 export function getWailaOffsetNumericId(mode) {
     return getWailaOffsetModeIndex(mode);
+}
+
+export function normalizeWailaSizePreset(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of WailaSizePresetLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaSizePresets.Normal;
+}
+
+export function getWailaSizePresetIndex(mode) {
+    const normalized = normalizeWailaSizePreset(mode);
+    const index = WailaSizePresetLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaSizePresetNumericId(mode) {
+    return getWailaSizePresetIndex(mode);
+}
+
+export function normalizeWailaWidthMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of WailaWidthModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaWidthModes.Normal;
+}
+
+export function getWailaWidthModeIndex(mode) {
+    const normalized = normalizeWailaWidthMode(mode);
+    const index = WailaWidthModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaWidthModeNumericId(mode) {
+    return getWailaWidthModeIndex(mode);
+}
+
+export function normalizeWailaHeightMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+    for (const option of WailaHeightModeLabels) {
+        if (option.key === normalized) {
+            return normalized;
+        }
+    }
+
+    return WailaHeightModes.Normal;
+}
+
+export function getWailaHeightModeIndex(mode) {
+    const normalized = normalizeWailaHeightMode(mode);
+    const index = WailaHeightModeLabels.findIndex((option) => option.key === normalized);
+    return index === -1 ? 0 : index;
+}
+
+export function getWailaHeightModeNumericId(mode) {
+    return getWailaHeightModeIndex(mode);
 }
 
 export function normalizeModePresetSummaryMode(mode) {
@@ -1201,6 +1339,90 @@ function safeWritePlayerDynamicProperty(player, key, value) {
     }
 }
 
+function hasPlayerTag(player, tag) {
+    if (!player || !tag) {
+        return false;
+    }
+
+    try {
+        if (typeof player.hasTag === "function") {
+            return player.hasTag(tag);
+        }
+    } catch {
+        // Ignore tag read errors.
+    }
+
+    return false;
+}
+
+function addPlayerTag(player, tag) {
+    if (!player || !tag || hasPlayerTag(player, tag)) {
+        return false;
+    }
+
+    try {
+        if (typeof player.addTag === "function") {
+            return Boolean(player.addTag(tag));
+        }
+    } catch {
+        // Ignore tag write errors.
+    }
+
+    return false;
+}
+
+function isPlayerOperator(player) {
+    if (!player) {
+        return false;
+    }
+
+    try {
+        if (typeof player.isOp === "function") {
+            return Boolean(player.isOp());
+        }
+    } catch {
+        // Ignore extension errors.
+    }
+
+    try {
+        if (typeof player.isOp === "boolean") {
+            return player.isOp;
+        }
+    } catch {
+        // Ignore extension errors.
+    }
+
+    return false;
+}
+
+function isTaggedAdminPlayer(player) {
+    return hasPlayerTag(player, ADMIN_PLAYER_TAG) || hasPlayerTag(player, LEGACY_ADMIN_PLAYER_TAG);
+}
+
+function getOnlinePlayers() {
+    try {
+        const players = world.getAllPlayers();
+        return Array.isArray(players) ? players : [];
+    } catch {
+        return [];
+    }
+}
+
+function doesPlayerMatchIdentity(player, playerId, playerName) {
+    if (!player) {
+        return false;
+    }
+
+    const expectedId = String(playerId || "").trim();
+    const expectedName = String(playerName || "").trim().toLowerCase();
+
+    if (expectedId.length && player.id === expectedId) {
+        return true;
+    }
+
+    return expectedName.length > 0 && String(player.name || "").trim().toLowerCase() === expectedName;
+}
+
 function normalizeRuntime(runtimeCandidate, presetRuntime) {
     const runtime = runtimeCandidate && typeof runtimeCandidate === "object" ? runtimeCandidate : {};
 
@@ -1371,6 +1593,15 @@ function normalizeRuntime(runtimeCandidate, presetRuntime) {
         wailaVerticalOffset: normalizeWailaOffsetMode(
             runtime.wailaVerticalOffset ?? presetRuntime.wailaVerticalOffset
         ),
+        wailaSizePreset: normalizeWailaSizePreset(
+            runtime.wailaSizePreset ?? presetRuntime.wailaSizePreset
+        ),
+        wailaWidthMode: normalizeWailaWidthMode(
+            runtime.wailaWidthMode ?? presetRuntime.wailaWidthMode
+        ),
+        wailaHeightMode: normalizeWailaHeightMode(
+            runtime.wailaHeightMode ?? presetRuntime.wailaHeightMode
+        ),
         wailaShowEntityRender: typeof runtime.wailaShowEntityRender === "boolean"
             ? runtime.wailaShowEntityRender
             : presetRuntime.wailaShowEntityRender,
@@ -1468,36 +1699,97 @@ export function setInsightGlobalEnabled(isEnabled) {
     return normalized;
 }
 
+export function getRecognizedHostId() {
+    const storedValue = safeReadWorldDynamicProperty(WORLD_HOST_ID_DYNAMIC_PROPERTY);
+    if (typeof storedValue === "string") {
+        memoryFallback.hostId = storedValue;
+        return storedValue;
+    }
+
+    return memoryFallback.hostId;
+}
+
+export function getRecognizedHostName() {
+    const storedValue = safeReadWorldDynamicProperty(WORLD_HOST_NAME_DYNAMIC_PROPERTY);
+    if (typeof storedValue === "string") {
+        memoryFallback.hostName = storedValue;
+        return storedValue;
+    }
+
+    return memoryFallback.hostName;
+}
+
+export function resolveRecognizedHostPlayer() {
+    return findPlayerByIdOrName(getRecognizedHostId(), getRecognizedHostName());
+}
+
+export function isRecognizedHostPlayer(player) {
+    return doesPlayerMatchIdentity(player, getRecognizedHostId(), getRecognizedHostName());
+}
+
+export function linkPlayerAdminTags(player) {
+    if (!player) {
+        return false;
+    }
+
+    const linkedAdminTag = addPlayerTag(player, ADMIN_PLAYER_TAG);
+    const linkedLegacyTag = addPlayerTag(player, LEGACY_ADMIN_PLAYER_TAG);
+    return linkedAdminTag || linkedLegacyTag || hasPlayerTag(player, ADMIN_PLAYER_TAG) || hasPlayerTag(player, LEGACY_ADMIN_PLAYER_TAG);
+}
+
+export function setRecognizedHostPlayer(player) {
+    if (!player) {
+        return false;
+    }
+
+    const hostId = String(player.id || "").trim();
+    const hostName = String(player.name || "").trim();
+
+    if (!hostId && !hostName) {
+        return false;
+    }
+
+    memoryFallback.hostId = hostId;
+    memoryFallback.hostName = hostName;
+    safeWriteWorldDynamicProperty(WORLD_HOST_ID_DYNAMIC_PROPERTY, hostId);
+    safeWriteWorldDynamicProperty(WORLD_HOST_NAME_DYNAMIC_PROPERTY, hostName);
+    linkPlayerAdminTags(player);
+    return true;
+}
+
 export function isAdminPlayer(player) {
     if (!player) {
         return false;
     }
 
-    try {
-        if (typeof player.isOp === "function") {
-            return Boolean(player.isOp());
-        }
-    } catch {
-        // Ignore extension errors.
+    return isPlayerOperator(player) || isTaggedAdminPlayer(player) || isRecognizedHostPlayer(player);
+}
+
+export function syncPlayerAdministrativeAccess(player) {
+    if (!player) {
+        return {
+            isAdmin: false,
+            linkedTags: false,
+            recognizedAsHost: false
+        };
     }
 
-    try {
-        if (typeof player.isOp === "boolean") {
-            return player.isOp;
-        }
-    } catch {
-        // Ignore extension errors.
+    const players = getOnlinePlayers();
+    const hasStoredHost = Boolean(getRecognizedHostId() || getRecognizedHostName());
+    let recognizedAsHost = false;
+
+    if (!hasStoredHost && (isPlayerOperator(player) || isTaggedAdminPlayer(player) || players.length <= 1)) {
+        recognizedAsHost = setRecognizedHostPlayer(player);
     }
 
-    try {
-        if (typeof player.hasTag === "function" && player.hasTag("insight:admin")) {
-            return true;
-        }
-    } catch {
-        // Ignore tag read errors.
-    }
+    const isAdmin = isAdminPlayer(player) || recognizedAsHost;
+    const linkedTags = isAdmin ? linkPlayerAdminTags(player) : false;
 
-    return false;
+    return {
+        isAdmin,
+        linkedTags,
+        recognizedAsHost: recognizedAsHost || isRecognizedHostPlayer(player)
+    };
 }
 
 export function isAdminOnlyGlobalProfileEnabled() {
@@ -1534,7 +1826,7 @@ function findPlayerByIdOrName(playerId, playerName) {
     const expectedId = String(playerId || "").trim();
     const expectedName = String(playerName || "").trim().toLowerCase();
 
-    for (const onlinePlayer of world.getAllPlayers()) {
+    for (const onlinePlayer of getOnlinePlayers()) {
         if (expectedId.length && onlinePlayer.id === expectedId) {
             return onlinePlayer;
         }
@@ -1548,7 +1840,7 @@ function findPlayerByIdOrName(playerId, playerName) {
 }
 
 function findFirstOnlineAdmin() {
-    for (const onlinePlayer of world.getAllPlayers()) {
+    for (const onlinePlayer of getOnlinePlayers()) {
         if (isAdminPlayer(onlinePlayer)) {
             return onlinePlayer;
         }
@@ -1563,6 +1855,11 @@ export function resolveAdminGlobalProfileSourcePlayer() {
     const explicitSource = findPlayerByIdOrName(sourceId, sourceName);
     if (explicitSource) {
         return explicitSource;
+    }
+
+    const recognizedHost = resolveRecognizedHostPlayer();
+    if (recognizedHost) {
+        return recognizedHost;
     }
 
     return findFirstOnlineAdmin();
@@ -1780,9 +2077,9 @@ export function getPlayerDisplaySettings(player) {
         && isHudVanillaVisible(runtime.hudSaturationVisibilityMode);
     const showHudArmorVanilla = isHudVanillaVisible(runtime.hudToughnessVisibilityMode);
     const hudHealthIndicatorEnabled = showHudHealthInsight
-        && runtime.hudHealthIndicatorMode === HudIndicatorModes.IconAndIndicator;
+        && runtime.hudHealthIndicatorMode !== HudIndicatorModes.Hidden;
     const hudHungerIndicatorEnabled = showHudHungerInsight
-        && runtime.hudHungerIndicatorMode === HudIndicatorModes.IconAndIndicator;
+        && runtime.hudHungerIndicatorMode !== HudIndicatorModes.Hidden;
     const hudInventoryEnabled = Boolean(runtime.hudInventoryEnabled);
 
     // Legacy compatibility via tags.
@@ -1857,7 +2154,9 @@ export function getPlayerDisplaySettings(player) {
         hudSaturationVisibilityMode: runtime.hudSaturationVisibilityMode,
         hudToughnessVisibilityMode: runtime.hudToughnessVisibilityMode,
         hudHealthIndicatorMode: runtime.hudHealthIndicatorMode,
+        hudHealthIndicatorModeId: getHudIndicatorModeNumericId(runtime.hudHealthIndicatorMode),
         hudHungerIndicatorMode: runtime.hudHungerIndicatorMode,
+        hudHungerIndicatorModeId: getHudIndicatorModeNumericId(runtime.hudHungerIndicatorMode),
         hudInventoryEnabled,
         hudInventoryPosition: runtime.hudInventoryPosition,
         hudInventoryDisplayMode: runtime.hudInventoryDisplayMode,
@@ -1881,6 +2180,12 @@ export function getPlayerDisplaySettings(player) {
         wailaHorizontalOffsetId: getWailaOffsetNumericId(runtime.wailaHorizontalOffset),
         wailaVerticalOffset: runtime.wailaVerticalOffset,
         wailaVerticalOffsetId: getWailaOffsetNumericId(runtime.wailaVerticalOffset),
+        wailaSizePreset: runtime.wailaSizePreset,
+        wailaSizePresetId: getWailaSizePresetNumericId(runtime.wailaSizePreset),
+        wailaWidthMode: runtime.wailaWidthMode,
+        wailaWidthModeId: getWailaWidthModeNumericId(runtime.wailaWidthMode),
+        wailaHeightMode: runtime.wailaHeightMode,
+        wailaHeightModeId: getWailaHeightModeNumericId(runtime.wailaHeightMode),
         wailaShowEntityRender: Boolean(runtime.wailaShowEntityRender),
         showHudHealthInsight,
         showHudHungerInsight,

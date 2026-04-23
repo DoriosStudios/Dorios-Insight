@@ -69,16 +69,14 @@ function Add-MainScriptImportIfMissing($mainScriptPath, $importStatement) {
     return $true
 }
 
-function Build-RegistryInjectorSource($addonEntry, $dependencyCheckerImport = './DoriosAPI/dependencyChecker.js') {
+function Build-RegistryInjectorSource($addonEntry) {
     $addonJson = $addonEntry | ConvertTo-Json -Depth 8
     $marker = "__insightNamespaceRegistry_" + $addonEntry.key
 
     return @"
 import { system } from "@minecraft/server";
-import { waitForDependency } from "$dependencyCheckerImport";
 
 const REGISTRATION_MARKER = "$marker";
-const INSIGHT_DEPENDENCY_IDENTIFIER = "dorios_insight";
 const REGISTRATION_RETRY_TICKS = 20;
 const MAX_REGISTRATION_ATTEMPTS = 180;
 
@@ -109,25 +107,12 @@ function registerAddonContentWithRetry(attempt = 0) {
     }, REGISTRATION_RETRY_TICKS);
 }
 
-function initializeNamespaceRegistration() {
-    if (tryRegisterAddonContent()) {
-        return;
-    }
-
-    waitForDependency(INSIGHT_DEPENDENCY_IDENTIFIER, () => {
-        registerAddonContentWithRetry();
-    }, {
-        retryTicks: REGISTRATION_RETRY_TICKS,
-        maxAttempts: MAX_REGISTRATION_ATTEMPTS
-    });
-}
-
-initializeNamespaceRegistration();
+registerAddonContentWithRetry();
 "@
 }
 
 $addons = @(
-    @{ key = 'utilitycraft_ascendant_technology'; name = 'UtilityCraft: Ascendant Technology'; identifier = 'AT'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\injectors'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\main.js'; importStatement = "import './injectors/insight_registry_injector.generated.js'"; dependencyCheckerImport = '../DoriosAPI/dependencyChecker.js' },
+    @{ key = 'utilitycraft_ascendant_technology'; name = 'UtilityCraft: Ascendant Technology'; identifier = 'AT'; type = 'expansion'; namespace = 'utilitycraft'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\injectors'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Ascendant Technology\BP\scripts\main.js'; importStatement = "import './injectors/insight_registry_injector.generated.js'" },
     @{ key = 'dorios_atelier'; name = 'Dorios'' Atelier'; identifier = 'Atelier'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios'' Atelier\BP\scripts\main.js'; importStatement = "import './insight_registry_injector.generated.js'" },
     @{ key = 'dorios_excavate'; name = 'Dorios Excavate'; type = 'addon'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-Excavate\BP\scripts\main.js'; importStatement = "import 'insight_registry_injector.generated.js'" },
     @{ key = 'dorios_rpg_core'; name = 'Dorios RPG Core'; type = 'core'; namespace = 'dorios'; root = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP'; scriptsRoot = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP\scripts'; mainScript = 'c:\Users\Usuário\AppData\Local\com.bridge.dev\bridge\projects\Dorios-RPG-Core\BP\scripts\main.js'; importStatement = "import 'insight_registry_injector.generated.js'" },
@@ -171,7 +156,7 @@ foreach ($addon in $addons) {
 
     if (Test-Path -LiteralPath $addon.scriptsRoot) {
         $injectorPath = Join-Path $addon.scriptsRoot 'insight_registry_injector.generated.js'
-        $injectorSource = Build-RegistryInjectorSource $addonEntry $addon.dependencyCheckerImport
+        $injectorSource = Build-RegistryInjectorSource $addonEntry
         Set-Content -LiteralPath $injectorPath -Value $injectorSource -Encoding UTF8
 
         $importAdded = Add-MainScriptImportIfMissing $addon.mainScript $addon.importStatement

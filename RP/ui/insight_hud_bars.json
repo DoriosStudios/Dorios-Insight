@@ -141,7 +141,7 @@
 				"health_numeric_indicator@insight_hud.health_numeric_indicator": {
 					"anchor_from": "bottom_left",
 					"anchor_to": "bottom_left",
-					"offset": [0, -62]
+					"offset": [0, -41]
 				}
 			},
 			{
@@ -160,7 +160,7 @@
 				"hunger_numeric_indicator@insight_hud.hunger_numeric_indicator": {
 					"anchor_from": "bottom_right",
 					"anchor_to": "bottom_right",
-					"offset": [1, -62]
+					"offset": [1, -32]
 				}
 			},
 			{
@@ -278,7 +278,7 @@
 				"health_numeric_indicator@insight_hud.health_numeric_indicator": {
 					"anchor_from": "bottom_left",
 					"anchor_to": "bottom_left",
-					"offset": [-11, -52]
+					"offset": [-11, -41]
 				}
 			},
 			{
@@ -297,7 +297,7 @@
 				"hunger_numeric_indicator@insight_hud.hunger_numeric_indicator": {
 					"anchor_from": "bottom_right",
 					"anchor_to": "bottom_right",
-					"offset": [11, -52]
+					"offset": [11, -32]
 				}
 			},
 			{
@@ -492,6 +492,7 @@
 				"icon": {
 					"type": "panel",
 					"size": [8, 9],
+					"layer": 20,
 					"controls": [
 						{
 							"full@insight_hud.health_img_full": {
@@ -534,17 +535,75 @@
 					"controls": [
 						{
 							"current": {
-								"type": "label",
-								"text": "#text",
-								"shadow": true,
-								"color": [1.0, 0.42, 0.42],
-								"bindings": [
+								"type": "panel",
+								"size": ["100%cm", "100%cm"],
+								"controls": [
 									{
-										"binding_type": "view",
-										"source_control_name": "section_a",
-										"source_property_name": "#health",
-										"target_property_name": "#text",
-										"binding_condition": "always"
+										"amount": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_a",
+													"source_property_name": "('§z' + #health)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "(#indicator_mode = 2)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #current_hearts_floor)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and not(#current_has_half))",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count_half": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #current_hearts_floor + '.5')",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and #current_has_half)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
 									}
 								]
 							}
@@ -571,17 +630,75 @@
 						},
 						{
 							"max": {
-								"type": "label",
-								"text": "#text",
-								"shadow": true,
-								"color": [1.0, 0.42, 0.42],
-								"bindings": [
+								"type": "panel",
+								"size": ["100%cm", "100%cm"],
+								"controls": [
 									{
-										"binding_type": "view",
-										"source_control_name": "section_a",
-										"source_property_name": "#max_health",
-										"target_property_name": "#text",
-										"binding_condition": "always"
+										"amount": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_a",
+													"source_property_name": "('§z' + #max_health)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "(#indicator_mode = 2)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #max_hearts_floor)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and not(#max_has_half))",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count_half": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.42, 0.42],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #max_hearts_floor + '.5')",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and #max_has_half)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
 									}
 								]
 							}
@@ -600,6 +717,53 @@
 				"source_control_name": "section_e",
 				"source_property_name": "(#hud_health_indicator > 0)",
 				"target_property_name": "#indicator_enabled",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "#hud_health_indicator",
+				"target_property_name": "#indicator_mode",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "((#health + 1) / 2)",
+				"target_property_name": "#current_hearts_ceil",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "(#health / 2)",
+				"target_property_name": "#current_hearts_floor",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#current_hearts_ceil > #current_hearts_floor)",
+				"target_property_name": "#current_has_half",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "((#max_health + 1) / 2)",
+				"target_property_name": "#max_hearts_ceil",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_a",
+				"source_property_name": "(#max_health / 2)",
+				"target_property_name": "#max_hearts_floor",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#max_hearts_ceil > #max_hearts_floor)",
+				"target_property_name": "#max_has_half",
 				"binding_condition": "always"
 			},
 			{
@@ -624,43 +788,168 @@
 		"size": ["100%cm", "100%cm"],
 		"controls": [
 			{
-				"current": {
-					"type": "label",
-					"text": "#text",
-					"shadow": true,
-					"color": [1.0, 0.76, 0.38],
-					"bindings": [
+				"value_group": {
+					"type": "stack_panel",
+					"orientation": "horizontal",
+					"size": ["100%cm", "100%cm"],
+					"controls": [
 						{
-							"binding_type": "view",
-							"source_control_name": "section_b",
-							"source_property_name": "#hunger",
-							"target_property_name": "#text",
-							"binding_condition": "always"
-						}
-					]
-				}
-			},
-			{
-				"slash": {
-					"type": "label",
-					"text": "/",
-					"shadow": true,
-					"color": [0.82, 0.82, 0.82]
-				}
-			},
-			{
-				"max": {
-					"type": "label",
-					"text": "#text",
-					"shadow": true,
-					"color": [1.0, 0.76, 0.38],
-					"bindings": [
+							"current": {
+								"type": "panel",
+								"size": ["100%cm", "100%cm"],
+								"controls": [
+									{
+										"amount": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_b",
+													"source_property_name": "('§z' + #hunger)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "(#indicator_mode = 2)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #current_hearts_floor)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and not(#current_has_half))",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count_half": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #current_hearts_floor + '.5')",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and #current_has_half)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									}
+								]
+							}
+						},
 						{
-							"binding_type": "view",
-							"source_control_name": "section_b",
-							"source_property_name": "#max_hunger",
-							"target_property_name": "#text",
-							"binding_condition": "always"
+							"slash": {
+								"type": "label",
+								"text": "/",
+								"shadow": true,
+								"color": [0.82, 0.82, 0.82]
+							}
+						},
+						{
+							"max": {
+								"type": "panel",
+								"size": ["100%cm", "100%cm"],
+								"controls": [
+									{
+										"amount": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_control_name": "section_b",
+													"source_property_name": "('§z' + #max_hunger)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "(#indicator_mode = 2)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #max_hearts_floor)",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and not(#max_has_half))",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									},
+									{
+										"heart_count_half": {
+											"type": "label",
+											"text": "#text",
+											"shadow": true,
+											"color": [1.0, 0.76, 0.38],
+											"bindings": [
+												{
+													"binding_type": "view",
+													"source_property_name": "('§z' + #max_hearts_floor + '.5')",
+													"target_property_name": "#text",
+													"binding_condition": "always"
+												},
+												{
+													"binding_type": "view",
+													"source_property_name": "((#indicator_mode = 1) and #max_has_half)",
+													"target_property_name": "#visible",
+													"binding_condition": "always"
+												}
+											]
+										}
+									}
+								]
+							}
 						}
 					]
 				}
@@ -714,6 +1003,53 @@
 				"source_control_name": "section_e",
 				"source_property_name": "(#hud_hunger_indicator > 0)",
 				"target_property_name": "#indicator_enabled",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_e",
+				"source_property_name": "#hud_hunger_indicator",
+				"target_property_name": "#indicator_mode",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "((#hunger + 1) / 2)",
+				"target_property_name": "#current_hearts_ceil",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#hunger / 2)",
+				"target_property_name": "#current_hearts_floor",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#current_hearts_ceil > #current_hearts_floor)",
+				"target_property_name": "#current_has_half",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "((#max_hunger + 1) / 2)",
+				"target_property_name": "#max_hearts_ceil",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_control_name": "section_b",
+				"source_property_name": "(#max_hunger / 2)",
+				"target_property_name": "#max_hearts_floor",
+				"binding_condition": "always"
+			},
+			{
+				"binding_type": "view",
+				"source_property_name": "(#max_hearts_ceil > #max_hearts_floor)",
+				"target_property_name": "#max_has_half",
 				"binding_condition": "always"
 			},
 			{
@@ -2161,7 +2497,7 @@
 									{
 										"binding_type": "view",
 										"source_control_name": "section_h",
-										"source_property_name": "#stack_current",
+												"source_property_name": "('§z' + #stack_current)",
 										"target_property_name": "#text",
 										"binding_condition": "always"
 									}
@@ -2198,7 +2534,7 @@
 												{
 													"binding_type": "view",
 													"source_control_name": "section_h",
-													"source_property_name": "#stack_total",
+													"source_property_name": "('§z' + #stack_total)",
 													"target_property_name": "#text",
 													"binding_condition": "always"
 												}

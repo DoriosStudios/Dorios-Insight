@@ -1,7 +1,15 @@
 import { system, world } from "@minecraft/server";
-import { InsightConfig, getCurrentModeLabel } from "./display/config.js";
+import { InsightConfig, getCurrentModeLabel, syncPlayerAdministrativeAccess } from "./display/config.js";
 import { initializeInsightCommands } from "./display/commands.js";
 import { initializeDisplayController } from "./display/controller.js";
+
+function synchronizeAdministrativeAccess(player) {
+    try {
+        syncPlayerAdministrativeAccess(player);
+    } catch {
+        // Ignore admin synchronization edge cases during startup/spawn.
+    }
+}
 
 if (InsightConfig.system.showLoadMessage) {
     system.run(() => {
@@ -16,12 +24,24 @@ if (InsightConfig.system.showLoadMessage) {
 initializeDisplayController();
 initializeInsightCommands();
 
+system.run(() => {
+    for (const player of world.getAllPlayers()) {
+        synchronizeAdministrativeAccess(player);
+    }
+});
+
 world.afterEvents.playerSpawn.subscribe((event) => {
-    if (!InsightConfig.system.showInitializationModeMessage || !event.initialSpawn) {
+    if (!event.initialSpawn) {
         return;
     }
 
     system.run(() => {
+        synchronizeAdministrativeAccess(event.player);
+
+        if (!InsightConfig.system.showInitializationModeMessage) {
+            return;
+        }
+
         try {
             event.player.sendMessage(`${InsightConfig.display.initializedPrefix}${getCurrentModeLabel()} Mode`);
         } catch {

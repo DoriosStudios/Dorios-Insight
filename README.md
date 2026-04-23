@@ -14,7 +14,22 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 - `/utilitycraft:insightmode <essential|detailed|debug>` — set global mode
 - `/utilitycraft:insightactivate <on|off|toggle>` — local toggle
 - `/utilitycraft:insightglobal <on|off|toggle|status>` — global toggle/status
+- `/utilitycraft:insightwaila <status|style|anchor|horizontal|vertical|render|reset>` — WAILA controls
+- `/utilitycraft:insightqc <status|toggle|icon|first|second|reset>` — quick counter controls
 - `/utilitycraft:insightnamespace <add|set> <namespace> <displayName>` — namespace alias
+
+### New command highlights
+- `/utilitycraft:insightwaila style <default|dark|copper|magenta|cyan|blood|ascane>`
+- `/utilitycraft:insightwaila anchor <top_left|top_middle|top_right|left_middle|right_middle|bottom_left|bottom_right>`
+- `/utilitycraft:insightwaila horizontal <left|center|right>`
+- `/utilitycraft:insightwaila vertical <up|center|down>`
+- `/utilitycraft:insightwaila render <on|off|toggle|status>`
+- `/utilitycraft:insightqc first <selected|total|durability|durability_max|durability_percent|xp|speed|hidden|reset>`
+- `/utilitycraft:insightqc second <selected|total|durability|durability_max|durability_percent|xp|speed|hidden|reset>`
+
+### Automatic admin/host recognition
+- On load/first spawn, Insight now tries to recognize the world host/admin automatically.
+- When a player is recognized as the admin authority, the addon links the `admin` tag for compatibility with global Insight controls.
 
 ### Secondary Objectives:
 #### V1.2+

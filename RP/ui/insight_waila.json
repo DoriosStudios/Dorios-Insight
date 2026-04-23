@@ -666,7 +666,7 @@
 	"view_indicator_offset_left_up": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [-36, -24],
+		"offset": ["-24%x", "-36%y"],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -683,7 +683,7 @@
 	"view_indicator_offset_center_up": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [0, -24],
+		"offset": [0, -56],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -700,7 +700,7 @@
 	"view_indicator_offset_right_up": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [36, -24],
+		"offset": ["24%x", "-36%y"],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -717,7 +717,7 @@
 	"view_indicator_offset_left_center": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [-36, 0],
+		"offset": ["-24%x", 0],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -751,7 +751,7 @@
 	"view_indicator_offset_right_center": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [36, 0],
+		"offset": ["24%x", 0],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -768,7 +768,7 @@
 	"view_indicator_offset_left_down": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [-36, 24],
+		"offset": ["-24%x", "36%y"],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -785,7 +785,7 @@
 	"view_indicator_offset_center_down": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [0, 24],
+		"offset": [0, "32%y"],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
@@ -802,7 +802,7 @@
 	"view_indicator_offset_right_down": {
 		"type": "panel",
 		"size": ["100%cm", "100%cm"],
-		"offset": [36, 24],
+		"offset": ["24%x", "24%y"],
 		"controls": [
 			{ "content@insight_waila.view_indicator_themed_panel": {} }
 		],
