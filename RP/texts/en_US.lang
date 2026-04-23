@@ -16,20 +16,20 @@ ui.dorios.insight.effect_mode.text=Text
 
 ui.dorios.insight.menu.title=Dorios' Insight
 ui.dorios.insight.menu.body=Mode: %1\nRange: %2\nInterval: %3 ticks\nTarget Hold Refresh: %4 ticks\nGlobal: %5\nLocal: %6
-ui.dorios.insight.menu.mode_button=Mode\n§3Current: %1
-ui.dorios.insight.menu.activation_button=Activation
+ui.dorios.insight.menu.mode_button=Quick Setup\n§7Apply a preset across Insight\n§3Current: %1
+ui.dorios.insight.menu.activation_button=Activation & Global Profile\n§7Local access, world toggle and shared profile
 ui.dorios.insight.menu.elements_button=Elements
 ui.dorios.insight.menu.display_button=Display
 ui.dorios.insight.menu.channels_button=HUD Channels
-ui.dorios.insight.menu.namespace_button=Namespaces
-ui.dorios.insight.menu.parameters_button=Parameters
-ui.dorios.insight.menu.reset_button=Reset My Overrides
+ui.dorios.insight.menu.namespace_button=Namespaces\n§7Display names and dynamic registrations
+ui.dorios.insight.menu.parameters_button=Advanced Settings\n§7Scan, limits and layout helpers
+ui.dorios.insight.menu.reset_button=Reset Preferences
 ui.dorios.insight.menu.close_button=Close
 ui.dorios.insight.menu.local_toggle_button=Local Activation\n§3Current: %1
 ui.dorios.insight.menu.global_toggle_button=Global Activation\n§3Current: %1
 ui.dorios.insight.menu.style_button=Style\n§3Current: %1
-ui.dorios.insight.menu.target_insight_button=Target Insight\n§7Entities, blocks, tags and families
-ui.dorios.insight.menu.display_root_button=Display & Layout\n§7Style, names, tools and runtime
+ui.dorios.insight.menu.target_insight_button=WAILA\n§7Target panel, content and labels
+ui.dorios.insight.menu.display_root_button=HUD\n§7Bars, counters and inventory overlay
 
 ## Menu - HUD Channels
 ui.dorios.insight.channels_menu.title=Insight - HUD Channels
@@ -42,8 +42,8 @@ ui.dorios.insight.mode_menu.title=Insight - Mode
 ui.dorios.insight.mode_menu.body=Select a mode preset.\n§3Current: %1
 ui.dorios.insight.mode_menu.option=%1\nRange: %2 | Interval: %3t\nEnabled Items: %4\nBlock States/Tags: %5/%6
 
-ui.dorios.insight.target_menu.title=Insight - Target Insight
-ui.dorios.insight.target_menu.body=Enabled items: %1\nStates: %2 | Block tags: %3\nEntity tags: %4 | Families: %5
+ui.dorios.insight.target_menu.title=Insight - WAILA Content
+ui.dorios.insight.target_menu.body=Choose what the WAILA panel can show.\nEnabled items: %1\nStates: %2 | Block tags: %3\nEntity tags: %4 | Families: %5
 ui.dorios.insight.target_menu.entity_button=Entity Components
 ui.dorios.insight.target_menu.block_button=Block Components
 ui.dorios.insight.target_menu.custom_button=Custom Components
@@ -60,11 +60,26 @@ ui.dorios.insight.components.block_tags.title=Insight - Block Tags
 ui.dorios.insight.components.entity_tags.title=Insight - Entity Tags
 ui.dorios.insight.components.entity_families.title=Insight - Entity Families
 
-ui.dorios.insight.display_root.title=Insight - Display & Layout
-ui.dorios.insight.display_root.body=Current style: %1\nTool mode: %2
+ui.dorios.insight.display_root.title=Insight - HUD
+ui.dorios.insight.display_root.body=Bars: %1\nInventory HUD: %2\nDurability: %3\nQuick Counter: %4
 ui.dorios.insight.display_root.conditions_button=Entity Names
 ui.dorios.insight.display_root.system_button=Layout & Summary
 ui.dorios.insight.display_root.runtime_button=Advanced Runtime
+ui.dorios.insight.display_root.inventory_button=Inventory HUD
+ui.dorios.insight.display_root.durability_button=Durability Indicator
+ui.dorios.insight.display_root.quick_counter_button=Quick Counter
+ui.dorios.insight.waila_root.title=Insight - WAILA
+ui.dorios.insight.waila_root.body=Configure the main target panel.\nEnabled items: %1\nTheme: %2 | Anchor: %3\nTool Indicator: %4 | Names: %5
+ui.dorios.insight.waila_root.content_button=Content
+ui.dorios.insight.waila_root.panel_button=Panel & Position
+ui.dorios.insight.waila_root.indicators_button=Indicators & Values
+ui.dorios.insight.waila_root.names_button=Names & Labels
+ui.dorios.insight.waila_root.custom_button=Custom Fields
+ui.dorios.insight.waila_indicators_menu.title=Insight - Indicators & Values
+ui.dorios.insight.waila_indicators_menu.body=Tune how values appear inside WAILA.\nDisplay Style: %1\nEffects: %2\nTool Indicator: %3\nPlacement: %4
+ui.dorios.insight.advanced_menu.title=Insight - Advanced Settings
+ui.dorios.insight.advanced_menu.body=Tune scan limits and layout helpers.\nRange: %1 blocks | Update: %2 ticks\nVisible states: %3 | Block tags: %4\nLinked scan: %5 ticks | %6 blocks
+ui.dorios.insight.advanced_menu.layout_button=Layout Helpers & Summary
 
 ## Menu - Elements
 ui.dorios.insight.elements_menu.title=Insight - Elements
@@ -275,7 +290,7 @@ ui.dorios.insight.system_menu.tag_columns=Tag Columns\n§3Current: %1
 ui.dorios.insight.system_menu.family_columns=Family Columns\n§3Current: %1
 
 ## Menu - Sub-menus
-ui.dorios.insight.activation_menu.title=Insight - Activation
+ui.dorios.insight.activation_menu.title=Insight - Activation & Global Profile
 ui.dorios.insight.display_menu.title=Insight - Display
 ui.dorios.insight.display_menu.entity_names_button=Entity Names & Labels
 ui.dorios.insight.display_menu.blocks_tools_button=Blocks & Tools
@@ -361,6 +376,8 @@ ui.dorios.insight.option.hud_display.both=Both
 ui.dorios.insight.option.hud_display.show_vanilla=Show Vanilla
 ui.dorios.insight.option.hud_display.none=None
 ui.dorios.insight.option.hud_indicator.hidden=Hidden
+ui.dorios.insight.option.hud_indicator.icon_and_heart_count=Icon + Heart Count
+ui.dorios.insight.option.hud_indicator.icon_and_health_amount=Icon + Health Amount
 ui.dorios.insight.option.hud_indicator.icon_and_indicator=Icon + Indicator
 ui.dorios.insight.option.hud_position.center=Center (Default)
 ui.dorios.insight.option.hud_position.top_right=Top Right

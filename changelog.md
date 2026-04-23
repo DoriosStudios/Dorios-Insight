@@ -8,6 +8,10 @@ Este documento descreve, com o máximo de transparência possível, as mudanças
 
 ### O que mudou
 - O `RP/manifest.json` foi atualizado para **format_version 3** (semver em `version` e `min_engine_version`).
+- Foram adicionados comandos dedicados para controlar o **WAILA** e o **Quick Counter** sem depender só do menu.
+- O mundo agora reconhece automaticamente um **anfitrião/admin** após carregar e sincroniza a tag `admin` para liberar o controle global do Insight.
+- O menu principal do addon foi reorganizado para destacar melhor o que é mais usado no dia a dia.
+- O **WAILA** agora fica no centro da navegação, com grupos separados para conteúdo, posição, indicadores, nomes e campos customizados.
 - Foi adicionada uma configuração de pack em **settings**:
   - `doriosinsight:display_position` (dropdown)
   - Opções: `top_left`, `top_middle`, `top_right`, `left_middle`, `right_middle`
@@ -47,6 +51,8 @@ Este documento descreve, com o máximo de transparência possível, as mudanças
 - A porcentagem da durabilidade deixou de arredondar para cima perto do valor máximo, evitando números inconsistentes em ferramentas quase novas.
 - O indicador de durabilidade voltou a renderizar os números corretamente, evitando o caso em que só a barra `/` aparecia.
 - Os indicadores numéricos de vida e fome agora reaparecem corretamente quando habilitados.
+- Os indicadores de vida e fome agora podem usar **contagem de corações** (`10`, `9.5`) ou **quantidade cheia** (`20`, `19`) sem sair do estilo visual do HUD.
+- Os indicadores de vida e fome foram reposicionados para acompanhar melhor o espaço **vanilla** das barras originais.
 - A barra de armadura extra volta a acompanhar o crescimento das linhas de vida.
 - A quantidade dos itens do inventário no HUD voltou a aparecer corretamente.
 - A exibição das ferramentas ganhou melhor separação visual no modo com ícones.
@@ -71,6 +77,9 @@ Este documento descreve, com o máximo de transparência possível, as mudanças
 - Agora também dá para escolher se esse inventário aparece completo, só com a hotbar ou só com a mochila, além de alternar entre layout horizontal e vertical.
 - O stack central ajuda a saber rapidamente quanto do item selecionado ainda existe no inventário inteiro.
 - Os ajustes de inventário no HUD e de ferramentas ficam reunidos em **HUD Elements**, deixando a configuração mais fácil de encontrar.
+- Usuários avançados agora conseguem ajustar o **WAILA** e o **Quick Counter** direto por comando, inclusive mudando estilo/posição e configurando o primeiro ou segundo contador.
+- O controle global do addon fica preso ao **anfitrião/admin** reconhecido, evitando que qualquer jogador desligue o Insight para todo mundo.
+- A navegação ficou mais clara, separando rapidamente **WAILA**, **HUD**, **Namespaces** e **Configurações Avançadas** sem misturar tudo na mesma árvore.
 
 ## [1.1.0] — States/Traits Injection + Conditions/System + Display Expansion
 

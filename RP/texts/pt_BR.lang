@@ -20,20 +20,20 @@ ui.dorios.insight.mode.debug=Depuração
 
 ui.dorios.insight.menu.title=Dorios' Insight
 ui.dorios.insight.menu.body=Modo: %1\nAlcance: %2\nIntervalo: %3 ticks\nAtualização do Alvo Fixo: %4 ticks\nGlobal: %5\nLocal: %6
-ui.dorios.insight.menu.mode_button=Preset de Modo\n§3Atual: %1
-ui.dorios.insight.menu.activation_button=Ativação
+ui.dorios.insight.menu.mode_button=Configuração Rápida\n§7Aplica um preset ao Insight inteiro\n§3Atual: %1
+ui.dorios.insight.menu.activation_button=Ativação & Perfil Global\n§7Acesso local, toggle global e perfil compartilhado
 ui.dorios.insight.menu.elements_button=Elementos
 ui.dorios.insight.menu.display_button=Exibição
 ui.dorios.insight.menu.channels_button=Canais do HUD
-ui.dorios.insight.menu.namespace_button=Namespaces
-ui.dorios.insight.menu.parameters_button=Parâmetros
-ui.dorios.insight.menu.reset_button=Resetar Minhas Preferências
+ui.dorios.insight.menu.namespace_button=Namespaces\n§7Nomes de exibição e registros dinâmicos
+ui.dorios.insight.menu.parameters_button=Configurações Avançadas\n§7Varredura, limites e auxiliares de layout
+ui.dorios.insight.menu.reset_button=Resetar Preferências
 ui.dorios.insight.menu.close_button=Fechar
 ui.dorios.insight.menu.local_toggle_button=Ativação Local\n§3Atual: %1
 ui.dorios.insight.menu.global_toggle_button=Ativação Global\n§3Atual: %1
 ui.dorios.insight.menu.style_button=Estilo Visual\n§3Atual: %1
-ui.dorios.insight.menu.target_insight_button=Target Insight\n§7Entidades, blocos, tags e famílias
-ui.dorios.insight.menu.display_root_button=Exibição & Layout\n§7Estilo, nomes, ferramenta e parâmetros
+ui.dorios.insight.menu.target_insight_button=WAILA\n§7Painel de alvo, conteúdo e rótulos
+ui.dorios.insight.menu.display_root_button=HUD\n§7Barras, contadores e inventário sobreposto
 
 ## Menu - Canais do HUD
 ui.dorios.insight.channels_menu.title=Insight - Canais do HUD
@@ -46,8 +46,8 @@ ui.dorios.insight.mode_menu.title=Insight - Modo
 ui.dorios.insight.mode_menu.body=Selecione um preset de modo.\n§3Atual: %1
 ui.dorios.insight.mode_menu.option=%1\nAlcance: %2 | Intervalo: %3t\nItens Ativos: %4\nEstados/Tags de Bloco: %5/%6
 
-ui.dorios.insight.target_menu.title=Insight - Target Insight
-ui.dorios.insight.target_menu.body=Itens ativos: %1\nEstados: %2 | Tags de bloco: %3\nTags de entidade: %4 | Famílias: %5
+ui.dorios.insight.target_menu.title=Insight - Conteúdo do WAILA
+ui.dorios.insight.target_menu.body=Escolha o que o painel WAILA pode mostrar.\nItens ativos: %1\nEstados: %2 | Tags de bloco: %3\nTags de entidade: %4 | Famílias: %5
 ui.dorios.insight.target_menu.entity_button=Componentes de Entidades
 ui.dorios.insight.target_menu.block_button=Componentes de Blocos
 ui.dorios.insight.target_menu.custom_button=Componentes Customizados
@@ -64,11 +64,26 @@ ui.dorios.insight.components.block_tags.title=Insight - Tags de Blocos
 ui.dorios.insight.components.entity_tags.title=Insight - Tags de Entidades
 ui.dorios.insight.components.entity_families.title=Insight - Famílias de Entidades
 
-ui.dorios.insight.display_root.title=Insight - Exibição & Layout
-ui.dorios.insight.display_root.body=Estilo atual: %1\nFerramenta: %2
+ui.dorios.insight.display_root.title=Insight - HUD
+ui.dorios.insight.display_root.body=Barras: %1\nInventário no HUD: %2\nDurabilidade: %3\nContador Rápido: %4
 ui.dorios.insight.display_root.conditions_button=Nomes de Entidades
 ui.dorios.insight.display_root.system_button=Layout & Resumo
 ui.dorios.insight.display_root.runtime_button=Parâmetros Avançados
+ui.dorios.insight.display_root.inventory_button=Inventário no HUD
+ui.dorios.insight.display_root.durability_button=Indicador de Durabilidade
+ui.dorios.insight.display_root.quick_counter_button=Contador Rápido
+ui.dorios.insight.waila_root.title=Insight - WAILA
+ui.dorios.insight.waila_root.body=Configure o painel principal de alvo.\nItens ativos: %1\nTema: %2 | Âncora: %3\nIndicador de Ferramenta: %4 | Nomes: %5
+ui.dorios.insight.waila_root.content_button=Conteúdo
+ui.dorios.insight.waila_root.panel_button=Painel & Posição
+ui.dorios.insight.waila_root.indicators_button=Indicadores & Valores
+ui.dorios.insight.waila_root.names_button=Nomes & Rótulos
+ui.dorios.insight.waila_root.custom_button=Campos Customizados
+ui.dorios.insight.waila_indicators_menu.title=Insight - Indicadores & Valores
+ui.dorios.insight.waila_indicators_menu.body=Ajuste como os valores aparecem dentro do WAILA.\nEstilo Visual: %1\nEfeitos: %2\nIndicador de Ferramenta: %3\nPosição: %4
+ui.dorios.insight.advanced_menu.title=Insight - Configurações Avançadas
+ui.dorios.insight.advanced_menu.body=Ajuste a varredura, os limites e os auxiliares de layout.\nAlcance: %1 blocos | Atualização: %2 ticks\nEstados visíveis: %3 | Tags de bloco: %4\nVarredura vinculada: %5 ticks | %6 blocos
+ui.dorios.insight.advanced_menu.layout_button=Auxiliares de Layout & Resumo
 
 ## Menu - Elementos
 ui.dorios.insight.elements_menu.title=Insight - Elementos
@@ -279,7 +294,7 @@ ui.dorios.insight.system_menu.tag_columns=Colunas de Tag\n§3Atual: %1
 ui.dorios.insight.system_menu.family_columns=Colunas de Família\n§3Atual: %1
 
 ## Menu - Sub-menus
-ui.dorios.insight.activation_menu.title=Insight - Ativação
+ui.dorios.insight.activation_menu.title=Insight - Ativação & Perfil Global
 ui.dorios.insight.display_menu.title=Insight - Exibição
 ui.dorios.insight.display_menu.entity_names_button=Nomes & Rótulos de Entidade
 ui.dorios.insight.display_menu.blocks_tools_button=Blocos & Ferramentas
@@ -361,6 +376,8 @@ ui.dorios.insight.option.hud_display.both=Ambos
 ui.dorios.insight.option.hud_display.show_vanilla=Mostrar Vanilla
 ui.dorios.insight.option.hud_display.none=Nenhum
 ui.dorios.insight.option.hud_indicator.hidden=Oculto
+ui.dorios.insight.option.hud_indicator.icon_and_heart_count=Ícone + Contagem de Corações
+ui.dorios.insight.option.hud_indicator.icon_and_health_amount=Ícone + Quantidade de Vida
 ui.dorios.insight.option.hud_indicator.icon_and_indicator=Ícone + Indicador
 ui.dorios.insight.option.hud_position.center=Centro (Padrão)
 ui.dorios.insight.option.hud_position.top_right=Superior Direito
