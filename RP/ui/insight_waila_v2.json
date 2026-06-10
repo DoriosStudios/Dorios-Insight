@@ -54,8 +54,8 @@
                                 "bindings": [
                                     {
                                         "binding_type": "view",
-                                        "source_control_name": "data_control_waila_v2",
-                                        "source_property_name": "(#preserved_waila_text - $update_string)",
+                                        "source_control_name": "display_background",
+                                        "source_property_name": "#waila_text",
                                         "target_property_name": "#waila_text"
                                     }
                                 ]
@@ -66,7 +66,27 @@
                         {
                             "binding_type": "view",
                             "source_control_name": "data_control_waila_v2",
-                            "source_property_name": "(not ((#preserved_waila_text - $update_string) = #preserved_waila_text) and not ((#preserved_waila_text - $update_string) = ''))",
+                            "source_property_name": "(#preserved_waila_text - $update_string)",
+                            "target_property_name": "#waila_payload"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((%.40s * #waila_payload) - '~')",
+                            "target_property_name": "#panel_texture"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(#waila_payload - (%.40s * #waila_payload))",
+                            "target_property_name": "#waila_text"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "#panel_texture",
+                            "target_property_name": "#texture"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(not (#waila_payload = '') and not (#waila_text = ''))",
                             "target_property_name": "#visible"
                         }
                     ]

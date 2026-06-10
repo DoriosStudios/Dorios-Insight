@@ -1,6 +1,6 @@
 import { ModalFormData } from "@minecraft/server-ui";
 import { system } from "@minecraft/server";
-import { CORE_LIMITS } from "./const.js";
+import { CORE_LIMITS, PANEL_STYLES } from "./const.js";
 import { getCoreSettings, setCoreSettings } from "./globalPlayerInterval.js";
 
 let initialized = false;
@@ -38,6 +38,15 @@ function getPlayerFromOrigin(origin) {
     return player?.typeId === "minecraft:player" ? player : undefined;
 }
 
+function getPanelStyleIndex(styleId) {
+    const index = PANEL_STYLES.findIndex((style) => style.id === Number(styleId));
+    return index >= 0 ? index : 0;
+}
+
+function getPanelStyleLabel(styleId) {
+    return PANEL_STYLES[getPanelStyleIndex(styleId)]?.label ?? PANEL_STYLES[0].label;
+}
+
 export async function openCoreMenu(player) {
     if (!isAdminPlayer(player)) {
         sendMessage(player, "§cOnly Insight admins can edit Core settings.");
@@ -55,6 +64,9 @@ export async function openCoreMenu(player) {
         })
         .slider("Max distance", CORE_LIMITS.minMaxDistance, CORE_LIMITS.maxMaxDistance, {
             defaultValue: settings.maxDistance
+        })
+        .dropdown("Panel style", PANEL_STYLES.map((style) => style.label), {
+            defaultValueIndex: getPanelStyleIndex(settings.panelStyleId)
         });
 
     const result = await form.show(player);
@@ -62,14 +74,16 @@ export async function openCoreMenu(player) {
         return;
     }
 
-    const [enabled, updateIntervalTicks, maxDistance] = result.formValues;
+    const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex] = result.formValues;
+    const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
     const next = setCoreSettings({
         enabled: Boolean(enabled),
         updateIntervalTicks: Number(updateIntervalTicks),
-        maxDistance: Number(maxDistance)
+        maxDistance: Number(maxDistance),
+        panelStyleId: panelStyle.id
     });
 
-    sendMessage(player, `§aInsight Core updated: ${next.enabled ? "enabled" : "disabled"}, ${next.updateIntervalTicks} ticks, ${next.maxDistance} blocks.`);
+    sendMessage(player, `§aInsight Core updated: ${next.enabled ? "enabled" : "disabled"}, ${next.updateIntervalTicks} ticks, ${next.maxDistance} blocks, ${getPanelStyleLabel(next.panelStyleId)} style.`);
 }
 
 function registerCommand(definition) {

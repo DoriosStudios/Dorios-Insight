@@ -5,6 +5,6 @@ export function composeBlockTarget(block) {
 
     return {
         headerText: general.headerText,
-        lines: renderBlockGeneral(general)
+        rawtext: renderBlockGeneral(general)
     };
 }

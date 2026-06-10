@@ -1,4 +1,9 @@
-import { formatTypeIdToText, normalizeHeaderText, resolveNamespaceLabel, safeTextValue } from "../format.js";
+import {
+  formatTypeIdToText,
+  normalizeHeaderText,
+  resolveNamespaceLabel,
+  safeTranslateOrText,
+} from "../format.js";
 
 function getEntityHealth(entity) {
   try {
@@ -27,12 +32,17 @@ export function collectEntityGeneral(entity) {
   const typeId = String(entity?.typeId || "").trim();
   const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
   const nameTag = normalizeHeaderText(entity?.nameTag, "");
+  const localizationKey = typeof entity?.localizationKey === "string"
+    ? entity.localizationKey.trim()
+    : "";
   const headerText = nameTag || fallbackName;
 
   return {
     typeId,
     headerText: normalizeHeaderText(headerText, "Entity"),
-    name: safeTextValue(nameTag || fallbackName, fallbackName),
+    name: nameTag
+      ? { text: nameTag }
+      : safeTranslateOrText(localizationKey, fallbackName),
     namespaceLabel: resolveNamespaceLabel(typeId),
     health: getEntityHealth(entity),
   };
@@ -43,11 +53,17 @@ export function renderEntityGeneral(data) {
     return [];
   }
 
-  const lines = [`§f${data.name}`, `§o§9@${data.namespaceLabel}§r`];
+  const rawtext = [
+    { text: "§f" },
+    data.name,
+    { text: `\n§o§9@${data.namespaceLabel}§r` },
+  ];
 
   if (data.health) {
-    lines.push(`§7Health: §c${data.health.current}§7/§c${data.health.max}§r`);
+    rawtext.push({
+      text: `\n§7Health: §c${data.health.current}§7/§c${data.health.max}§r`,
+    });
   }
 
-  return lines;
+  return rawtext;
 }

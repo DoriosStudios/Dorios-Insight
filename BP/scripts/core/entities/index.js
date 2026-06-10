@@ -5,7 +5,7 @@ export function composeEntityTarget(entity) {
 
     return {
         headerText: general.headerText,
-        lines: renderEntityGeneral(general),
+        rawtext: renderEntityGeneral(general),
         currentHealth: general.health?.current ?? 0,
         maxHealth: general.health?.max ?? 0
     };

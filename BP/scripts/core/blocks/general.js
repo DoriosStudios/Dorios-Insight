@@ -1,13 +1,21 @@
-import { formatTypeIdToText, normalizeHeaderText, resolveNamespaceLabel, safeTextValue } from "../format.js";
+import {
+  formatTypeIdToText,
+  normalizeHeaderText,
+  resolveNamespaceLabel,
+  safeTranslateOrText,
+} from "../format.js";
 
 export function collectBlockGeneral(block) {
   const typeId = String(block?.typeId || "").trim();
   const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
+  const localizationKey = typeof block?.localizationKey === "string"
+    ? block.localizationKey.trim()
+    : "";
 
   return {
     typeId,
     headerText: normalizeHeaderText(fallbackName, "Block"),
-    name: safeTextValue(fallbackName, fallbackName),
+    name: safeTranslateOrText(localizationKey, fallbackName),
     namespaceLabel: resolveNamespaceLabel(typeId),
   };
 }
@@ -17,5 +25,9 @@ export function renderBlockGeneral(data) {
     return [];
   }
 
-  return [`§f${data.name}`, `§o§9@${data.namespaceLabel}§r`];
+  return [
+    { text: "§f" },
+    data.name,
+    { text: `\n§o§9@${data.namespaceLabel}§r` },
+  ];
 }

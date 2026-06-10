@@ -4,7 +4,9 @@ import {
     CORE_LIMITS,
     CORE_SETTINGS_DYNAMIC_PROPERTY,
     DEFAULT_CORE_SETTINGS,
-    EMPTY_WAILA_TEXT
+    EMPTY_WAILA_TEXT,
+    PANEL_STYLES,
+    WAILA_STYLE_TEXTURE_FIELD_LENGTH
 } from "./const.js";
 import { resolvePlayerTarget, TargetKinds } from "./target.js";
 import { composeBlockTarget } from "./blocks/index.js";
@@ -37,6 +39,12 @@ function normalizeSettings(settings = {}) {
             CORE_LIMITS.minMaxDistance,
             CORE_LIMITS.maxMaxDistance,
             DEFAULT_CORE_SETTINGS.maxDistance
+        ),
+        panelStyleId: clampNumber(
+            settings.panelStyleId,
+            CORE_LIMITS.minPanelStyleId,
+            CORE_LIMITS.maxPanelStyleId,
+            DEFAULT_CORE_SETTINGS.panelStyleId
         )
     };
 }
@@ -82,41 +90,65 @@ export function setCoreSettings(settings) {
     });
 }
 
-function sanitizeLine(value) {
-    return String(value ?? "")
-        .replace(/\r/g, "")
-        .replace(/\t/g, " ")
-        .trim();
+function buildStyleTextureField(settings) {
+    const style = PANEL_STYLES[settings.panelStyleId] ?? PANEL_STYLES[0];
+    return style.texture
+        .slice(0, WAILA_STYLE_TEXTURE_FIELD_LENGTH)
+        .padEnd(WAILA_STYLE_TEXTURE_FIELD_LENGTH, "~");
 }
 
-function buildWailaText(lines) {
-    const body = lines
-        .map(sanitizeLine)
-        .filter((line) => line.length > 0)
-        .join("\n");
+function normalizeRawtextParts(parts) {
+    if (!Array.isArray(parts)) {
+        return [];
+    }
 
-    return body.length ? `${CHANNEL_WAILA}${body}` : EMPTY_WAILA_TEXT;
+    return parts.filter((part) => {
+        if (!part || typeof part !== "object") {
+            return false;
+        }
+
+        return typeof part.text === "string" || typeof part.translate === "string";
+    });
 }
 
-function composeTargetText(player, settings) {
+function buildWailaRawMessage(parts, settings) {
+    const rawtext = normalizeRawtextParts(parts);
+
+    if (!rawtext.length) {
+        return {
+            rawtext: [{ text: EMPTY_WAILA_TEXT }]
+        };
+    }
+
+    return {
+        rawtext: [
+            { text: `${CHANNEL_WAILA}${buildStyleTextureField(settings)}` },
+            ...rawtext
+        ]
+    };
+}
+
+function composeTargetMessage(player, settings) {
     const target = resolvePlayerTarget(player, settings);
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity);
-        return buildWailaText(entityTarget.lines);
+        return buildWailaRawMessage(entityTarget.rawtext, settings);
     }
 
     if (target.kind === TargetKinds.Block) {
         const blockTarget = composeBlockTarget(target.block);
-        return buildWailaText(blockTarget.lines);
+        return buildWailaRawMessage(blockTarget.rawtext, settings);
     }
 
-    return EMPTY_WAILA_TEXT;
+    return {
+        rawtext: [{ text: EMPTY_WAILA_TEXT }]
+    };
 }
 
-function sendWailaText(player, text) {
+function sendWailaMessage(player, message) {
     try {
-        player.runCommand(`titleraw @s title ${JSON.stringify({ rawtext: [{ text }] })}`);
+        player.runCommand(`titleraw @s title ${JSON.stringify(message)}`);
         player.runCommand(`titleraw @s subtitle ${JSON.stringify({ rawtext: [{ text: "" }] })}`);
     } catch {
         // Skip players that are not ready yet.
@@ -133,9 +165,9 @@ function tickPlayers() {
 
     for (const player of world.getAllPlayers()) {
         try {
-            sendWailaText(player, composeTargetText(player, settings));
+            sendWailaMessage(player, composeTargetMessage(player, settings));
         } catch {
-            sendWailaText(player, EMPTY_WAILA_TEXT);
+            sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
         }
     }
 }
