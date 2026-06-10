@@ -1,0 +1,77 @@
+{
+    "namespace": "insight_waila_v2",
+
+    "root_panel": {
+        "$update_string": "insight_waila:",
+        "type": "panel",
+        "size": ["100%", "100%"],
+        "controls": [
+            {
+                "data_control_waila_v2": {
+                    "type": "panel",
+                    "size": [0, 0],
+                    "property_bag": {
+                        "#preserved_waila_text": ""
+                    },
+                    "bindings": [
+                        {
+                            "binding_name": "#hud_title_text_string"
+                        },
+                        {
+                            "binding_name": "#hud_title_text_string",
+                            "binding_name_override": "#preserved_waila_text",
+                            "binding_condition": "visibility_changed"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(not (#hud_title_text_string = #preserved_waila_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+                            "target_property_name": "#visible"
+                        }
+                    ]
+                }
+            },
+            {
+                "display_background": {
+                    "type": "image",
+                    "texture": "textures/insight/style_default",
+                    "alpha": 0.85,
+                    "anchor_from": "top_middle",
+                    "anchor_to": "top_middle",
+                    "offset": [0, "20%"],
+                    "size": ["100%c + 20px", "100%cm + 10px"],
+                    "nineslice_size": 4,
+                    "controls": [
+                        {
+                            "text_display": {
+                                "type": "label",
+                                "text": "#waila_text",
+                                "shadow": true,
+                                "layer": 5,
+                                "anchor_from": "center",
+                                "anchor_to": "center",
+                                "size": ["default", "default"],
+                                "max_size": [260, "default"],
+                                "bindings": [
+                                    {
+                                        "binding_type": "view",
+                                        "source_control_name": "data_control_waila_v2",
+                                        "source_property_name": "(#preserved_waila_text - $update_string)",
+                                        "target_property_name": "#waila_text"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "data_control_waila_v2",
+                            "source_property_name": "(not ((#preserved_waila_text - $update_string) = #preserved_waila_text) and not ((#preserved_waila_text - $update_string) = ''))",
+                            "target_property_name": "#visible"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

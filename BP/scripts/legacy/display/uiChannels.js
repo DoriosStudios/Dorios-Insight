@@ -19,13 +19,13 @@
  * │   b: hunger(2) maxHunger(2) saturation(2) exhaustion(2)          │
  * │   c: armor(2) toughness(2) extraArmor(2) extraArmorFull(2)       │
  * │   d: hungerPreview(2) airSupply(2) maxAir(2) flags(2)            │
- * │   e: hudHealthIndicator(2) hudHungerIndicator(2)                  │
- * │      durPercent(2) durVisible(2)                                  │
- * │   f: durCurHi(2) durCurLo(2) durMaxHi(2) durMaxLo(2)              │
- * │   g: hudInventory(2) hudInventoryPosition(2)                      │
- * │      hudInventoryDisplayMode(2) hudInventoryOrientation(2)        │
- * │   h: stackCurrent(3) stackVisible(1)                              │
- * │      stackTotalHi(2) stackTotalLo(2)                              │
+ * │   e: hudHealthIndicator(2) hudHungerIndicator(2)                 │
+ * │      durPercent(2) durVisible(2)                                 │
+ * │   f: durCurHi(2) durCurLo(2) durMaxHi(2) durMaxLo(2)             │
+ * │   g: hudInventory(2) hudInventoryPosition(2)                     │
+ * │      hudInventoryDisplayMode(2) hudInventoryOrientation(2)       │
+ * │   h: stackCurrent(3) stackVisible(1)                             │
+ * │      stackTotalHi(2) stackTotalLo(2)                             │
  * │                                                                  │
  * │ Total: 11 + (7 × 9) = 74 chars + suffix                          │
  * └──────────────────────────────────────────────────────────────────┘
@@ -63,59 +63,59 @@ import { defineSchema, encodePayload, computePayloadLength } from "./uiDataEncod
 // ===========================================================================
 
 const HUD_SECTION_A = defineSchema("a", [
-    { name: "health",      digits: 3 },
-    { name: "maxHealth",   digits: 3 },
-    { name: "absorption",  digits: 2 },
-    { name: "healthGap",   digits: 2 }
+  { name: "health", digits: 3 },
+  { name: "maxHealth", digits: 3 },
+  { name: "absorption", digits: 2 },
+  { name: "healthGap", digits: 2 },
 ]);
 
 const HUD_SECTION_B = defineSchema("b", [
-    { name: "hunger",      digits: 2 },
-    { name: "maxHunger",   digits: 2, defaultValue: 20 },
-    { name: "saturation",  digits: 2 },
-    { name: "exhaustion",  digits: 2 }
+  { name: "hunger", digits: 2 },
+  { name: "maxHunger", digits: 2, defaultValue: 20 },
+  { name: "saturation", digits: 2 },
+  { name: "exhaustion", digits: 2 },
 ]);
 
 const HUD_SECTION_C = defineSchema("c", [
-    { name: "armor",          digits: 2 },
-    { name: "toughness",      digits: 2 },
-    { name: "extraArmor",     digits: 2 },
-    { name: "extraArmorFull", digits: 2 }
+  { name: "armor", digits: 2 },
+  { name: "toughness", digits: 2 },
+  { name: "extraArmor", digits: 2 },
+  { name: "extraArmorFull", digits: 2 },
 ]);
 
 const HUD_SECTION_D = defineSchema("d", [
-    { name: "hungerPreview", digits: 2 },
-    { name: "airSupply",     digits: 2 },
-    { name: "maxAir",        digits: 2, defaultValue: 15 },
-    { name: "flags",         digits: 2 }
+  { name: "hungerPreview", digits: 2 },
+  { name: "airSupply", digits: 2 },
+  { name: "maxAir", digits: 2, defaultValue: 15 },
+  { name: "flags", digits: 2 },
 ]);
 
 const HUD_SECTION_E = defineSchema("e", [
-    { name: "hudHealthIndicator", digits: 2 },
-    { name: "hudHungerIndicator", digits: 2 },
-    { name: "durPercent",         digits: 2 },
-    { name: "durVisible",         digits: 2 }
+  { name: "hudHealthIndicator", digits: 2 },
+  { name: "hudHungerIndicator", digits: 2 },
+  { name: "durPercent", digits: 2 },
+  { name: "durVisible", digits: 2 },
 ]);
 
 const HUD_SECTION_F = defineSchema("f", [
-    { name: "durCurHi",  digits: 2 },
-    { name: "durCurLo",  digits: 2 },
-    { name: "durMaxHi",  digits: 2 },
-    { name: "durMaxLo",  digits: 2 }
+  { name: "durCurHi", digits: 2 },
+  { name: "durCurLo", digits: 2 },
+  { name: "durMaxHi", digits: 2 },
+  { name: "durMaxLo", digits: 2 },
 ]);
 
 const HUD_SECTION_G = defineSchema("g", [
-    { name: "hudInventory",          digits: 2 },
-    { name: "hudInventoryPosition",  digits: 2 },
-    { name: "hudInventoryDisplayMode", digits: 2 },
-    { name: "hudInventoryOrientation", digits: 2 }
+  { name: "hudInventory", digits: 2 },
+  { name: "hudInventoryPosition", digits: 2 },
+  { name: "hudInventoryDisplayMode", digits: 2 },
+  { name: "hudInventoryOrientation", digits: 2 },
 ]);
 
 const HUD_SECTION_H = defineSchema("h", [
-    { name: "stackCurrent", digits: 3 },
-    { name: "stackVisible", digits: 1 },
-    { name: "stackTotalHi", digits: 2 },
-    { name: "stackTotalLo", digits: 2 }
+  { name: "stackCurrent", digits: 3 },
+  { name: "stackVisible", digits: 1 },
+  { name: "stackTotalHi", digits: 2 },
+  { name: "stackTotalLo", digits: 2 },
 ]);
 
 const HUD_SCHEMAS = [HUD_SECTION_A, HUD_SECTION_B, HUD_SECTION_C, HUD_SECTION_D, HUD_SECTION_E, HUD_SECTION_F, HUD_SECTION_G, HUD_SECTION_H];
@@ -133,7 +133,7 @@ export const HUD_PAYLOAD_LENGTH = computePayloadLength(HUD_SCHEMAS);
  * @returns {string} Full encoded payload with channel suffix.
  */
 export function encodeHudData(data) {
-    return encodePayload(HUD_SCHEMAS, data, CHANNEL_HUD);
+  return encodePayload(HUD_SCHEMAS, data, CHANNEL_HUD);
 }
 
 // ===========================================================================
@@ -141,17 +141,17 @@ export function encodeHudData(data) {
 // ===========================================================================
 
 const TARGET_SECTION_A = defineSchema("a", [
-    { name: "targetType",       digits: 2 },
-    { name: "targetHealth",     digits: 2 },
-    { name: "targetMaxHealth",  digits: 2 },
-    { name: "targetArmor",      digits: 2 }
+  { name: "targetType", digits: 2 },
+  { name: "targetHealth", digits: 2 },
+  { name: "targetMaxHealth", digits: 2 },
+  { name: "targetArmor", digits: 2 },
 ]);
 
 const TARGET_SECTION_B = defineSchema("b", [
-    { name: "targetIsBaby",    digits: 2 },
-    { name: "targetVariant",   digits: 2 },
-    { name: "targetMarkColor", digits: 2 },
-    { name: "targetReserved",  digits: 2 }
+  { name: "targetIsBaby", digits: 2 },
+  { name: "targetVariant", digits: 2 },
+  { name: "targetMarkColor", digits: 2 },
+  { name: "targetReserved", digits: 2 },
 ]);
 
 const TARGET_SCHEMAS = [TARGET_SECTION_A, TARGET_SECTION_B];
@@ -169,7 +169,7 @@ export const TARGET_PAYLOAD_LENGTH = computePayloadLength(TARGET_SCHEMAS);
  * @returns {string} Full encoded payload with channel suffix.
  */
 export function encodeTargetData(data) {
-    return encodePayload(TARGET_SCHEMAS, data, CHANNEL_TARGET);
+  return encodePayload(TARGET_SCHEMAS, data, CHANNEL_TARGET);
 }
 
 // ===========================================================================
@@ -177,17 +177,17 @@ export function encodeTargetData(data) {
 // ===========================================================================
 
 const BIOME_SECTION_A = defineSchema("a", [
-    { name: "dimension",   digits: 2 },
-    { name: "biomeId",     digits: 2 },
-    { name: "coordX_hi",   digits: 2 },
-    { name: "coordX_lo",   digits: 2 }
+  { name: "dimension", digits: 2 },
+  { name: "biomeId", digits: 2 },
+  { name: "coordX_hi", digits: 2 },
+  { name: "coordX_lo", digits: 2 },
 ]);
 
 const BIOME_SECTION_B = defineSchema("b", [
-    { name: "coordY",      digits: 2 },
-    { name: "coordZ_hi",   digits: 2 },
-    { name: "coordZ_lo",   digits: 2 },
-    { name: "reserved",    digits: 2 }
+  { name: "coordY", digits: 2 },
+  { name: "coordZ_hi", digits: 2 },
+  { name: "coordZ_lo", digits: 2 },
+  { name: "reserved", digits: 2 },
 ]);
 
 const BIOME_SCHEMAS = [BIOME_SECTION_A, BIOME_SECTION_B];
@@ -205,7 +205,7 @@ export const BIOME_PAYLOAD_LENGTH = computePayloadLength(BIOME_SCHEMAS);
  * @returns {string} Full encoded payload with channel suffix.
  */
 export function encodeBiomeData(data) {
-    return encodePayload(BIOME_SCHEMAS, data, CHANNEL_BIOME);
+  return encodePayload(BIOME_SCHEMAS, data, CHANNEL_BIOME);
 }
 
 // ===========================================================================
@@ -221,18 +221,18 @@ export function encodeBiomeData(data) {
  * @enum {number}
  */
 export const HudFlags = Object.freeze({
-    /** Player is poisoned (wither/poison heart icons) */
-    POISONED:       1,
-    /** Player is withered */
-    WITHERED:       2,
-    /** Player has absorption effect */
-    HAS_ABSORPTION: 4,
-    /** Player is frozen (powdered snow) */
-    FROZEN:         8,
-    /** Player has hunger effect */
-    HUNGER_EFFECT:  16,
-    /** Hunger preview is active (holding food item) */
-    HUNGER_PREVIEW: 32
+  /** Player is poisoned (wither/poison heart icons) */
+  POISONED: 1,
+  /** Player is withered */
+  WITHERED: 2,
+  /** Player has absorption effect */
+  HAS_ABSORPTION: 4,
+  /** Player is frozen (powdered snow) */
+  FROZEN: 8,
+  /** Player has hunger effect */
+  HUNGER_EFFECT: 16,
+  /** Hunger preview is active (holding food item) */
+  HUNGER_PREVIEW: 32,
 });
 
 /**
@@ -242,14 +242,14 @@ export const HudFlags = Object.freeze({
  * @returns {number} Packed flags value (0–63).
  */
 export function packHudFlags(flagValues) {
-    let packed = 0;
-    if (flagValues.poisoned)      packed |= HudFlags.POISONED;
-    if (flagValues.withered)      packed |= HudFlags.WITHERED;
-    if (flagValues.hasAbsorption) packed |= HudFlags.HAS_ABSORPTION;
-    if (flagValues.frozen)        packed |= HudFlags.FROZEN;
-    if (flagValues.hungerEffect)  packed |= HudFlags.HUNGER_EFFECT;
-    if (flagValues.hungerPreview) packed |= HudFlags.HUNGER_PREVIEW;
-    return Math.min(99, packed);
+  let packed = 0;
+  if (flagValues.poisoned) packed |= HudFlags.POISONED;
+  if (flagValues.withered) packed |= HudFlags.WITHERED;
+  if (flagValues.hasAbsorption) packed |= HudFlags.HAS_ABSORPTION;
+  if (flagValues.frozen) packed |= HudFlags.FROZEN;
+  if (flagValues.hungerEffect) packed |= HudFlags.HUNGER_EFFECT;
+  if (flagValues.hungerPreview) packed |= HudFlags.HUNGER_PREVIEW;
+  return Math.min(99, packed);
 }
 
 // ===========================================================================
@@ -262,11 +262,11 @@ export function packHudFlags(flagValues) {
  * @enum {number}
  */
 export const TargetTypes = Object.freeze({
-    NONE:   0,
-    BLOCK:  1,
-    ENTITY: 2,
-    ITEM:   3,
-    PLAYER: 4
+  NONE: 0,
+  BLOCK: 1,
+  ENTITY: 2,
+  ITEM: 3,
+  PLAYER: 4,
 });
 
 // ===========================================================================
@@ -279,9 +279,9 @@ export const TargetTypes = Object.freeze({
  * @enum {number}
  */
 export const DimensionIds = Object.freeze({
-    "minecraft:overworld": 1,
-    "minecraft:nether":    2,
-    "minecraft:the_end":   3
+  "minecraft:overworld": 1,
+  "minecraft:nether": 2,
+  "minecraft:the_end": 3,
 });
 
 /**
@@ -291,7 +291,7 @@ export const DimensionIds = Object.freeze({
  * @returns {number} 2-digit dimension ID (0 if unknown).
  */
 export function getDimensionNumericId(dimensionId) {
-    return DimensionIds[dimensionId] ?? 0;
+  return DimensionIds[dimensionId] ?? 0;
 }
 
 // ===========================================================================
@@ -322,12 +322,12 @@ export function getDimensionNumericId(dimensionId) {
  * @returns {{hi: number, lo: number}} Two 2-digit values.
  */
 export function encodeCoordinate(coord) {
-    const clamped = Math.max(-9999, Math.min(9999, Math.round(coord)));
-    const shifted = clamped + 9999; // Range: 0–19998
-    return {
-        hi: Math.min(99, Math.floor(shifted / 100)),
-        lo: shifted % 100
-    };
+  const clamped = Math.max(-9999, Math.min(9999, Math.round(coord)));
+  const shifted = clamped + 9999; // Range: 0–19998
+  return {
+    hi: Math.min(99, Math.floor(shifted / 100)),
+    lo: shifted % 100,
+  };
 }
 
 /**
@@ -338,10 +338,10 @@ export function encodeCoordinate(coord) {
  * @returns {number} Single 2-digit value (0–99). Maps -64..320 → 0..99.
  */
 export function encodeYCoordinate(y) {
-    // Map -64..320 range to 0..99
-    const clamped = Math.max(-64, Math.min(320, Math.round(y)));
-    const normalized = (clamped + 64) / 384; // 0..1
-    return Math.min(99, Math.max(0, Math.round(normalized * 99)));
+  // Map -64..320 range to 0..99
+  const clamped = Math.max(-64, Math.min(320, Math.round(y)));
+  const normalized = (clamped + 64) / 384; // 0..1
+  return Math.min(99, Math.max(0, Math.round(normalized * 99)));
 }
 
 // ===========================================================================

@@ -6,14 +6,108 @@
             {
                 "array_name": "controls",
                 "operation": "insert_back",
-                "value": [
-                    {
-                        "insight_hud_screen_panel@insight_hud.root_panel": {}
-                    },
-                    {
-                        "insight_waila_panel@insight_waila.root_panel": {}
-                    }
-                ]
+                "value": {
+                    "insight_hud_screen_panel@insight_hud.root_panel": {}
+                }
+            },
+            {
+                "array_name": "controls",
+                "operation": "insert_back",
+                "value": {
+                    "insight_waila_panel@insight_waila.root_panel": {}
+                }
+            },
+            {
+                "array_name": "controls",
+                "operation": "insert_back",
+                "value": {
+                    "insight_waila_v2_panel@insight_waila_v2.root_panel": {}
+                }
+            }
+        ]
+    },
+
+    "hud_title_text": {
+        "$update_string": "insight_waila:",
+        "$title_txt": "$title_text",
+        "visible": "(($title_txt - $update_string) = $title_txt)",
+        "type": "stack_panel",
+        "orientation": "vertical",
+        "offset": [0, -19],
+        "layer": 1,
+        "alpha": 0.0,
+        "propagate_alpha": true,
+        "controls": [
+            {
+                "title_frame": {
+                    "type": "panel",
+                    "visible": "(1=2)",
+                    "size": ["100%", "100%cm"],
+                    "controls": [
+                        {
+                            "title": {
+                                "type": "label",
+                                "anchor_from": "top_middle",
+                                "anchor_to": "top_middle",
+                                "color": "$title_command_text_color",
+                                "enable_profanity_filter": true,
+                                "text": "#text",
+                                "layer": 31,
+                                "localize": false,
+                                "font_size": "extra_large",
+                                "visible": "(1=2)",
+                                "shadow": true,
+                                "text_alignment": "center",
+                                "offset": [0, 6],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#hud_title_text_string",
+                                        "binding_name_override": "#text",
+                                        "binding_type": "global"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "((#text - $update_string) = #text)",
+                                        "target_property_name": "#visible"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "subtitle_frame": {
+                    "type": "panel",
+                    "visible": "(1=2)",
+                    "size": ["100%", "100%cm"],
+                    "controls": [
+                        {
+                            "subtitle": {
+                                "type": "label",
+                                "anchor_from": "top_middle",
+                                "anchor_to": "top_middle",
+                                "color": "$title_command_text_color",
+                                "enable_profanity_filter": true,
+                                "text": "#text",
+                                "layer": 31,
+                                "localize": false,
+                                "font_size": "large",
+                                "visible": "(1=2)",
+                                "shadow": true,
+                                "text_alignment": "center",
+                                "offset": [0, 6],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#hud_subtitle_text_string",
+                                        "binding_name_override": "#text",
+                                        "binding_type": "global"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
             }
         ]
     }
