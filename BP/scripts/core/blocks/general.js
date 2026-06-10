@@ -3,6 +3,7 @@ import {
   normalizeHeaderText,
   resolveNamespaceLabel,
   safeTranslateOrText,
+  shouldShowNamespaceLine,
 } from "../format.js";
 
 export function collectBlockGeneral(block) {
@@ -17,6 +18,7 @@ export function collectBlockGeneral(block) {
     headerText: normalizeHeaderText(fallbackName, "Block"),
     name: safeTranslateOrText(localizationKey, fallbackName),
     namespaceLabel: resolveNamespaceLabel(typeId),
+    showNamespaceLine: shouldShowNamespaceLine(typeId),
   };
 }
 
@@ -25,9 +27,14 @@ export function renderBlockGeneral(data) {
     return [];
   }
 
-  return [
+  const rawtext = [
     { text: "§f" },
     data.name,
-    { text: `\n§o§9@${data.namespaceLabel}§r` },
   ];
+
+  if (data.showNamespaceLine) {
+    rawtext.push({ text: `\n§o§9@${data.namespaceLabel}§r` });
+  }
+
+  return rawtext;
 }

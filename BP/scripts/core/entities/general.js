@@ -3,6 +3,7 @@ import {
   normalizeHeaderText,
   resolveNamespaceLabel,
   safeTranslateOrText,
+  shouldShowNamespaceLine,
 } from "../format.js";
 
 function getEntityHealth(entity) {
@@ -44,6 +45,7 @@ export function collectEntityGeneral(entity) {
       ? { text: nameTag }
       : safeTranslateOrText(localizationKey, fallbackName),
     namespaceLabel: resolveNamespaceLabel(typeId),
+    showNamespaceLine: shouldShowNamespaceLine(typeId),
     health: getEntityHealth(entity),
   };
 }
@@ -56,8 +58,11 @@ export function renderEntityGeneral(data) {
   const rawtext = [
     { text: "§f" },
     data.name,
-    { text: `\n§o§9@${data.namespaceLabel}§r` },
   ];
+
+  if (data.showNamespaceLine) {
+    rawtext.push({ text: `\n§o§9@${data.namespaceLabel}§r` });
+  }
 
   if (data.health) {
     rawtext.push({
