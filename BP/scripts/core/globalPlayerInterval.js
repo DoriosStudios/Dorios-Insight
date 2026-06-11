@@ -9,7 +9,7 @@ import {
     WAILA_STYLE_TEXTURE_FIELD_LENGTH
 } from "./const.js";
 import { resolvePlayerTarget, TargetKinds } from "./target.js";
-import { composeBlockTarget } from "./blocks/index.js";
+import { buildBlockLabel } from "./blocks/general.js";
 import { composeEntityTarget } from "./entities/index.js";
 
 let initialized = false;
@@ -137,8 +137,7 @@ function composeTargetMessage(player, settings) {
     }
 
     if (target.kind === TargetKinds.Block) {
-        const blockTarget = composeBlockTarget(target.block);
-        return buildWailaRawMessage(blockTarget.rawtext, settings);
+        return buildWailaRawMessage(buildBlockLabel(target.block), settings);
     }
 
     return {
