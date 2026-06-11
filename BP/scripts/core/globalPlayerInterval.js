@@ -220,28 +220,36 @@ function buildWailaRawMessage(parts, mainSettings) {
     };
 }
 
+function buildWailaPayload(title, subtitleText = "") {
+    return {
+        title,
+        subtitleText: String(subtitleText || "")
+    };
+}
+
 /** @param {CoreSettings} settings */
 function composeTargetMessage(player, settings) {
     const target = resolvePlayerTarget(player, settings.main);
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
-        return buildWailaRawMessage(entityTarget.rawtext, settings.main);
+        return buildWailaPayload(buildWailaRawMessage(entityTarget.rawtext, settings.main), entityTarget.entityId);
     }
 
     if (target.kind === TargetKinds.Block) {
-        return buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main);
+        return buildWailaPayload(buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main));
     }
 
-    return {
-        rawtext: [{ text: EMPTY_WAILA_TEXT }]
-    };
+    return buildWailaPayload({ rawtext: [{ text: EMPTY_WAILA_TEXT }] });
 }
 
-function sendWailaMessage(player, message) {
+function sendWailaMessage(player, payload) {
+    const title = payload?.title ?? payload;
+    const subtitleText = payload?.subtitleText ?? "";
+
     try {
-        player.runCommand(`titleraw @s title ${JSON.stringify(message)}`);
-        player.runCommand(`titleraw @s subtitle ${JSON.stringify({ rawtext: [{ text: "" }] })}`);
+        player.runCommand(`titleraw @s title ${JSON.stringify(title)}`);
+        player.runCommand(`titleraw @s subtitle ${JSON.stringify({ rawtext: [{ text: subtitleText }] })}`);
     } catch {
         // Skip players that are not ready yet.
     }
