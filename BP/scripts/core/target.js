@@ -6,6 +6,22 @@ export const TargetKinds = {
 
 /** @typedef {import("./const.js").MainSettings} MainSettings */
 
+const IGNORED_ENTITY_TARGET_FAMILIES = ["inanimate"];
+
+function hasTypeFamily(entity, family) {
+    try {
+        return entity
+            ?.getComponent("minecraft:type_family")
+            ?.hasTypeFamily(family) === true;
+    } catch {
+        return false;
+    }
+}
+
+function shouldIgnoreEntityTarget(entity) {
+    return IGNORED_ENTITY_TARGET_FAMILIES.some((family) => hasTypeFamily(entity, family));
+}
+
 /**
  * @param {import("@minecraft/server").Player} player
  * @param {MainSettings} settings
@@ -21,7 +37,9 @@ export function resolvePlayerTarget(player, settings) {
         });
 
         if (Array.isArray(entityHits) && entityHits.length > 0) {
-            const hit = entityHits.find((candidate) => candidate?.entity);
+            const hit = entityHits.find((candidate) => (
+                candidate?.entity && !shouldIgnoreEntityTarget(candidate.entity)
+            ));
             if (hit?.entity) {
                 return {
                     kind: TargetKinds.Entity,
