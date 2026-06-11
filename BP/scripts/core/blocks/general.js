@@ -1,9 +1,6 @@
-import {
-  formatTypeIdToText,
-  resolveNamespaceLabel,
-  safeTranslateOrText,
-  shouldShowNamespaceLine,
-} from "../format.js";
+import { formatTypeIdToText, resolveNamespaceLabel, safeTranslateOrText, shouldShowNamespaceLine } from "../format.js";
+import { getEnergyLine } from "./energyContainers.js";
+import { getFluidLines } from "./fluidContainers.js";
 
 /**
  * @typedef {object} RawTextPart
@@ -59,6 +56,22 @@ const BLOCK_TOOL_TIER_DESCRIPTORS = [
   },
 ];
 
+function getDividerLine() {
+  return { text: "\n§7--------------------§r" };
+}
+
+/**
+ * @param {RawTextPart[]} rawtext
+ * @param {RawTextPart[]} lines
+ */
+function pushSection(rawtext, lines) {
+  if (!lines.length) {
+    return;
+  }
+
+  rawtext.push(getDividerLine(), ...lines);
+}
+
 /**
  * @param {import("@minecraft/server").Block | undefined} block
  * @returns {RawTextPart[]}
@@ -66,12 +79,8 @@ const BLOCK_TOOL_TIER_DESCRIPTORS = [
 function getBlockName(block) {
   const typeId = String(block?.typeId || "").trim();
   const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
-  const localizationKey = typeof block?.localizationKey === "string"
-    ? block.localizationKey.trim()
-    : "";
-  const rawtext = [
-    safeTranslateOrText(localizationKey, fallbackName),
-  ];
+  const localizationKey = typeof block?.localizationKey === "string" ? block.localizationKey.trim() : "";
+  const rawtext = [safeTranslateOrText(localizationKey, fallbackName)];
 
   if (shouldShowNamespaceLine(typeId)) {
     rawtext.push({ text: `\n§o§9@${resolveNamespaceLabel(typeId)}§r` });
@@ -91,9 +100,7 @@ function getBlockTags(block) {
       return [];
     }
 
-    return tags
-      .map((tag) => String(tag || "").trim())
-      .filter((tag) => tag.length > 0);
+    return tags.map((tag) => String(tag || "").trim()).filter((tag) => tag.length > 0);
   } catch {
     return [];
   }
@@ -104,11 +111,17 @@ function getBlockTags(block) {
  * @returns {RawTextPart}
  */
 function getPreferredToolLine(tagSet) {
-  const tools = BLOCK_TOOL_DESCRIPTORS
-    .filter((descriptor) => descriptor.tags.some((tag) => tagSet.has(tag)))
-    .map((descriptor) => descriptor.label);
+  const tools = getPreferredTools(tagSet);
 
-  return { text: `\n§8Tool: §7${tools.length ? tools.join(", ") : "Hand"}§r` };
+  return { text: `\n§fTool: ${tools.length ? tools.join(", ") : "Hand"}§r` };
+}
+
+/**
+ * @param {ReadonlySet<string>} tagSet
+ * @returns {string[]}
+ */
+function getPreferredTools(tagSet) {
+  return BLOCK_TOOL_DESCRIPTORS.filter((descriptor) => descriptor.tags.some((tag) => tagSet.has(tag))).map((descriptor) => descriptor.label);
 }
 
 /**
@@ -116,11 +129,38 @@ function getPreferredToolLine(tagSet) {
  * @returns {RawTextPart}
  */
 function getToolTierLine(tagSet) {
-  const tier = BLOCK_TOOL_TIER_DESCRIPTORS.find((descriptor) => (
-    descriptor.tags.some((tag) => tagSet.has(tag))
-  ));
+  const tier = BLOCK_TOOL_TIER_DESCRIPTORS.find((descriptor) => descriptor.tags.some((tag) => tagSet.has(tag)));
+  const tools = getPreferredTools(tagSet);
+  const onlyHandTierTools = tools.length > 0 && tools.every((tool) => tool === "Shovel" || tool === "Hoe");
+  const fallbackTier = !tools.length || onlyHandTierTools ? "Hand" : "Wood";
 
-  return { text: `\n§8Tier: §7${tier?.label || "Hand"}§r` };
+  return { text: `\n§fTier: ${tier?.label || fallbackTier}§r` };
+}
+
+/**
+ * @param {import("@minecraft/server").Block | undefined} block
+ * @returns {RawTextPart | undefined}
+ */
+function getBlockLocationLine(block) {
+  const location = block?.location;
+  if (!location) {
+    return undefined;
+  }
+
+  return { text: `\n§fLocation: ${Math.floor(location.x)} ${Math.floor(location.y)} ${Math.floor(location.z)}§r` };
+}
+
+/**
+ * @param {import("@minecraft/server").Block | undefined} block
+ * @returns {RawTextPart | undefined}
+ */
+function getBlockIdentifierLine(block) {
+  const typeId = String(block?.typeId || "").trim();
+  if (!typeId) {
+    return undefined;
+  }
+
+  return { text: `\n§7ID: ${typeId}§r` };
 }
 
 /**
@@ -132,7 +172,45 @@ function getBlockTagsLine(blockTags) {
     return undefined;
   }
 
-  return { text: `\n§8Tags: ${blockTags.join(", ")}§r` };
+  return { text: `\n§7Tags: ${blockTags.join(", ")}§r` };
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
+function formatStateValue(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return String(value);
+}
+
+/**
+ * @param {import("@minecraft/server").Block | undefined} block
+ * @returns {RawTextPart | undefined}
+ */
+function getBlockStatesLine(block) {
+  try {
+    const states = block?.permutation?.getAllStates?.();
+    if (!states || typeof states !== "object") {
+      return undefined;
+    }
+
+    const stateLines = Object.entries(states)
+      .filter(([stateName]) => String(stateName || "").trim().length > 0)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([stateName, value]) => `\n§7${stateName}: ${formatStateValue(value)}§r`);
+
+    if (!stateLines.length) {
+      return undefined;
+    }
+
+    return { text: stateLines.join("") };
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -143,23 +221,63 @@ function getBlockTagsLine(blockTags) {
 export function buildBlockLabel(block, settings = {}) {
   const blockTags = getBlockTags(block);
   const tagSet = new Set(blockTags);
-  const rawtext = [
-    { text: "§f" },
-    ...getBlockName(block),
-  ];
+  const rawtext = [{ text: "§f" }, ...getBlockName(block)];
+  const containerDetails = [];
+
+  if (settings.energyContainers) {
+    const energyLine = getEnergyLine(block);
+    if (energyLine) {
+      containerDetails.push(energyLine);
+    }
+  }
+
+  if (settings.fluidContainers) {
+    containerDetails.push(...getFluidLines(block));
+  }
+
+  pushSection(rawtext, containerDetails);
+
+  const details = [];
 
   if (settings.preferredTool) {
-    rawtext.push(getPreferredToolLine(tagSet));
+    details.push(getPreferredToolLine(tagSet));
   }
 
   if (settings.toolTier) {
-    rawtext.push(getToolTierLine(tagSet));
+    details.push(getToolTierLine(tagSet));
+  }
+
+  if (settings.location) {
+    const locationLine = getBlockLocationLine(block);
+    if (locationLine) {
+      details.push(locationLine);
+    }
+  }
+
+  pushSection(rawtext, details);
+
+  const tagDetails = [];
+
+  if (settings.identifier) {
+    const identifierLine = getBlockIdentifierLine(block);
+    if (identifierLine) {
+      tagDetails.push(identifierLine);
+    }
   }
 
   if (settings.blockTags) {
     const tagsLine = getBlockTagsLine(blockTags);
     if (tagsLine) {
-      rawtext.push(tagsLine);
+      tagDetails.push(tagsLine);
+    }
+  }
+
+  pushSection(rawtext, tagDetails);
+
+  if (settings.states) {
+    const statesLine = getBlockStatesLine(block);
+    if (statesLine) {
+      pushSection(rawtext, [statesLine]);
     }
   }
 

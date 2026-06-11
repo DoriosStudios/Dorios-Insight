@@ -12,9 +12,14 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
 /**
  * @typedef {object} BlockSettings
+ * @property {boolean} energyContainers
+ * @property {boolean} fluidContainers
  * @property {boolean} preferredTool
  * @property {boolean} toolTier
+ * @property {boolean} location
+ * @property {boolean} identifier
  * @property {boolean} blockTags
+ * @property {boolean} states
  */
 
 /**
@@ -37,9 +42,14 @@ export const DEFAULT_CORE_SETTINGS = {
     panelStyleId: 0,
   },
   block: {
+    energyContainers: false,
+    fluidContainers: false,
     preferredTool: false,
     toolTier: false,
+    location: false,
+    identifier: false,
     blockTags: false,
+    states: false,
   },
   entity: {},
 };

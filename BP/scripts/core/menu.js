@@ -5,6 +5,21 @@ import { getCoreSettings, setCoreSettings } from "./globalPlayerInterval.js";
 
 let initialized = false;
 
+const UI = {
+    info: "§b",
+    warn: "§e",
+    muted: "§7",
+    reset: "§r"
+};
+
+function infoLabel(text) {
+    return `${UI.info}${text}${UI.reset}`;
+}
+
+function mutedText(text) {
+    return `${UI.muted}${text}${UI.reset}`;
+}
+
 function isAdminPlayer(player) {
     if (!player) {
         return false;
@@ -53,18 +68,22 @@ async function openMainSettingsMenu(player) {
     const settings = getCoreSettings();
     const mainSettings = settings.main;
     const form = new ModalFormData()
-        .title("Main Settings")
-        .toggle("Enabled", {
-            defaultValue: mainSettings.enabled
+        .title(`${UI.info}Main Settings${UI.reset}`)
+        .toggle(infoLabel("Enabled"), {
+            defaultValue: mainSettings.enabled,
+            tooltip: "Turns Dorios Insight target labels on or off globally."
         })
-        .slider("Update interval (ticks)", CORE_LIMITS.minUpdateIntervalTicks, CORE_LIMITS.maxUpdateIntervalTicks, {
-            defaultValue: mainSettings.updateIntervalTicks
+        .slider(infoLabel("Update Interval"), CORE_LIMITS.minUpdateIntervalTicks, CORE_LIMITS.maxUpdateIntervalTicks, {
+            defaultValue: mainSettings.updateIntervalTicks,
+            tooltip: "How often Insight refreshes labels, measured in ticks."
         })
-        .slider("Max distance", CORE_LIMITS.minMaxDistance, CORE_LIMITS.maxMaxDistance, {
-            defaultValue: mainSettings.maxDistance
+        .slider(infoLabel("Max Distance"), CORE_LIMITS.minMaxDistance, CORE_LIMITS.maxMaxDistance, {
+            defaultValue: mainSettings.maxDistance,
+            tooltip: "Maximum block distance used to find what the player is looking at."
         })
-        .dropdown("Panel style", PANEL_STYLES.map((style) => style.label), {
-            defaultValueIndex: getPanelStyleIndex(mainSettings.panelStyleId)
+        .dropdown(infoLabel("Panel Style"), PANEL_STYLES.map((style) => style.label), {
+            defaultValueIndex: getPanelStyleIndex(mainSettings.panelStyleId),
+            tooltip: "Visual style used by the WAILA panel."
         });
 
     const result = await form.show(player);
@@ -89,15 +108,38 @@ async function openMainSettingsMenu(player) {
 async function openBlockSettingsMenu(player) {
     const settings = getCoreSettings();
     const form = new ModalFormData()
-        .title("Block Settings")
-        .toggle("Preferred Tool", {
-            defaultValue: settings.block.preferredTool
+        .title(`${UI.info}Block Settings${UI.reset}`)
+        .toggle(infoLabel("Energy Containers"), {
+            defaultValue: settings.block.energyContainers,
+            tooltip: "Shows stored energy for blocks tagged dorios:energy."
         })
-        .toggle("Tool Tier", {
-            defaultValue: settings.block.toolTier
+        .toggle(infoLabel("Fluid Containers"), {
+            defaultValue: settings.block.fluidContainers,
+            tooltip: "Shows stored fluids for blocks tagged dorios:fluid."
         })
-        .toggle("Block Tags", {
-            defaultValue: settings.block.blockTags
+        .toggle(infoLabel("Preferred Tool"), {
+            defaultValue: settings.block.preferredTool,
+            tooltip: "Shows the tool type associated with block destructible tags, such as Pickaxe or Shovel."
+        })
+        .toggle(infoLabel("Tool Tier"), {
+            defaultValue: settings.block.toolTier,
+            tooltip: "Shows the destructible tier tag. Blocks without a tier show Hand."
+        })
+        .toggle(infoLabel("Location"), {
+            defaultValue: settings.block.location,
+            tooltip: "Shows the targeted block coordinates as X Y Z."
+        })
+        .toggle(infoLabel("Identifier"), {
+            defaultValue: settings.block.identifier,
+            tooltip: "Shows the full block type identifier."
+        })
+        .toggle(infoLabel("Block Tags"), {
+            defaultValue: settings.block.blockTags,
+            tooltip: "Shows all tags found on the targeted block."
+        })
+        .toggle(infoLabel("States"), {
+            defaultValue: settings.block.states,
+            tooltip: "Shows every state on the targeted block, one per line."
         });
 
     const result = await form.show(player);
@@ -105,12 +147,17 @@ async function openBlockSettingsMenu(player) {
         return;
     }
 
-    const [preferredTool, toolTier, blockTags] = result.formValues;
+    const [energyContainers, fluidContainers, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
     setCoreSettings({
         block: {
+            energyContainers: Boolean(energyContainers),
+            fluidContainers: Boolean(fluidContainers),
             preferredTool: Boolean(preferredTool),
             toolTier: Boolean(toolTier),
-            blockTags: Boolean(blockTags)
+            location: Boolean(location),
+            identifier: Boolean(identifier),
+            blockTags: Boolean(blockTags),
+            states: Boolean(states)
         }
     });
 
@@ -119,9 +166,9 @@ async function openBlockSettingsMenu(player) {
 
 async function openEntitySettingsMenu(player) {
     const form = new ActionFormData()
-        .title("Entity Settings")
-        .body("Entity settings are not used yet.")
-        .button("Back");
+        .title(`${UI.info}Entity Settings${UI.reset}`)
+        .body(mutedText("Entity settings are not used yet."))
+        .button(`${UI.warn}Back${UI.reset}`);
 
     const result = await form.show(player);
     if (!result.canceled && result.selection === 0) {
@@ -136,10 +183,11 @@ export async function openCoreMenu(player) {
     }
 
     const form = new ActionFormData()
-        .title("Dorios Insight Core")
-        .button("Main Settings")
-        .button("Block Settings")
-        .button("Entity Settings");
+        .title(`${UI.info}Dorios Insight Core${UI.reset}`)
+        .body(mutedText("Choose the settings group to edit."))
+        .button(`Main Settings\n${mutedText("Core behavior and panel style")}`, "textures/ui/icon_setting")
+        .button(`Block Settings\n${mutedText("Tools, tiers, and tags")}`, "textures/ui/Wrenches1")
+        .button(`Entity Settings\n${mutedText("Coming soon")}`, "textures/ui/gear");
 
     const result = await form.show(player);
     if (result.canceled) {

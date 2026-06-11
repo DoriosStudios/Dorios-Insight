@@ -63,9 +63,14 @@ function normalizeBlockSettings(settings = {}) {
     const block = getSettingsSection(settings, "block");
 
     return {
+        energyContainers: block.energyContainers === true,
+        fluidContainers: block.fluidContainers === true,
         preferredTool: block.preferredTool === true,
         toolTier: block.toolTier === true,
-        blockTags: block.blockTags === true
+        location: block.location === true,
+        identifier: block.identifier === true,
+        blockTags: block.blockTags === true,
+        states: block.states === true
     };
 }
 
