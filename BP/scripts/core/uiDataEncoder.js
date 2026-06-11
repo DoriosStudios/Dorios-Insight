@@ -75,11 +75,11 @@ export function defineSchema(delimiter, fields) {
         totalDigits += digits;
     }
 
-    return Object.freeze({
+    return {
         delimiter: String(delimiter).charAt(0),
-        fields: Object.freeze(normalizedFields),
+        fields: normalizedFields,
         totalDigits
-    });
+    };
 }
 
 // ---------------------------------------------------------------------------

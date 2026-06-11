@@ -1,4 +1,4 @@
-import { ModalFormData } from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { system } from "@minecraft/server";
 import { CORE_LIMITS, PANEL_STYLES } from "./const.js";
 import { getCoreSettings, setCoreSettings } from "./globalPlayerInterval.js";
@@ -43,30 +43,28 @@ function getPanelStyleIndex(styleId) {
     return index >= 0 ? index : 0;
 }
 
+/** @typedef {import("./const.js").CoreSettings} CoreSettings */
+
 function getPanelStyleLabel(styleId) {
     return PANEL_STYLES[getPanelStyleIndex(styleId)]?.label ?? PANEL_STYLES[0].label;
 }
 
-export async function openCoreMenu(player) {
-    if (!isAdminPlayer(player)) {
-        sendMessage(player, "§cOnly Insight admins can edit Core settings.");
-        return;
-    }
-
+async function openMainSettingsMenu(player) {
     const settings = getCoreSettings();
+    const mainSettings = settings.main;
     const form = new ModalFormData()
-        .title("Dorios Insight Core")
+        .title("Main Settings")
         .toggle("Enabled", {
-            defaultValue: settings.enabled
+            defaultValue: mainSettings.enabled
         })
         .slider("Update interval (ticks)", CORE_LIMITS.minUpdateIntervalTicks, CORE_LIMITS.maxUpdateIntervalTicks, {
-            defaultValue: settings.updateIntervalTicks
+            defaultValue: mainSettings.updateIntervalTicks
         })
         .slider("Max distance", CORE_LIMITS.minMaxDistance, CORE_LIMITS.maxMaxDistance, {
-            defaultValue: settings.maxDistance
+            defaultValue: mainSettings.maxDistance
         })
         .dropdown("Panel style", PANEL_STYLES.map((style) => style.label), {
-            defaultValueIndex: getPanelStyleIndex(settings.panelStyleId)
+            defaultValueIndex: getPanelStyleIndex(mainSettings.panelStyleId)
         });
 
     const result = await form.show(player);
@@ -77,13 +75,90 @@ export async function openCoreMenu(player) {
     const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex] = result.formValues;
     const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
     const next = setCoreSettings({
-        enabled: Boolean(enabled),
-        updateIntervalTicks: Number(updateIntervalTicks),
-        maxDistance: Number(maxDistance),
-        panelStyleId: panelStyle.id
+        main: {
+            enabled: Boolean(enabled),
+            updateIntervalTicks: Number(updateIntervalTicks),
+            maxDistance: Number(maxDistance),
+            panelStyleId: panelStyle.id
+        }
     });
 
-    sendMessage(player, `§aInsight Core updated: ${next.enabled ? "enabled" : "disabled"}, ${next.updateIntervalTicks} ticks, ${next.maxDistance} blocks, ${getPanelStyleLabel(next.panelStyleId)} style.`);
+    sendMessage(player, `§aMain settings updated: ${next.main.enabled ? "enabled" : "disabled"}, ${next.main.updateIntervalTicks} ticks, ${next.main.maxDistance} blocks, ${getPanelStyleLabel(next.main.panelStyleId)} style.`);
+}
+
+async function openBlockSettingsMenu(player) {
+    const settings = getCoreSettings();
+    const form = new ModalFormData()
+        .title("Block Settings")
+        .toggle("Preferred Tool", {
+            defaultValue: settings.block.preferredTool
+        })
+        .toggle("Tool Tier", {
+            defaultValue: settings.block.toolTier
+        })
+        .toggle("Block Tags", {
+            defaultValue: settings.block.blockTags
+        });
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    const [preferredTool, toolTier, blockTags] = result.formValues;
+    setCoreSettings({
+        block: {
+            preferredTool: Boolean(preferredTool),
+            toolTier: Boolean(toolTier),
+            blockTags: Boolean(blockTags)
+        }
+    });
+
+    sendMessage(player, "§aBlock settings updated.");
+}
+
+async function openEntitySettingsMenu(player) {
+    const form = new ActionFormData()
+        .title("Entity Settings")
+        .body("Entity settings are not used yet.")
+        .button("Back");
+
+    const result = await form.show(player);
+    if (!result.canceled && result.selection === 0) {
+        await openCoreMenu(player);
+    }
+}
+
+export async function openCoreMenu(player) {
+    if (!isAdminPlayer(player)) {
+        sendMessage(player, "§cOnly Insight admins can edit Core settings.");
+        return;
+    }
+
+    const form = new ActionFormData()
+        .title("Dorios Insight Core")
+        .button("Main Settings")
+        .button("Block Settings")
+        .button("Entity Settings");
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    if (result.selection === 0) {
+        await openMainSettingsMenu(player);
+        return;
+    }
+
+    if (result.selection === 1) {
+        await openBlockSettingsMenu(player);
+        return;
+    }
+
+    if (result.selection === 2) {
+        await openEntitySettingsMenu(player);
+    }
 }
 
 function registerCommand(definition) {

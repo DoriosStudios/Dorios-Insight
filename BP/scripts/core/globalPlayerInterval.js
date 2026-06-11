@@ -16,6 +16,9 @@ let initialized = false;
 let systemTick = 0;
 let cachedSettings;
 
+/** @typedef {import("./const.js").CoreSettings} CoreSettings */
+/** @typedef {import("./const.js").MainSettings} MainSettings */
+
 function clampNumber(value, min, max, fallback) {
     const number = Math.floor(Number(value));
     if (!Number.isFinite(number)) {
@@ -25,30 +28,65 @@ function clampNumber(value, min, max, fallback) {
     return Math.min(max, Math.max(min, number));
 }
 
-function normalizeSettings(settings = {}) {
+function getSettingsSection(settings, key) {
+    const section = settings?.[key];
+    return section && typeof section === "object" ? section : settings;
+}
+
+function normalizeMainSettings(settings = {}) {
+    const main = getSettingsSection(settings, "main");
+
     return {
-        enabled: settings.enabled !== false,
+        enabled: main.enabled !== false,
         updateIntervalTicks: clampNumber(
-            settings.updateIntervalTicks,
+            main.updateIntervalTicks,
             CORE_LIMITS.minUpdateIntervalTicks,
             CORE_LIMITS.maxUpdateIntervalTicks,
-            DEFAULT_CORE_SETTINGS.updateIntervalTicks
+            DEFAULT_CORE_SETTINGS.main.updateIntervalTicks
         ),
         maxDistance: clampNumber(
-            settings.maxDistance,
+            main.maxDistance,
             CORE_LIMITS.minMaxDistance,
             CORE_LIMITS.maxMaxDistance,
-            DEFAULT_CORE_SETTINGS.maxDistance
+            DEFAULT_CORE_SETTINGS.main.maxDistance
         ),
         panelStyleId: clampNumber(
-            settings.panelStyleId,
+            main.panelStyleId,
             CORE_LIMITS.minPanelStyleId,
             CORE_LIMITS.maxPanelStyleId,
-            DEFAULT_CORE_SETTINGS.panelStyleId
+            DEFAULT_CORE_SETTINGS.main.panelStyleId
         )
     };
 }
 
+function normalizeBlockSettings(settings = {}) {
+    const block = getSettingsSection(settings, "block");
+
+    return {
+        preferredTool: block.preferredTool === true,
+        toolTier: block.toolTier === true,
+        blockTags: block.blockTags === true
+    };
+}
+
+function normalizeEntitySettings(settings = {}) {
+    const entity = settings?.entity;
+    return entity && typeof entity === "object" ? { ...entity } : {};
+}
+
+/**
+ * @param {Partial<CoreSettings> | Record<string, unknown>} [settings]
+ * @returns {CoreSettings}
+ */
+function normalizeSettings(settings = {}) {
+    return {
+        main: normalizeMainSettings(settings),
+        block: normalizeBlockSettings(settings),
+        entity: normalizeEntitySettings(settings),
+    };
+}
+
+/** @returns {CoreSettings} */
 function loadSettings() {
     try {
         const raw = world.getDynamicProperty(CORE_SETTINGS_DYNAMIC_PROPERTY);
@@ -62,6 +100,10 @@ function loadSettings() {
     return normalizeSettings(DEFAULT_CORE_SETTINGS);
 }
 
+/**
+ * @param {Partial<CoreSettings> | Record<string, unknown>} settings
+ * @returns {CoreSettings}
+ */
 function saveSettings(settings) {
     const normalized = normalizeSettings(settings);
 
@@ -75,6 +117,7 @@ function saveSettings(settings) {
     return normalized;
 }
 
+/** @returns {CoreSettings} */
 export function getCoreSettings() {
     if (!cachedSettings) {
         cachedSettings = loadSettings();
@@ -83,15 +126,47 @@ export function getCoreSettings() {
     return cachedSettings;
 }
 
+/**
+ * @param {Partial<CoreSettings> | Record<string, unknown>} settings
+ * @returns {CoreSettings}
+ */
 export function setCoreSettings(settings) {
+    const current = getCoreSettings();
+    const hasSections = Boolean(settings?.main || settings?.block || settings?.entity);
+
+    if (!hasSections) {
+        return saveSettings({
+            main: {
+                ...current.main,
+                ...settings
+            },
+            block: {
+                ...current.block,
+                ...settings
+            },
+            entity: current.entity
+        });
+    }
+
     return saveSettings({
-        ...getCoreSettings(),
-        ...settings
+        main: {
+            ...current.main,
+            ...settings?.main
+        },
+        block: {
+            ...current.block,
+            ...settings?.block
+        },
+        entity: {
+            ...current.entity,
+            ...settings?.entity
+        }
     });
 }
 
-function buildStyleTextureField(settings) {
-    const style = PANEL_STYLES[settings.panelStyleId] ?? PANEL_STYLES[0];
+/** @param {MainSettings} mainSettings */
+function buildStyleTextureField(mainSettings) {
+    const style = PANEL_STYLES[mainSettings.panelStyleId] ?? PANEL_STYLES[0];
     return style.texture
         .slice(0, WAILA_STYLE_TEXTURE_FIELD_LENGTH)
         .padEnd(WAILA_STYLE_TEXTURE_FIELD_LENGTH, "~");
@@ -111,7 +186,11 @@ function normalizeRawtextParts(parts) {
     });
 }
 
-function buildWailaRawMessage(parts, settings) {
+/**
+ * @param {Array<object>} parts
+ * @param {MainSettings} mainSettings
+ */
+function buildWailaRawMessage(parts, mainSettings) {
     const rawtext = normalizeRawtextParts(parts);
 
     if (!rawtext.length) {
@@ -122,22 +201,23 @@ function buildWailaRawMessage(parts, settings) {
 
     return {
         rawtext: [
-            { text: `${CHANNEL_WAILA}${buildStyleTextureField(settings)}` },
+            { text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}` },
             ...rawtext
         ]
     };
 }
 
+/** @param {CoreSettings} settings */
 function composeTargetMessage(player, settings) {
-    const target = resolvePlayerTarget(player, settings);
+    const target = resolvePlayerTarget(player, settings.main);
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity);
-        return buildWailaRawMessage(entityTarget.rawtext, settings);
+        return buildWailaRawMessage(entityTarget.rawtext, settings.main);
     }
 
     if (target.kind === TargetKinds.Block) {
-        return buildWailaRawMessage(buildBlockLabel(target.block), settings);
+        return buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main);
     }
 
     return {
@@ -158,7 +238,7 @@ function tickPlayers() {
     systemTick += 1;
 
     const settings = getCoreSettings();
-    if (!settings.enabled || systemTick % settings.updateIntervalTicks !== 0) {
+    if (!settings.main.enabled || systemTick % settings.main.updateIntervalTicks !== 0) {
         return;
     }
 

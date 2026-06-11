@@ -1,9 +1,15 @@
-export const TargetKinds = Object.freeze({
+export const TargetKinds = {
     None: "none",
     Block: "block",
     Entity: "entity"
-});
+};
 
+/** @typedef {import("./const.js").MainSettings} MainSettings */
+
+/**
+ * @param {import("@minecraft/server").Player} player
+ * @param {MainSettings} settings
+ */
 export function resolvePlayerTarget(player, settings) {
     const maxDistance = Math.max(1, Number(settings?.maxDistance) || 8);
 
