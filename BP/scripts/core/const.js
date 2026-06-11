@@ -24,6 +24,12 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
 /**
  * @typedef {object} EntitySettings
+ * @property {boolean} health
+ * @property {boolean} hostile
+ * @property {boolean} identifier
+ * @property {boolean} typeFamilies
+ * @property {boolean} tags
+ * @property {boolean} properties
  */
 
 /**
@@ -51,7 +57,14 @@ export const DEFAULT_CORE_SETTINGS = {
     blockTags: false,
     states: false,
   },
-  entity: {},
+  entity: {
+    health: true,
+    hostile: false,
+    identifier: false,
+    typeFamilies: false,
+    tags: false,
+    properties: false,
+  },
 };
 
 export const CORE_LIMITS = {

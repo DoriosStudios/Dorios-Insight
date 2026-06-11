@@ -165,15 +165,52 @@ async function openBlockSettingsMenu(player) {
 }
 
 async function openEntitySettingsMenu(player) {
-    const form = new ActionFormData()
+    const settings = getCoreSettings();
+    const form = new ModalFormData()
         .title(`${UI.info}Entity Settings${UI.reset}`)
-        .body(mutedText("Entity settings are not used yet."))
-        .button(`${UI.warn}Back${UI.reset}`);
+        .toggle(infoLabel("Health"), {
+            defaultValue: settings.entity.health,
+            tooltip: "Shows the entity current and max health when the entity has a health component."
+        })
+        .toggle(infoLabel("Hostile"), {
+            defaultValue: settings.entity.hostile,
+            tooltip: "Shows whether Insight detects the entity as hostile from type families or attack components."
+        })
+        .toggle(infoLabel("Identifier"), {
+            defaultValue: settings.entity.identifier,
+            tooltip: "Shows the full entity type identifier."
+        })
+        .toggle(infoLabel("Type Families"), {
+            defaultValue: settings.entity.typeFamilies,
+            tooltip: "Shows all type families found on the targeted entity."
+        })
+        .toggle(infoLabel("Tags"), {
+            defaultValue: settings.entity.tags,
+            tooltip: "Shows all runtime tags found on the targeted entity."
+        })
+        .toggle(infoLabel("Properties"), {
+            defaultValue: settings.entity.properties,
+            tooltip: "Shows normal entity properties, not dynamic properties."
+        });
 
     const result = await form.show(player);
-    if (!result.canceled && result.selection === 0) {
-        await openCoreMenu(player);
+    if (result.canceled) {
+        return;
     }
+
+    const [health, hostile, identifier, typeFamilies, tags, properties] = result.formValues;
+    setCoreSettings({
+        entity: {
+            health: Boolean(health),
+            hostile: Boolean(hostile),
+            identifier: Boolean(identifier),
+            typeFamilies: Boolean(typeFamilies),
+            tags: Boolean(tags),
+            properties: Boolean(properties)
+        }
+    });
+
+    sendMessage(player, "§aEntity settings updated.");
 }
 
 export async function openCoreMenu(player) {
@@ -187,7 +224,7 @@ export async function openCoreMenu(player) {
         .body(mutedText("Choose the settings group to edit."))
         .button(`Main Settings\n${mutedText("Core behavior and panel style")}`, "textures/ui/icon_setting")
         .button(`Block Settings\n${mutedText("Tools, tiers, and tags")}`, "textures/ui/Wrenches1")
-        .button(`Entity Settings\n${mutedText("Coming soon")}`, "textures/ui/gear");
+        .button(`Entity Settings\n${mutedText("Health, families, and tags")}`, "textures/ui/gear");
 
     const result = await form.show(player);
     if (result.canceled) {

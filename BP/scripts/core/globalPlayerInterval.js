@@ -75,8 +75,16 @@ function normalizeBlockSettings(settings = {}) {
 }
 
 function normalizeEntitySettings(settings = {}) {
-    const entity = settings?.entity;
-    return entity && typeof entity === "object" ? { ...entity } : {};
+    const entity = getSettingsSection(settings, "entity");
+
+    return {
+        health: entity?.health !== false,
+        hostile: entity?.hostile === true,
+        identifier: entity?.identifier === true,
+        typeFamilies: entity?.typeFamilies === true,
+        tags: entity?.tags === true,
+        properties: entity?.properties === true
+    };
 }
 
 /**
@@ -217,7 +225,7 @@ function composeTargetMessage(player, settings) {
     const target = resolvePlayerTarget(player, settings.main);
 
     if (target.kind === TargetKinds.Entity) {
-        const entityTarget = composeEntityTarget(target.entity);
+        const entityTarget = composeEntityTarget(target.entity, settings.entity);
         return buildWailaRawMessage(entityTarget.rawtext, settings.main);
     }
 
