@@ -1,6 +1,6 @@
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { system } from "@minecraft/server";
-import { CORE_LIMITS, PANEL_STYLES } from "./const.js";
+import { PANEL_STYLES, WAILA_FONT_SCALE_OPTIONS } from "./const.js";
 import { getCoreSettings, setCoreSettings } from "./globalPlayerInterval.js";
 
 let initialized = false;
@@ -58,6 +58,25 @@ function getPanelStyleIndex(styleId) {
     return index >= 0 ? index : 0;
 }
 
+function getFontScaleIndex(fontScale) {
+    const scale = Number(fontScale);
+    if (!Number.isFinite(scale)) {
+        return WAILA_FONT_SCALE_OPTIONS.findIndex((option) => option.scale === 1);
+    }
+
+    let nearestIndex = 0;
+    let nearestDistance = Infinity;
+    for (let i = 0; i < WAILA_FONT_SCALE_OPTIONS.length; i += 1) {
+        const distance = Math.abs(WAILA_FONT_SCALE_OPTIONS[i].scale - scale);
+        if (distance < nearestDistance) {
+            nearestIndex = i;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearestIndex;
+}
+
 /** @typedef {import("./const.js").CoreSettings} CoreSettings */
 
 function getPanelStyleLabel(styleId) {
@@ -73,17 +92,21 @@ async function openMainSettingsMenu(player) {
             defaultValue: mainSettings.enabled,
             tooltip: "Turns Dorios Insight target labels on or off globally."
         })
-        .slider(infoLabel("Update Interval"), CORE_LIMITS.minUpdateIntervalTicks, CORE_LIMITS.maxUpdateIntervalTicks, {
+        .slider(infoLabel("Update Interval"), 1, 40, {
             defaultValue: mainSettings.updateIntervalTicks,
             tooltip: "How often Insight refreshes labels, measured in ticks."
         })
-        .slider(infoLabel("Max Distance"), CORE_LIMITS.minMaxDistance, CORE_LIMITS.maxMaxDistance, {
+        .slider(infoLabel("Max Distance"), 1, 32, {
             defaultValue: mainSettings.maxDistance,
             tooltip: "Maximum block distance used to find what the player is looking at."
         })
         .dropdown(infoLabel("Panel Style"), PANEL_STYLES.map((style) => style.label), {
             defaultValueIndex: getPanelStyleIndex(mainSettings.panelStyleId),
             tooltip: "Visual style used by the WAILA panel."
+        })
+        .dropdown(infoLabel("Font Size"), WAILA_FONT_SCALE_OPTIONS.map((option) => option.label), {
+            defaultValueIndex: getFontScaleIndex(mainSettings.fontScale),
+            tooltip: "Text scale used by block and entity WAILA labels: 0.5, 0.75, 1, 1.25, 1.5."
         });
 
     const result = await form.show(player);
@@ -91,14 +114,16 @@ async function openMainSettingsMenu(player) {
         return;
     }
 
-    const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex] = result.formValues;
+    const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex, fontScaleIndex] = result.formValues;
     const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
+    const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
     const next = setCoreSettings({
         main: {
             enabled: Boolean(enabled),
             updateIntervalTicks: Number(updateIntervalTicks),
             maxDistance: Number(maxDistance),
-            panelStyleId: panelStyle.id
+            panelStyleId: panelStyle.id,
+            fontScale
         }
     });
 

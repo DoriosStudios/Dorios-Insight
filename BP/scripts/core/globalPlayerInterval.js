@@ -8,6 +8,8 @@ import {
     DEFAULT_CORE_SETTINGS,
     EMPTY_WAILA_TEXT,
     PANEL_STYLES,
+    WAILA_FONT_SCALE_FIELD_LENGTH,
+    WAILA_FONT_SCALE_OPTIONS,
     WAILA_STYLE_TEXTURE_FIELD_LENGTH
 } from "./const.js";
 import { resolvePlayerTarget, TargetKinds } from "./target.js";
@@ -29,6 +31,36 @@ function clampNumber(value, min, max, fallback) {
     }
 
     return Math.min(max, Math.max(min, number));
+}
+
+function clampFloat(value, min, max, fallback) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+        return fallback;
+    }
+
+    return Math.round(Math.min(max, Math.max(min, number)) * 100) / 100;
+}
+
+function getNearestFontScale(value) {
+    const scale = clampFloat(
+        value,
+        CORE_LIMITS.minFontScale,
+        CORE_LIMITS.maxFontScale,
+        DEFAULT_CORE_SETTINGS.main.fontScale
+    );
+
+    let nearest = WAILA_FONT_SCALE_OPTIONS[0].scale;
+    let nearestDistance = Infinity;
+    for (const option of WAILA_FONT_SCALE_OPTIONS) {
+        const distance = Math.abs(option.scale - scale);
+        if (distance < nearestDistance) {
+            nearest = option.scale;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearest;
 }
 
 function getSettingsSection(settings, key) {
@@ -58,7 +90,8 @@ function normalizeMainSettings(settings = {}) {
             CORE_LIMITS.minPanelStyleId,
             CORE_LIMITS.maxPanelStyleId,
             DEFAULT_CORE_SETTINGS.main.panelStyleId
-        )
+        ),
+        fontScale: getNearestFontScale(main.fontScale)
     };
 }
 
@@ -189,6 +222,15 @@ function buildStyleTextureField(mainSettings) {
         .padEnd(WAILA_STYLE_TEXTURE_FIELD_LENGTH, "~");
 }
 
+/** @param {MainSettings} mainSettings */
+function buildFontScaleField(mainSettings) {
+    const scale = getNearestFontScale(mainSettings.fontScale);
+    const encodedScale = Math.round(scale * 100);
+    return String(encodedScale)
+        .slice(0, WAILA_FONT_SCALE_FIELD_LENGTH)
+        .padEnd(WAILA_FONT_SCALE_FIELD_LENGTH, "~");
+}
+
 function normalizeRawtextParts(parts) {
     if (!Array.isArray(parts)) {
         return [];
@@ -219,7 +261,7 @@ function buildWailaRawMessage(parts, mainSettings, channel = CHANNEL_WAILA) {
 
     return {
         rawtext: [
-            { text: `${channel}${buildStyleTextureField(mainSettings)}` },
+            { text: `${channel}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}` },
             ...rawtext
         ]
     };

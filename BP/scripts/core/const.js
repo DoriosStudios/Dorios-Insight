@@ -10,6 +10,7 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @property {number} updateIntervalTicks
  * @property {number} maxDistance
  * @property {number} panelStyleId
+ * @property {number} fontScale
  */
 
 /**
@@ -49,6 +50,7 @@ export const DEFAULT_CORE_SETTINGS = {
     updateIntervalTicks: 4,
     maxDistance: 8,
     panelStyleId: 0,
+    fontScale: 1,
   },
   block: {
     energyContainers: false,
@@ -78,9 +80,35 @@ export const CORE_LIMITS = {
   maxMaxDistance: 32,
   minPanelStyleId: 0,
   maxPanelStyleId: 6,
+  minFontScale: 0.5,
+  maxFontScale: 1.5,
 };
 
 export const WAILA_STYLE_TEXTURE_FIELD_LENGTH = 40;
+export const WAILA_FONT_SCALE_FIELD_LENGTH = 12;
+
+export const WAILA_FONT_SCALE_OPTIONS = [
+  {
+    label: "Extra Small",
+    scale: 0.5,
+  },
+  {
+    label: "Small",
+    scale: 0.75,
+  },
+  {
+    label: "Normal",
+    scale: 1,
+  },
+  {
+    label: "Large",
+    scale: 1.25,
+  },
+  {
+    label: "Extra Large",
+    scale: 1.5,
+  },
+];
 
 export const PANEL_STYLES = [
   {
