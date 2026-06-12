@@ -39,7 +39,7 @@
                     },
                     "anchor_from": "top_middle",
                     "anchor_to": "top_middle",
-                    "offset": [0, "2.5%"],
+                    "offset": [0, "1%"],
                     "size": ["100%c + 20px", "100%cm + 10px"],
                     "nineslice_size": 4,
                     "controls": [
