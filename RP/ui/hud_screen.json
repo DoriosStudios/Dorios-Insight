@@ -7,13 +7,6 @@
                 "array_name": "controls",
                 "operation": "insert_back",
                 "value": {
-                    "insight_hud_screen_panel@insight_hud.root_panel": {}
-                }
-            },
-            {
-                "array_name": "controls",
-                "operation": "insert_back",
-                "value": {
                     "insight_entity_waila_panel@insight_entity_waila.root_panel": {}
                 }
             },
