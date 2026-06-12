@@ -73,7 +73,7 @@ export function resolvePlayerTarget(player, settings) {
     try {
         const entityHits = player.getEntitiesFromViewDirection({
             maxDistance,
-            includeLiquidBlocks: false,
+            includeLiquidBlocks: true,
             includePassableBlocks: true
         });
 
@@ -89,7 +89,7 @@ export function resolvePlayerTarget(player, settings) {
     try {
         blockHit = player.getBlockFromViewDirection({
             maxDistance,
-            includeLiquidBlocks: false,
+            includeLiquidBlocks: true,
             includePassableBlocks: true
         });
     } catch {

@@ -20,26 +20,6 @@ function mutedText(text) {
     return `${UI.muted}${text}${UI.reset}`;
 }
 
-function isAdminPlayer(player) {
-    if (!player) {
-        return false;
-    }
-
-    try {
-        if (typeof player.isOp === "function" && player.isOp()) {
-            return true;
-        }
-    } catch {
-        // Try tag fallback.
-    }
-
-    try {
-        return typeof player.hasTag === "function" && player.hasTag("insight:admin");
-    } catch {
-        return false;
-    }
-}
-
 function sendMessage(player, message) {
     try {
         player.sendMessage(message);
@@ -84,13 +64,13 @@ function getPanelStyleLabel(styleId) {
 }
 
 async function openMainSettingsMenu(player) {
-    const settings = getCoreSettings();
+    const settings = getCoreSettings(player);
     const mainSettings = settings.main;
     const form = new ModalFormData()
         .title(`${UI.info}Main Settings${UI.reset}`)
         .toggle(infoLabel("Enabled"), {
             defaultValue: mainSettings.enabled,
-            tooltip: "Turns Dorios Insight target labels on or off globally."
+            tooltip: "Turns Dorios Insight target labels on or off for you."
         })
         .slider(infoLabel("Update Interval"), 1, 40, {
             defaultValue: mainSettings.updateIntervalTicks,
@@ -117,7 +97,7 @@ async function openMainSettingsMenu(player) {
     const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex, fontScaleIndex] = result.formValues;
     const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
     const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
-    const next = setCoreSettings({
+    const next = setCoreSettings(player, {
         main: {
             enabled: Boolean(enabled),
             updateIntervalTicks: Number(updateIntervalTicks),
@@ -131,7 +111,7 @@ async function openMainSettingsMenu(player) {
 }
 
 async function openBlockSettingsMenu(player) {
-    const settings = getCoreSettings();
+    const settings = getCoreSettings(player);
     const form = new ModalFormData()
         .title(`${UI.info}Block Settings${UI.reset}`)
         .toggle(infoLabel("Energy Containers"), {
@@ -177,7 +157,7 @@ async function openBlockSettingsMenu(player) {
     }
 
     const [energyContainers, fluidContainers, blockRender, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
-    setCoreSettings({
+    setCoreSettings(player, {
         block: {
             energyContainers: Boolean(energyContainers),
             fluidContainers: Boolean(fluidContainers),
@@ -195,7 +175,7 @@ async function openBlockSettingsMenu(player) {
 }
 
 async function openEntitySettingsMenu(player) {
-    const settings = getCoreSettings();
+    const settings = getCoreSettings(player);
     const form = new ModalFormData()
         .title(`${UI.info}Entity Settings${UI.reset}`)
         .toggle(infoLabel("Entity Render"), {
@@ -233,7 +213,7 @@ async function openEntitySettingsMenu(player) {
     }
 
     const [entityRender, health, hostile, identifier, typeFamilies, tags, properties] = result.formValues;
-    setCoreSettings({
+    setCoreSettings(player, {
         entity: {
             entityRender: Boolean(entityRender),
             health: Boolean(health),
@@ -249,14 +229,9 @@ async function openEntitySettingsMenu(player) {
 }
 
 export async function openCoreMenu(player) {
-    if (!isAdminPlayer(player)) {
-        sendMessage(player, "§cOnly Insight admins can edit Core settings.");
-        return;
-    }
-
     const form = new ActionFormData()
         .title(`${UI.info}Dorios Insight Core${UI.reset}`)
-        .body(mutedText("Choose the settings group to edit."))
+        .body(mutedText("Choose the personal settings group to edit."))
         .button(`Main Settings\n${mutedText("Core behavior and panel style")}`, "textures/ui/icon_setting")
         .button(`Block Settings\n${mutedText("Tools, tiers, and tags")}`, "textures/ui/Wrenches1")
         .button(`Entity Settings\n${mutedText("Health, families, and tags")}`, "textures/ui/gear");

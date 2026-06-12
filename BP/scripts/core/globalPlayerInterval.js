@@ -20,7 +20,7 @@ import { getBlockRenderAux } from "./render/blockRender.js";
 
 let initialized = false;
 let systemTick = 0;
-let cachedSettings;
+const playerSettingsCache = new Map();
 
 /** @typedef {import("./const.js").CoreSettings} CoreSettings */
 /** @typedef {import("./const.js").MainSettings} MainSettings */
@@ -138,10 +138,17 @@ function normalizeSettings(settings = {}) {
     };
 }
 
-/** @returns {CoreSettings} */
-function loadSettings() {
+function getPlayerSettingsCacheKey(player) {
+    if (!player) {
+        return undefined;
+    }
+
+    return String(player.id || player.name || "");
+}
+
+function readStoredSettings(source) {
     try {
-        const raw = world.getDynamicProperty(CORE_SETTINGS_DYNAMIC_PROPERTY);
+        const raw = source?.getDynamicProperty?.(CORE_SETTINGS_DYNAMIC_PROPERTY);
         if (typeof raw === "string" && raw.length) {
             return normalizeSettings(JSON.parse(raw));
         }
@@ -149,45 +156,75 @@ function loadSettings() {
         // Use defaults when the property is missing or malformed.
     }
 
-    return normalizeSettings(DEFAULT_CORE_SETTINGS);
+    return undefined;
 }
 
 /**
+ * @param {import("@minecraft/server").Player} [player]
+ * @returns {CoreSettings}
+ */
+function loadSettings(player) {
+    return readStoredSettings(player)
+        ?? readStoredSettings(world)
+        ?? normalizeSettings(DEFAULT_CORE_SETTINGS);
+}
+
+/**
+ * @param {import("@minecraft/server").Player | undefined} player
  * @param {Partial<CoreSettings> | Record<string, unknown>} settings
  * @returns {CoreSettings}
  */
-function saveSettings(settings) {
+function saveSettings(player, settings) {
     const normalized = normalizeSettings(settings);
 
     try {
-        world.setDynamicProperty(CORE_SETTINGS_DYNAMIC_PROPERTY, JSON.stringify(normalized));
+        const target = player ?? world;
+        target.setDynamicProperty(CORE_SETTINGS_DYNAMIC_PROPERTY, JSON.stringify(normalized));
     } catch {
         // Runtime settings still work in memory if persistence is unavailable.
     }
 
-    cachedSettings = normalized;
+    const cacheKey = getPlayerSettingsCacheKey(player);
+    if (cacheKey) {
+        playerSettingsCache.set(cacheKey, normalized);
+    }
+
     return normalized;
 }
 
-/** @returns {CoreSettings} */
-export function getCoreSettings() {
-    if (!cachedSettings) {
-        cachedSettings = loadSettings();
+/**
+ * @param {import("@minecraft/server").Player} [player]
+ * @returns {CoreSettings}
+ */
+export function getCoreSettings(player) {
+    const cacheKey = getPlayerSettingsCacheKey(player);
+    if (!cacheKey) {
+        return loadSettings(player);
     }
 
-    return cachedSettings;
+    if (!playerSettingsCache.has(cacheKey)) {
+        playerSettingsCache.set(cacheKey, loadSettings(player));
+    }
+
+    return playerSettingsCache.get(cacheKey);
 }
 
 /**
+ * @param {import("@minecraft/server").Player} player
  * @param {Partial<CoreSettings> | Record<string, unknown>} settings
  * @returns {CoreSettings}
  */
-export function setCoreSettings(settings) {
-    const current = getCoreSettings();
+export function setCoreSettings(player, settings) {
+    if (!settings) {
+        settings = player;
+        player = undefined;
+    }
+
+    const current = getCoreSettings(player);
     const hasSections = Boolean(settings?.main || settings?.block || settings?.entity);
 
     if (!hasSections) {
-        return saveSettings({
+        return saveSettings(player, {
             main: {
                 ...current.main,
                 ...settings
@@ -200,7 +237,7 @@ export function setCoreSettings(settings) {
         });
     }
 
-    return saveSettings({
+    return saveSettings(player, {
         main: {
             ...current.main,
             ...settings?.main
@@ -331,13 +368,13 @@ function sendWailaMessage(player, payload) {
 function tickPlayers() {
     systemTick += 1;
 
-    const settings = getCoreSettings();
-    if (!settings.main.enabled || systemTick % settings.main.updateIntervalTicks !== 0) {
-        return;
-    }
-
     for (const player of world.getAllPlayers()) {
         try {
+            const settings = getCoreSettings(player);
+            if (!settings.main.enabled || systemTick % settings.main.updateIntervalTicks !== 0) {
+                continue;
+            }
+
             sendWailaMessage(player, composeTargetMessage(player, settings));
         } catch {
             sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
