@@ -1,6 +1,7 @@
 export const CHANNEL_WAILA = "insight_waila:";
 export const CHANNEL_ENTITY_WAILA = "insight_entity_waila:";
 export const CHANNEL_BLOCK_WAILA = "insight_block_waila:";
+export const CHANNEL_DEFAULT_WAILA = "insight_default_waila:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
@@ -28,6 +29,7 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
 /**
  * @typedef {object} EntitySettings
+ * @property {boolean} entityRender
  * @property {boolean} health
  * @property {boolean} hostile
  * @property {boolean} identifier
@@ -64,6 +66,7 @@ export const DEFAULT_CORE_SETTINGS = {
     states: false,
   },
   entity: {
+    entityRender: true,
     health: true,
     hostile: false,
     identifier: false,

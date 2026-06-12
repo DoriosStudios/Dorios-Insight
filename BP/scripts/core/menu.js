@@ -198,6 +198,10 @@ async function openEntitySettingsMenu(player) {
     const settings = getCoreSettings();
     const form = new ModalFormData()
         .title(`${UI.info}Entity Settings${UI.reset}`)
+        .toggle(infoLabel("Entity Render"), {
+            defaultValue: settings.entity.entityRender,
+            tooltip: "Shows the targeted entity render next to the WAILA text."
+        })
         .toggle(infoLabel("Health"), {
             defaultValue: settings.entity.health,
             tooltip: "Shows the entity current and max health when the entity has a health component."
@@ -228,9 +232,10 @@ async function openEntitySettingsMenu(player) {
         return;
     }
 
-    const [health, hostile, identifier, typeFamilies, tags, properties] = result.formValues;
+    const [entityRender, health, hostile, identifier, typeFamilies, tags, properties] = result.formValues;
     setCoreSettings({
         entity: {
+            entityRender: Boolean(entityRender),
             health: Boolean(health),
             hostile: Boolean(hostile),
             identifier: Boolean(identifier),

@@ -1,6 +1,7 @@
 import { system, world } from "@minecraft/server";
 import {
     CHANNEL_BLOCK_WAILA,
+    CHANNEL_DEFAULT_WAILA,
     CHANNEL_ENTITY_WAILA,
     CHANNEL_WAILA,
     CORE_LIMITS,
@@ -115,6 +116,7 @@ function normalizeEntitySettings(settings = {}) {
     const entity = getSettingsSection(settings, "entity");
 
     return {
+        entityRender: entity?.entityRender !== false,
         health: entity?.health !== false,
         hostile: entity?.hostile === true,
         identifier: entity?.identifier === true,
@@ -293,16 +295,21 @@ function composeTargetMessage(player, settings) {
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
         return buildWailaPayload(
-            buildWailaRawMessage(entityTarget.rawtext, settings.main, CHANNEL_ENTITY_WAILA),
-            entityTarget.entityId
+            buildWailaRawMessage(
+                entityTarget.rawtext,
+                settings.main,
+                settings.entity.entityRender ? CHANNEL_ENTITY_WAILA : CHANNEL_DEFAULT_WAILA
+            ),
+            settings.entity.entityRender ? entityTarget.entityId : "default:"
         );
     }
 
     if (target.kind === TargetKinds.Block) {
         const renderAux = getSafeBlockRenderAux(target.block, settings.block);
+        const channel = renderAux ? CHANNEL_BLOCK_WAILA : CHANNEL_DEFAULT_WAILA;
         return buildWailaPayload(
-            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, CHANNEL_BLOCK_WAILA),
-            `block:${renderAux || 0}`
+            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, channel),
+            renderAux ? `block:${renderAux}` : "default:"
         );
     }
 
