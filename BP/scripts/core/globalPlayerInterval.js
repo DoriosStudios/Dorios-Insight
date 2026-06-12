@@ -1,5 +1,6 @@
 import { system, world } from "@minecraft/server";
 import {
+    CHANNEL_BLOCK_WAILA,
     CHANNEL_ENTITY_WAILA,
     CHANNEL_WAILA,
     CORE_LIMITS,
@@ -258,7 +259,7 @@ function composeTargetMessage(player, settings) {
     if (target.kind === TargetKinds.Block) {
         const renderAux = getSafeBlockRenderAux(target.block, settings.block);
         return buildWailaPayload(
-            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, ""),
+            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, CHANNEL_BLOCK_WAILA),
             `block:${renderAux || 0}`
         );
     }
