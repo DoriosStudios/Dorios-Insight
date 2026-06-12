@@ -1,5 +1,5 @@
 {
-    "namespace": "insight_waila_v2",
+    "namespace": "insight_block_waila",
 
     "root_panel": {
         "$update_string": "insight_waila:",
@@ -7,11 +7,12 @@
         "size": ["100%", "100%"],
         "controls": [
             {
-                "data_control_waila_v2": {
+                "data_control_block_waila": {
                     "type": "panel",
                     "size": [0, 0],
                     "property_bag": {
-                        "#preserved_waila_text": ""
+                        "#preserved_waila_text": "",
+                        "#stored_subtitle_text": ""
                     },
                     "bindings": [
                         {
@@ -19,12 +20,15 @@
                         },
                         {
                             "binding_name": "#hud_title_text_string",
-                            "binding_name_override": "#preserved_waila_text",
-                            "binding_condition": "visibility_changed"
+                            "binding_name_override": "#preserved_waila_text"
+                        },
+                        {
+                            "binding_name": "#hud_subtitle_text_string",
+                            "binding_name_override": "#stored_subtitle_text"
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(not (#hud_title_text_string = #preserved_waila_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+                            "source_property_name": "(not ((#stored_subtitle_text - 'block:') = #stored_subtitle_text))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -44,8 +48,8 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_control_name": "data_control_waila_v2",
-                            "source_property_name": "(not ((#preserved_waila_text - $update_string) = #preserved_waila_text))",
+                            "source_control_name": "data_control_block_waila",
+                            "source_property_name": "(not ((#stored_subtitle_text - 'block:') = #stored_subtitle_text))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -102,7 +106,7 @@
                                                 {
                                                     "binding_type": "view",
                                                     "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
+                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id) and not ((#stored_entity_id - 'block:') = '0'))",
                                                     "target_property_name": "#visible"
                                                 }
                                             ]
@@ -116,59 +120,7 @@
                                                 {
                                                     "binding_type": "view",
                                                     "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
-                                                    "target_property_name": "#visible"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "entity_display_panel": {
-                                            "type": "panel",
-                                            "size": [32, "100%sm"],
-                                            "max_size": ["100%y", "100%sm"],
-                                            "controls": [
-                                                {
-                                                    "entity_display": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 4px", "100%x"],
-                                                        "offset": [0, 6],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "stored_entity_id",
-                                                                "source_property_name": "#stored_entity_id",
-                                                                "target_property_name": "#entity_id"
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = '') and ((#stored_entity_id - 'block:') = #stored_entity_id))",
-                                                    "target_property_name": "#visible"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "entity_text_gap": {
-                                            "type": "panel",
-                                            "size": [4, 0],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = '') and ((#stored_entity_id - 'block:') = #stored_entity_id))",
+                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id) and not ((#stored_entity_id - 'block:') = '0'))",
                                                     "target_property_name": "#visible"
                                                 }
                                             ]
@@ -198,8 +150,8 @@
                     "bindings": [
                         {
                             "binding_type": "view",
-                            "source_control_name": "data_control_waila_v2",
-                            "source_property_name": "(#preserved_waila_text - $update_string)",
+                            "source_control_name": "data_control_block_waila",
+                            "source_property_name": "#preserved_waila_text",
                             "target_property_name": "#waila_payload"
                         },
                         {
@@ -219,7 +171,8 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(not (#waila_payload = '') and not (#waila_text = ''))",
+                            "source_control_name": "stored_entity_id",
+                            "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
                             "target_property_name": "#visible"
                         }
                     ]

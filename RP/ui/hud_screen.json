@@ -21,7 +21,14 @@
                 "array_name": "controls",
                 "operation": "insert_back",
                 "value": {
-                    "insight_waila_v2_panel@insight_waila_v2.root_panel": {}
+                    "insight_entity_waila_panel@insight_entity_waila.root_panel": {}
+                }
+            },
+            {
+                "array_name": "controls",
+                "operation": "insert_back",
+                "value": {
+                    "insight_block_waila_panel@insight_block_waila.root_panel": {}
                 }
             }
         ]
@@ -29,8 +36,10 @@
 
     "hud_title_text": {
         "$update_string": "insight_waila:",
+        "$entity_update_string": "insight_entity_waila:",
+        "$block_update_string": "insight_block_waila:",
         "$title_txt": "$title_text",
-        "visible": "(($title_txt - $update_string) = $title_txt)",
+        "visible": "((($title_txt - $update_string) = $title_txt) and (($title_txt - $entity_update_string) = $title_txt) and (($title_txt - $block_update_string) = $title_txt))",
         "type": "stack_panel",
         "orientation": "vertical",
         "offset": [0, -19],
@@ -67,7 +76,7 @@
                                     },
                                     {
                                         "binding_type": "view",
-                                        "source_property_name": "((#text - $update_string) = #text)",
+                                        "source_property_name": "(((#text - $update_string) = #text) and ((#text - $entity_update_string) = #text) and ((#text - $block_update_string) = #text))",
                                         "target_property_name": "#visible"
                                     }
                                 ]

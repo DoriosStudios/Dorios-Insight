@@ -1,13 +1,14 @@
 {
-    "namespace": "insight_waila_v2",
+    "namespace": "insight_entity_waila",
 
     "root_panel": {
-        "$update_string": "insight_waila:",
+        "$update_string": "insight_entity_waila:",
         "type": "panel",
         "size": ["100%", "100%"],
         "controls": [
             {
-                "data_control_waila_v2": {
+                "data_control_entity_waila": {
+                    "$update_string": "insight_entity_waila:",
                     "type": "panel",
                     "size": [0, 0],
                     "property_bag": {
@@ -19,12 +20,11 @@
                         },
                         {
                             "binding_name": "#hud_title_text_string",
-                            "binding_name_override": "#preserved_waila_text",
-                            "binding_condition": "visibility_changed"
+                            "binding_name_override": "#preserved_waila_text"
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(not (#hud_title_text_string = #preserved_waila_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+                            "source_property_name": "(not ((#hud_title_text_string - 'insight_entity_waila:') = #hud_title_text_string))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -44,8 +44,8 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_control_name": "data_control_waila_v2",
-                            "source_property_name": "(not ((#preserved_waila_text - $update_string) = #preserved_waila_text))",
+                            "source_control_name": "data_control_entity_waila",
+                            "source_property_name": "(not ((#preserved_waila_text - 'insight_entity_waila:') = #preserved_waila_text))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -71,57 +71,6 @@
                                 "size": ["100%c", "100%cm"],
                                 "layer": 5,
                                 "controls": [
-                                    {
-                                        "block_display_panel": {
-                                            "type": "panel",
-                                            "size": [32, "100%sm"],
-                                            "max_size": ["100%y", "100%sm"],
-                                            "controls": [
-                                                {
-                                                    "block_display": {
-                                                        "type": "custom",
-                                                        "renderer": "inventory_item_renderer",
-                                                        "size": ["100% - 4px", "100%x"],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#item_id_aux": 0
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "stored_entity_id",
-                                                                "source_property_name": "((#stored_entity_id - 'block:') * 1)",
-                                                                "target_property_name": "#item_id_aux"
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
-                                                    "target_property_name": "#visible"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "block_text_gap": {
-                                            "type": "panel",
-                                            "size": [4, 0],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
-                                                    "target_property_name": "#visible"
-                                                }
-                                            ]
-                                        }
-                                    },
                                     {
                                         "entity_display_panel": {
                                             "type": "panel",
@@ -154,7 +103,7 @@
                                                 {
                                                     "binding_type": "view",
                                                     "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = '') and ((#stored_entity_id - 'block:') = #stored_entity_id))",
+                                                    "source_property_name": "(not (#stored_entity_id = ''))",
                                                     "target_property_name": "#visible"
                                                 }
                                             ]
@@ -168,7 +117,7 @@
                                                 {
                                                     "binding_type": "view",
                                                     "source_control_name": "stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = '') and ((#stored_entity_id - 'block:') = #stored_entity_id))",
+                                                    "source_property_name": "(not (#stored_entity_id = ''))",
                                                     "target_property_name": "#visible"
                                                 }
                                             ]
@@ -198,8 +147,8 @@
                     "bindings": [
                         {
                             "binding_type": "view",
-                            "source_control_name": "data_control_waila_v2",
-                            "source_property_name": "(#preserved_waila_text - $update_string)",
+                            "source_control_name": "data_control_entity_waila",
+                            "source_property_name": "(#preserved_waila_text - 'insight_entity_waila:')",
                             "target_property_name": "#waila_payload"
                         },
                         {
@@ -214,12 +163,8 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "#panel_texture",
-                            "target_property_name": "#texture"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "(not (#waila_payload = '') and not (#waila_text = ''))",
+                            "source_control_name": "data_control_entity_waila",
+                            "source_property_name": "(not ((#hud_title_text_string - 'insight_entity_waila:') = #hud_title_text_string))",
                             "target_property_name": "#visible"
                         }
                     ]

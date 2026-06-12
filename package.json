@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "generate:block-render-aux": "node scripts/tools/generateBlockRenderAux.js"
+  },
   "dependencies": {
     "@minecraft/server": "^2.7.0"
   },

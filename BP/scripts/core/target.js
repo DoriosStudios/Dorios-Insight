@@ -7,6 +7,45 @@ export const TargetKinds = {
 /** @typedef {import("./const.js").MainSettings} MainSettings */
 
 const IGNORED_ENTITY_TARGET_FAMILIES = ["inanimate"];
+const TARGET_DISTANCE_EPSILON = 0.1;
+
+function getDistanceBetween(left, right) {
+    if (!left || !right) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    const dx = Number(left.x) - Number(right.x);
+    const dy = Number(left.y) - Number(right.y);
+    const dz = Number(left.z) - Number(right.z);
+
+    if (!Number.isFinite(dx) || !Number.isFinite(dy) || !Number.isFinite(dz)) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+function getBlockHitDistance(player, blockHit) {
+    if (!blockHit?.block) {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    const origin = player.getHeadLocation?.() ?? player.location;
+    const blockLocation = blockHit.block.location;
+    return getDistanceBetween(origin, {
+        x: blockLocation.x + 0.5,
+        y: blockLocation.y + 0.5,
+        z: blockLocation.z + 0.5
+    });
+}
+
+function getEntityHitDistance(player, entityHit) {
+    if (typeof entityHit?.distance === "number" && Number.isFinite(entityHit.distance)) {
+        return entityHit.distance;
+    }
+
+    return getDistanceBetween(player.getHeadLocation?.() ?? player.location, entityHit?.entity?.location);
+}
 
 function hasTypeFamily(entity, family) {
     try {
@@ -28,6 +67,8 @@ function shouldIgnoreEntityTarget(entity) {
  */
 export function resolvePlayerTarget(player, settings) {
     const maxDistance = Math.max(1, Number(settings?.maxDistance) || 8);
+    let entityHit;
+    let blockHit;
 
     try {
         const entityHits = player.getEntitiesFromViewDirection({
@@ -37,35 +78,53 @@ export function resolvePlayerTarget(player, settings) {
         });
 
         if (Array.isArray(entityHits) && entityHits.length > 0) {
-            const hit = entityHits.find((candidate) => (
+            entityHit = entityHits.find((candidate) => (
                 candidate?.entity && !shouldIgnoreEntityTarget(candidate.entity)
             ));
-            if (hit?.entity) {
-                return {
-                    kind: TargetKinds.Entity,
-                    entity: hit.entity
-                };
-            }
         }
     } catch {
         // Entity raycast is optional; fall back to block raycast.
     }
 
     try {
-        const blockHit = player.getBlockFromViewDirection({
+        blockHit = player.getBlockFromViewDirection({
             maxDistance,
             includeLiquidBlocks: false,
             includePassableBlocks: true
         });
+    } catch {
+        // No target.
+    }
 
-        if (blockHit?.block) {
+    if (entityHit?.entity && blockHit?.block) {
+        const entityDistance = getEntityHitDistance(player, entityHit);
+        const blockDistance = getBlockHitDistance(player, blockHit);
+
+        if (blockDistance <= entityDistance + TARGET_DISTANCE_EPSILON) {
             return {
                 kind: TargetKinds.Block,
                 block: blockHit.block
             };
         }
-    } catch {
-        // No target.
+
+        return {
+            kind: TargetKinds.Entity,
+            entity: entityHit.entity
+        };
+    }
+
+    if (entityHit?.entity) {
+        return {
+            kind: TargetKinds.Entity,
+            entity: entityHit.entity
+        };
+    }
+
+    if (blockHit?.block) {
+        return {
+            kind: TargetKinds.Block,
+            block: blockHit.block
+        };
     }
 
     return {

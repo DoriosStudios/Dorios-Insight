@@ -1,4 +1,6 @@
 export const CHANNEL_WAILA = "insight_waila:";
+export const CHANNEL_ENTITY_WAILA = "insight_entity_waila:";
+export const CHANNEL_BLOCK_WAILA = "insight_block_waila:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
@@ -14,6 +16,7 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @typedef {object} BlockSettings
  * @property {boolean} energyContainers
  * @property {boolean} fluidContainers
+ * @property {boolean} blockRender
  * @property {boolean} preferredTool
  * @property {boolean} toolTier
  * @property {boolean} location
@@ -50,6 +53,7 @@ export const DEFAULT_CORE_SETTINGS = {
   block: {
     energyContainers: false,
     fluidContainers: false,
+    blockRender: true,
     preferredTool: false,
     toolTier: false,
     location: false,

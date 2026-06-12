@@ -117,6 +117,10 @@ async function openBlockSettingsMenu(player) {
             defaultValue: settings.block.fluidContainers,
             tooltip: "Shows stored fluids for blocks tagged dorios:fluid."
         })
+        .toggle(infoLabel("Block Render"), {
+            defaultValue: settings.block.blockRender,
+            tooltip: "Shows the targeted block item render next to the WAILA text when Insight can resolve its aux id."
+        })
         .toggle(infoLabel("Preferred Tool"), {
             defaultValue: settings.block.preferredTool,
             tooltip: "Shows the tool type associated with block destructible tags, such as Pickaxe or Shovel."
@@ -147,11 +151,12 @@ async function openBlockSettingsMenu(player) {
         return;
     }
 
-    const [energyContainers, fluidContainers, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
+    const [energyContainers, fluidContainers, blockRender, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
     setCoreSettings({
         block: {
             energyContainers: Boolean(energyContainers),
             fluidContainers: Boolean(fluidContainers),
+            blockRender: Boolean(blockRender),
             preferredTool: Boolean(preferredTool),
             toolTier: Boolean(toolTier),
             location: Boolean(location),

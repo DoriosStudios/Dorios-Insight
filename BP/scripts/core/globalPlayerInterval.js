@@ -1,5 +1,6 @@
 import { system, world } from "@minecraft/server";
 import {
+    CHANNEL_ENTITY_WAILA,
     CHANNEL_WAILA,
     CORE_LIMITS,
     CORE_SETTINGS_DYNAMIC_PROPERTY,
@@ -11,6 +12,7 @@ import {
 import { resolvePlayerTarget, TargetKinds } from "./target.js";
 import { buildBlockLabel } from "./blocks/general.js";
 import { composeEntityTarget } from "./entities/index.js";
+import { getBlockRenderAux } from "./render/blockRender.js";
 
 let initialized = false;
 let systemTick = 0;
@@ -65,6 +67,7 @@ function normalizeBlockSettings(settings = {}) {
     return {
         energyContainers: block.energyContainers === true,
         fluidContainers: block.fluidContainers === true,
+        blockRender: block.blockRender !== false,
         preferredTool: block.preferredTool === true,
         toolTier: block.toolTier === true,
         location: block.location === true,
@@ -202,8 +205,9 @@ function normalizeRawtextParts(parts) {
 /**
  * @param {Array<object>} parts
  * @param {MainSettings} mainSettings
+ * @param {string} channel
  */
-function buildWailaRawMessage(parts, mainSettings) {
+function buildWailaRawMessage(parts, mainSettings, channel = CHANNEL_WAILA) {
     const rawtext = normalizeRawtextParts(parts);
 
     if (!rawtext.length) {
@@ -214,7 +218,7 @@ function buildWailaRawMessage(parts, mainSettings) {
 
     return {
         rawtext: [
-            { text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}` },
+            { text: `${channel}${buildStyleTextureField(mainSettings)}` },
             ...rawtext
         ]
     };
@@ -227,17 +231,36 @@ function buildWailaPayload(title, subtitleText = "") {
     };
 }
 
+function getSafeBlockRenderAux(block, blockSettings) {
+    if (!blockSettings.blockRender) {
+        return 0;
+    }
+
+    try {
+        return getBlockRenderAux(block) || 0;
+    } catch {
+        return 0;
+    }
+}
+
 /** @param {CoreSettings} settings */
 function composeTargetMessage(player, settings) {
     const target = resolvePlayerTarget(player, settings.main);
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
-        return buildWailaPayload(buildWailaRawMessage(entityTarget.rawtext, settings.main), entityTarget.entityId);
+        return buildWailaPayload(
+            buildWailaRawMessage(entityTarget.rawtext, settings.main, CHANNEL_ENTITY_WAILA),
+            entityTarget.entityId
+        );
     }
 
     if (target.kind === TargetKinds.Block) {
-        return buildWailaPayload(buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main));
+        const renderAux = getSafeBlockRenderAux(target.block, settings.block);
+        return buildWailaPayload(
+            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, ""),
+            `block:${renderAux || 0}`
+        );
     }
 
     return buildWailaPayload({ rawtext: [{ text: EMPTY_WAILA_TEXT }] });
