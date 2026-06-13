@@ -3,6 +3,7 @@ import {
     CHANNEL_BLOCK_WAILA,
     CHANNEL_DEFAULT_WAILA,
     CHANNEL_ENTITY_WAILA,
+    CHANNEL_HUD,
     CHANNEL_WAILA,
     CORE_LIMITS,
     CORE_SETTINGS_DYNAMIC_PROPERTY,
@@ -17,10 +18,13 @@ import { resolvePlayerTarget, TargetKinds } from "./target.js";
 import { buildBlockLabel } from "./blocks/general.js";
 import { composeEntityTarget } from "./entities/index.js";
 import { getBlockRenderAux } from "./render/blockRender.js";
+import { updateDurabilityIndicator } from "./hud/durabilityIndicator.js";
+import { initializeUIQueue, registerChannel, sendRaw, setSubtitle } from "./uiQueue.js";
 
 let initialized = false;
 let systemTick = 0;
 const playerSettingsCache = new Map();
+const playerWailaChannelCache = new Map();
 
 /** @typedef {import("./const.js").CoreSettings} CoreSettings */
 /** @typedef {import("./const.js").MainSettings} MainSettings */
@@ -306,10 +310,18 @@ function buildWailaRawMessage(parts, mainSettings, channel = CHANNEL_WAILA) {
     };
 }
 
-function buildWailaPayload(title, subtitleText = "") {
+/** @param {MainSettings} mainSettings */
+function buildWailaClearMessage(mainSettings, channel) {
+    return {
+        rawtext: [{ text: `${channel}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}` }]
+    };
+}
+
+function buildWailaPayload(title, subtitleText = "", channel = CHANNEL_WAILA) {
     return {
         title,
-        subtitleText: String(subtitleText || "")
+        subtitleText: String(subtitleText || ""),
+        channel
     };
 }
 
@@ -331,13 +343,15 @@ function composeTargetMessage(player, settings) {
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
+        const channel = settings.entity.entityRender ? CHANNEL_ENTITY_WAILA : CHANNEL_DEFAULT_WAILA;
         return buildWailaPayload(
             buildWailaRawMessage(
                 entityTarget.rawtext,
                 settings.main,
-                settings.entity.entityRender ? CHANNEL_ENTITY_WAILA : CHANNEL_DEFAULT_WAILA
+                channel
             ),
-            settings.entity.entityRender ? entityTarget.entityId : "default:"
+            settings.entity.entityRender ? entityTarget.entityId : "default:",
+            channel
         );
     }
 
@@ -346,20 +360,29 @@ function composeTargetMessage(player, settings) {
         const channel = renderAux ? CHANNEL_BLOCK_WAILA : CHANNEL_DEFAULT_WAILA;
         return buildWailaPayload(
             buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, channel),
-            renderAux ? `block:${renderAux}` : "default:"
+            renderAux ? `block:${renderAux}` : "default:",
+            channel
         );
     }
 
     return buildWailaPayload({ rawtext: [{ text: EMPTY_WAILA_TEXT }] });
 }
 
-function sendWailaMessage(player, payload) {
+function sendWailaMessage(player, payload, mainSettings = DEFAULT_CORE_SETTINGS.main) {
     const title = payload?.title ?? payload;
     const subtitleText = payload?.subtitleText ?? "";
+    const channel = payload?.channel ?? CHANNEL_WAILA;
 
     try {
-        player.runCommand(`titleraw @s title ${JSON.stringify(title)}`);
-        player.runCommand(`titleraw @s subtitle ${JSON.stringify({ rawtext: [{ text: subtitleText }] })}`);
+        setSubtitle(player, { rawtext: [{ text: subtitleText }] });
+
+        const previousChannel = playerWailaChannelCache.get(player.id);
+        if (previousChannel && previousChannel !== channel && previousChannel !== CHANNEL_WAILA) {
+            sendRaw(player, previousChannel, buildWailaClearMessage(mainSettings, previousChannel));
+        }
+
+        playerWailaChannelCache.set(player.id, channel);
+        sendRaw(player, channel, title);
     } catch {
         // Skip players that are not ready yet.
     }
@@ -375,7 +398,11 @@ function tickPlayers() {
                 continue;
             }
 
-            sendWailaMessage(player, composeTargetMessage(player, settings));
+            const targetPayload = composeTargetMessage(player, settings);
+            sendWailaMessage(player, targetPayload, settings.main);
+            if (targetPayload.channel === CHANNEL_WAILA) {
+                updateDurabilityIndicator(player);
+            }
         } catch {
             sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
         }
@@ -389,5 +416,14 @@ export function initializeGlobalPlayerInterval() {
 
     initialized = true;
 
+    registerChannel(CHANNEL_WAILA);
+    registerChannel(CHANNEL_DEFAULT_WAILA);
+    registerChannel(CHANNEL_ENTITY_WAILA);
+    registerChannel(CHANNEL_BLOCK_WAILA);
+    registerChannel(CHANNEL_HUD);
+    initializeUIQueue();
+    world.afterEvents.playerLeave.subscribe((event) => {
+        playerWailaChannelCache.delete(event.playerId);
+    });
     system.runInterval(tickPlayers, 1);
 }

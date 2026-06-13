@@ -19,7 +19,8 @@
                         },
                         {
                             "binding_name": "#hud_title_text_string",
-                            "binding_name_override": "#preserved_waila_text"
+                            "binding_name_override": "#preserved_waila_text",
+                            "binding_condition": "visible"
                         },
                         {
                             "binding_type": "view",
@@ -35,7 +36,8 @@
                     "texture": "textures/insight/style_default",
                     "alpha": 0.85,
                     "property_bag": {
-                        "#current_title_text": ""
+                        "#current_title_text": "",
+                        "#current_subtitle_text": ""
                     },
                     "anchor_from": "top_middle",
                     "anchor_to": "top_middle",
@@ -65,6 +67,10 @@
                             "binding_name_override": "#current_title_text"
                         },
                         {
+                            "binding_name": "#hud_subtitle_text_string",
+                            "binding_name_override": "#current_subtitle_text"
+                        },
+                        {
                             "binding_type": "view",
                             "source_control_name": "data_control_default_waila",
                             "source_property_name": "(#preserved_waila_text - 'insight_default_waila:')",
@@ -92,7 +98,7 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(not ((#current_title_text - 'insight_default_waila:') = #current_title_text))",
+                            "source_property_name": "((not (#waila_text = '')) and not (#current_subtitle_text = '') and not ((#current_title_text - 'insight_default_waila:') = #current_title_text))",
                             "target_property_name": "#visible"
                         }
                     ]

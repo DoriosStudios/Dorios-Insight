@@ -50,8 +50,8 @@ let started = false;
 // Configuration
 // ---------------------------------------------------------------------------
 
-/** How many ticks before a stale channel gets a refresh re-send */
-const STALE_THRESHOLD_TICKS = 10;
+/** How many ticks before a stale channel gets a refresh re-send. Disabled for the current multi-panel WAILA bridge. */
+const STALE_THRESHOLD_TICKS = Number.POSITIVE_INFINITY;
 
 /** Base multiplier for exponential backoff on stale refreshes (ticks) */
 const BACKOFF_BASE_TICKS = 20;
