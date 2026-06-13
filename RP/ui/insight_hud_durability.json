@@ -405,7 +405,7 @@
         "type": "panel",
         "anchor_from": "bottom_middle",
         "anchor_to": "bottom_middle",
-        "offset": [136, -8],
+        "offset": [136, "-3.25%"],
         "layer": 28,
         "size": ["100%cm", "100%cm"],
         "controls": [

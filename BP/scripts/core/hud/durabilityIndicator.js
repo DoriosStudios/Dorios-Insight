@@ -127,12 +127,12 @@ function collectDurabilityData(player) {
 
     const max = Math.max(0, Math.round(Number(durability.maxDurability) || 0));
     const damage = Math.max(0, Math.round(Number(durability.damage) || 0));
-    if (max <= 0 || damage <= 0) {
+    if (max <= 0) {
         return EMPTY_DURABILITY_DATA;
     }
 
     const current = Math.max(0, Math.min(max, max - damage));
-    const percent = Math.max(0, Math.min(99, Math.round((current / max) * 100)));
+    const percent = Math.max(0, Math.min(100, Math.round((current / max) * 100)));
     const currentParts = splitTwoDigitPairs(current);
     const maxParts = splitTwoDigitPairs(max);
 
