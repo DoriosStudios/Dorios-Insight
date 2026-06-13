@@ -1,8 +1,8 @@
 export const CHANNEL_WAILA = "insight_waila:";
-export const CHANNEL_ENTITY_WAILA = "insight_entity_waila:";
-export const CHANNEL_BLOCK_WAILA = "insight_block_waila:";
-export const CHANNEL_DEFAULT_WAILA = "insight_default_waila:";
-export const CHANNEL_HUD = "insight_hud";
+export const CHANNEL_ENTITY_WAILA = CHANNEL_WAILA;
+export const CHANNEL_BLOCK_WAILA = CHANNEL_WAILA;
+export const CHANNEL_DEFAULT_WAILA = CHANNEL_WAILA;
+export const CHANNEL_HUD = "insight_hud:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 

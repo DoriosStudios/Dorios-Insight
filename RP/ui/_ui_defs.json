@@ -1,9 +1,7 @@
 {
     "ui_defs": [
         "ui/hud_screen.json",
-        "ui/insight_default_waila.json",
-        "ui/insight_entity_waila.json",
-        "ui/insight_block_waila.json",
+        "ui/insight_waila.json",
         "ui/insight_hud_durability.json"
     ]
 }

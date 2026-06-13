@@ -1,6 +1,6 @@
 import { CHANNEL_HUD } from "../const.js";
 import { defineSchema, encodePayload } from "../uiDataEncoder.js";
-import { forceRefresh, send } from "../uiQueue.js";
+import { sendLatchedTitle } from "../titleBus.js";
 
 const EMPTY_DURABILITY_DATA = {
     durPercent: 0,
@@ -272,6 +272,5 @@ function encodeDurabilityData(data) {
 }
 
 export function updateDurabilityIndicator(player) {
-    send(player, CHANNEL_HUD, `${encodeDurabilityData(collectDurabilityData(player))}${encodeEquipmentData(player)}`);
-    forceRefresh(player, CHANNEL_HUD);
+    sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(collectDurabilityData(player))}${encodeEquipmentData(player)}`);
 }

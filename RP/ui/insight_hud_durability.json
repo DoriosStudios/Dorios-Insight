@@ -30,7 +30,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.47s' * (#stored_text - ('%.38s' * #stored_text))) - 'e')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.47s' * (#hud_payload - ('%.38s' * #hud_payload))) - 'e')",
                 "target_property_name": "#data_e"
             },
             {
@@ -55,7 +60,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -73,7 +78,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.56s' * (#stored_text - ('%.47s' * #stored_text))) - 'f')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.56s' * (#hud_payload - ('%.47s' * #hud_payload))) - 'f')",
                 "target_property_name": "#data_f"
             },
             {
@@ -108,7 +118,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -126,7 +136,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.83s' * (#stored_text - ('%.74s' * #stored_text))) - 'i')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.83s' * (#hud_payload - ('%.74s' * #hud_payload))) - 'i')",
                 "target_property_name": "#data_i"
             },
             {
@@ -151,7 +166,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -169,7 +184,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.92s' * (#stored_text - ('%.83s' * #stored_text))) - 'j')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.92s' * (#hud_payload - ('%.83s' * #hud_payload))) - 'j')",
                 "target_property_name": "#equip_data"
             },
             {
@@ -194,7 +214,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -212,7 +232,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.101s' * (#stored_text - ('%.92s' * #stored_text))) - 'k')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.101s' * (#hud_payload - ('%.92s' * #hud_payload))) - 'k')",
                 "target_property_name": "#equip_data"
             },
             {
@@ -237,7 +262,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -255,7 +280,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.110s' * (#stored_text - ('%.101s' * #stored_text))) - 'l')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.110s' * (#hud_payload - ('%.101s' * #hud_payload))) - 'l')",
                 "target_property_name": "#equip_data"
             },
             {
@@ -280,7 +310,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -298,7 +328,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.119s' * (#stored_text - ('%.110s' * #stored_text))) - 'm')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.119s' * (#hud_payload - ('%.110s' * #hud_payload))) - 'm')",
                 "target_property_name": "#equip_data"
             },
             {
@@ -323,7 +358,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]
@@ -341,7 +376,12 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(('%.128s' * (#stored_text - ('%.119s' * #stored_text))) - 'n')",
+                "source_property_name": "(#stored_text - 'insight_hud:')",
+                "target_property_name": "#hud_payload"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.128s' * (#hud_payload - ('%.119s' * #hud_payload))) - 'n')",
                 "target_property_name": "#equip_data"
             },
             {
@@ -366,7 +406,7 @@
             },
             {
                 "binding_type": "view",
-                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud:') = #hud_title_text_string))",
                 "target_property_name": "#visible"
             }
         ]

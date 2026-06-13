@@ -1,9 +1,5 @@
 import { system, world } from "@minecraft/server";
 import {
-    CHANNEL_BLOCK_WAILA,
-    CHANNEL_DEFAULT_WAILA,
-    CHANNEL_ENTITY_WAILA,
-    CHANNEL_HUD,
     CHANNEL_WAILA,
     CORE_LIMITS,
     CORE_SETTINGS_DYNAMIC_PROPERTY,
@@ -20,12 +16,11 @@ import { buildBlockLabel } from "./blocks/general.js";
 import { composeEntityTarget } from "./entities/index.js";
 import { getBlockRenderAux } from "./render/blockRender.js";
 import { updateDurabilityIndicator } from "./hud/durabilityIndicator.js";
-import { initializeUIQueue, registerChannel, sendRaw, setSubtitle } from "./uiQueue.js";
+import { clearLatched, initializeTitleBus, sendLatchedPair } from "./titleBus.js";
 
 let initialized = false;
 let systemTick = 0;
 const playerSettingsCache = new Map();
-const playerWailaChannelCache = new Map();
 
 /** @typedef {import("./const.js").CoreSettings} CoreSettings */
 /** @typedef {import("./const.js").MainSettings} MainSettings */
@@ -292,56 +287,32 @@ function normalizeRawtextParts(parts) {
 /**
  * @param {Array<object>} parts
  * @param {MainSettings} mainSettings
- * @param {string} channel
  */
-function buildWailaRawMessage(parts, mainSettings, channel = CHANNEL_WAILA) {
+function buildWailaRawMessage(parts, mainSettings, meta = "default:") {
     const rawtext = normalizeRawtextParts(parts);
 
     if (!rawtext.length) {
         return {
-            rawtext: [{ text: EMPTY_WAILA_TEXT }]
+            rawtext: [{ text: CHANNEL_WAILA }]
         };
     }
 
+    const metaField = String(meta || "default:")
+        .slice(0, WAILA_META_FIELD_LENGTH)
+        .padEnd(WAILA_META_FIELD_LENGTH, "~");
+
     return {
         rawtext: [
-            { text: `${channel}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}` },
+            { text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}${metaField}` },
             ...rawtext
         ]
     };
 }
 
-/** @param {MainSettings} mainSettings */
-function buildWailaClearMessage(mainSettings, channel) {
-    return {
-        rawtext: [{ text: `${channel}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}` }]
-    };
-}
-
-function buildWailaPayload(title, subtitleText = "", channel = CHANNEL_WAILA) {
+function buildWailaPayload(title, subtitleText = "") {
     return {
         title,
-        subtitleText: String(subtitleText || ""),
-        channel
-    };
-}
-
-function buildWailaSubtitlePayload(title, subtitleText = "") {
-    const rawtext = normalizeRawtextParts(title?.rawtext);
-    if (!rawtext.length || !subtitleText) {
-        return null;
-    }
-
-    const meta = String(subtitleText || "")
-        .slice(0, WAILA_META_FIELD_LENGTH)
-        .padEnd(WAILA_META_FIELD_LENGTH, "~");
-
-    const [header, ...content] = rawtext;
-    return {
-        rawtext: [
-            { text: `${String(header.text || "")}${meta}` },
-            ...content
-        ]
+        subtitleText: String(subtitleText || "")
     };
 }
 
@@ -363,25 +334,25 @@ function composeTargetMessage(player, settings) {
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
-        const channel = settings.entity.entityRender ? CHANNEL_ENTITY_WAILA : CHANNEL_DEFAULT_WAILA;
+        const renderMeta = settings.entity.entityRender ? `entity:${entityTarget.entityId}` : "default:";
         return buildWailaPayload(
             buildWailaRawMessage(
                 entityTarget.rawtext,
                 settings.main,
-                channel
+                renderMeta
             ),
-            settings.entity.entityRender ? entityTarget.entityId : "default:",
-            channel
+            settings.entity.entityRender ? entityTarget.entityId : ""
         );
     }
 
     if (target.kind === TargetKinds.Block) {
         const renderAux = getSafeBlockRenderAux(target.block, settings.block);
-        const channel = renderAux ? CHANNEL_BLOCK_WAILA : CHANNEL_DEFAULT_WAILA;
         return buildWailaPayload(
-            buildWailaRawMessage(buildBlockLabel(target.block, settings.block), settings.main, channel),
-            renderAux ? `block:${renderAux}` : "default:",
-            channel
+            buildWailaRawMessage(
+                buildBlockLabel(target.block, settings.block),
+                settings.main,
+                renderAux ? `block:${renderAux}` : "default:"
+            )
         );
     }
 
@@ -393,7 +364,13 @@ function sendWailaMessage(player, payload, mainSettings = DEFAULT_CORE_SETTINGS.
     const subtitleText = payload?.subtitleText ?? "";
 
     try {
-        setSubtitle(player, buildWailaSubtitlePayload(title, subtitleText));
+        const rawtext = normalizeRawtextParts(title?.rawtext);
+        if (rawtext.length === 1 && rawtext[0]?.text === EMPTY_WAILA_TEXT) {
+            clearLatched(player, CHANNEL_WAILA);
+            return;
+        }
+
+        sendLatchedPair(player, CHANNEL_WAILA, title, subtitleText);
     } catch {
         // Skip players that are not ready yet.
     }
@@ -425,15 +402,7 @@ export function initializeGlobalPlayerInterval() {
 
     initialized = true;
 
-    registerChannel(CHANNEL_WAILA);
-    registerChannel(CHANNEL_DEFAULT_WAILA);
-    registerChannel(CHANNEL_ENTITY_WAILA);
-    registerChannel(CHANNEL_BLOCK_WAILA);
-    registerChannel(CHANNEL_HUD);
-    initializeUIQueue();
-    world.afterEvents.playerLeave.subscribe((event) => {
-        playerWailaChannelCache.delete(event.playerId);
-    });
+    initializeTitleBus();
     world.afterEvents.playerSpawn.subscribe((event) => {
         if (!event.initialSpawn) {
             return;
