@@ -87,6 +87,18 @@ async function openMainSettingsMenu(player) {
         .dropdown(infoLabel("Font Size"), WAILA_FONT_SCALE_OPTIONS.map((option) => option.label), {
             defaultValueIndex: getFontScaleIndex(mainSettings.fontScale),
             tooltip: "Text scale used by block and entity WAILA labels: 0.5, 0.75, 1, 1.25, 1.5."
+        })
+        .toggle(infoLabel("Mainhand Durability"), {
+            defaultValue: mainSettings.mainhandDurability,
+            tooltip: "Shows the selected main hand item durability HUD."
+        })
+        .toggle(infoLabel("Offhand Durability"), {
+            defaultValue: mainSettings.offhandDurability,
+            tooltip: "Shows the offhand item durability HUD."
+        })
+        .toggle(infoLabel("Armor Durability"), {
+            defaultValue: mainSettings.armorDurability,
+            tooltip: "Shows helmet, chestplate, leggings, and boots durability HUD."
         });
 
     const result = await form.show(player);
@@ -94,7 +106,16 @@ async function openMainSettingsMenu(player) {
         return;
     }
 
-    const [enabled, updateIntervalTicks, maxDistance, panelStyleIndex, fontScaleIndex] = result.formValues;
+    const [
+        enabled,
+        updateIntervalTicks,
+        maxDistance,
+        panelStyleIndex,
+        fontScaleIndex,
+        mainhandDurability,
+        offhandDurability,
+        armorDurability
+    ] = result.formValues;
     const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
     const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
     const next = setCoreSettings(player, {
@@ -103,7 +124,10 @@ async function openMainSettingsMenu(player) {
             updateIntervalTicks: Number(updateIntervalTicks),
             maxDistance: Number(maxDistance),
             panelStyleId: panelStyle.id,
-            fontScale
+            fontScale,
+            mainhandDurability: Boolean(mainhandDurability),
+            offhandDurability: Boolean(offhandDurability),
+            armorDurability: Boolean(armorDurability)
         }
     });
 

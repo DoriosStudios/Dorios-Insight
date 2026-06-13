@@ -13,6 +13,9 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @property {number} maxDistance
  * @property {number} panelStyleId
  * @property {number} fontScale
+ * @property {boolean} mainhandDurability
+ * @property {boolean} offhandDurability
+ * @property {boolean} armorDurability
  */
 
 /**
@@ -54,6 +57,9 @@ export const DEFAULT_CORE_SETTINGS = {
     maxDistance: 8,
     panelStyleId: 0,
     fontScale: 1,
+    mainhandDurability: true,
+    offhandDurability: true,
+    armorDurability: true,
   },
   block: {
     energyContainers: false,

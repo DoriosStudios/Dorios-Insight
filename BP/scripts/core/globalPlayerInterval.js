@@ -92,7 +92,10 @@ function normalizeMainSettings(settings = {}) {
             CORE_LIMITS.maxPanelStyleId,
             DEFAULT_CORE_SETTINGS.main.panelStyleId
         ),
-        fontScale: getNearestFontScale(main.fontScale)
+        fontScale: getNearestFontScale(main.fontScale),
+        mainhandDurability: main.mainhandDurability !== false,
+        offhandDurability: main.offhandDurability !== false,
+        armorDurability: main.armorDurability !== false
     };
 }
 
@@ -390,7 +393,7 @@ function tickPlayers() {
 
             const targetPayload = composeTargetMessage(player, settings);
             sendWailaMessage(player, targetPayload, settings.main);
-            updateDurabilityIndicator(player);
+            updateDurabilityIndicator(player, settings.main);
         } catch {
             sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
         }
@@ -412,7 +415,7 @@ export function initializeGlobalPlayerInterval() {
 
         system.runTimeout(() => {
             try {
-                updateDurabilityIndicator(event.player);
+                updateDurabilityIndicator(event.player, getCoreSettings(event.player).main);
             } catch {
                 // Player UI may not be ready on the first spawn tick.
             }

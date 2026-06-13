@@ -43,6 +43,12 @@ const EQUIPMENT_SLOT_CONFIGS = [
     }
 ];
 
+const HIDDEN_EQUIPMENT_SLOT_DATA = {
+    current: 0,
+    max: 0,
+    icon: 99
+};
+
 const HUD_SCHEMAS = [
     defineSchema("a", [
         { name: "health", digits: 3 },
@@ -247,7 +253,15 @@ function encodeFixedNumber(value, digits) {
     return String(safeValue).padStart(digits, "0");
 }
 
-function encodeEquipmentData(player) {
+function shouldShowEquipmentSlot(config, settings = {}) {
+    if (config.key === "offhand") {
+        return settings.offhandDurability !== false;
+    }
+
+    return settings.armorDurability !== false;
+}
+
+function encodeEquipmentData(player, settings = {}) {
     let equippable;
     try {
         equippable = player.getComponent?.("minecraft:equippable");
@@ -256,7 +270,9 @@ function encodeEquipmentData(player) {
     }
 
     return EQUIPMENT_SLOT_CONFIGS.map((config) => {
-        const slot = collectEquipmentSlotData(equippable, config);
+        const slot = shouldShowEquipmentSlot(config, settings)
+            ? collectEquipmentSlotData(equippable, config)
+            : HIDDEN_EQUIPMENT_SLOT_DATA;
         return [
             config.delimiter,
             encodeFixedNumber(slot.icon, 2),
@@ -271,6 +287,10 @@ function encodeDurabilityData(data) {
     return fullPayload.slice(0, -CHANNEL_HUD.length);
 }
 
-export function updateDurabilityIndicator(player) {
-    sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(collectDurabilityData(player))}${encodeEquipmentData(player)}`);
+export function updateDurabilityIndicator(player, settings = {}) {
+    const mainhandData = settings.mainhandDurability === false
+        ? EMPTY_DURABILITY_DATA
+        : collectDurabilityData(player);
+
+    sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(mainhandData)}${encodeEquipmentData(player, settings)}`);
 }
