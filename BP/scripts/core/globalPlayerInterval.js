@@ -334,7 +334,9 @@ function composeTargetMessage(player, settings) {
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
-        const renderMeta = settings.entity.entityRender ? `entity:${entityTarget.entityId}` : "default:";
+        const renderMeta = settings.entity.entityRender
+            ? `entity:${entityTarget.renderHeightClass}:${entityTarget.entityId}`
+            : "default:";
         return buildWailaPayload(
             buildWailaRawMessage(
                 entityTarget.rawtext,

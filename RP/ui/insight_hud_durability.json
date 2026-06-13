@@ -1447,6 +1447,18 @@
             { "right_hotbar@insight_hud_durability.durability_position_right_hotbar": {} },
             { "left_hotbar_offhand@insight_hud_durability.equipment_offhand_position_left_hotbar": {} },
             { "equipment_column@insight_hud_durability.equipment_durability_column": {} }
+        ],
+        "bindings": [
+            {
+                "binding_name": "#show_survival_ui",
+                "binding_condition": "always"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "#show_survival_ui",
+                "target_property_name": "#visible",
+                "binding_condition": "always"
+            }
         ]
     }
 }
