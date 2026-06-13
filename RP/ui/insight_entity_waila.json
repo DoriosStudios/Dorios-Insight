@@ -48,19 +48,17 @@
                     },
                     "bindings": [
                         {
-                            "binding_name": "#hud_subtitle_text_string",
-                            "binding_name_override": "#stored_entity_id"
-                        },
-                        {
                             "binding_type": "view",
                             "source_control_name": "data_control_entity_waila",
                             "source_property_name": "((%.116s * (#preserved_waila_text - 'insight_entity_waila:')) - (%.52s * (#preserved_waila_text - 'insight_entity_waila:')) - '~')",
-                            "target_property_name": "#stored_entity_id"
+                            "target_property_name": "#stored_entity_id",
+                            "binding_condition": "always"
                         },
                         {
                             "binding_type": "view",
                             "source_property_name": "(not (#stored_entity_id = ''))",
-                            "target_property_name": "#visible"
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
                         }
                     ]
                 }
@@ -125,14 +123,23 @@
                                                         "anchor_from": "center",
                                                         "anchor_to": "center",
                                                         "property_bag": {
+                                                            "#entity_id": "#entity_id",
                                                             "#look_at_cursor": false
                                                         },
                                                         "bindings": [
                                                             {
                                                                 "binding_type": "view",
-                                                                "source_control_name": "entity_stored_entity_id",
-                                                                "source_property_name": "#stored_entity_id",
-                                                                "target_property_name": "#entity_id"
+                                                                "source_control_name": "entity_display_background",
+                                                                "source_property_name": "#waila_meta",
+                                                                "target_property_name": "#entity_id",
+                                                                "binding_condition": "always"
+                                                            },
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "entity_display_background",
+                                                                "source_property_name": "(not (#waila_meta = '') and ((#waila_meta - 'block:') = #waila_meta) and ((#waila_meta - 'default:') = #waila_meta))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
                                                             }
                                                         ]
                                                     }
@@ -141,9 +148,10 @@
                                             "bindings": [
                                                 {
                                                     "binding_type": "view",
-                                                    "source_control_name": "entity_stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = ''))",
-                                                    "target_property_name": "#visible"
+                                                    "source_control_name": "entity_display_background",
+                                                    "source_property_name": "(not (#waila_meta = '') and ((#waila_meta - 'block:') = #waila_meta) and ((#waila_meta - 'default:') = #waila_meta))",
+                                                    "target_property_name": "#visible",
+                                                    "binding_condition": "always"
                                                 }
                                             ]
                                         }
@@ -158,9 +166,10 @@
                                             "bindings": [
                                                 {
                                                     "binding_type": "view",
-                                                    "source_control_name": "entity_stored_entity_id",
-                                                    "source_property_name": "(not (#stored_entity_id = ''))",
-                                                    "target_property_name": "#visible"
+                                                    "source_control_name": "entity_display_background",
+                                                    "source_property_name": "(not (#waila_meta = '') and ((#waila_meta - 'block:') = #waila_meta) and ((#waila_meta - 'default:') = #waila_meta))",
+                                                    "target_property_name": "#visible",
+                                                    "binding_condition": "always"
                                                 }
                                             ]
                                         }

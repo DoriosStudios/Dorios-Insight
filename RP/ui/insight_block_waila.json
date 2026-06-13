@@ -52,19 +52,17 @@
                     },
                     "bindings": [
                         {
-                            "binding_name": "#hud_subtitle_text_string",
-                            "binding_name_override": "#stored_entity_id"
-                        },
-                        {
                             "binding_type": "view",
                             "source_control_name": "data_control_block_waila",
                             "source_property_name": "((%.116s * (#preserved_waila_text - 'insight_block_waila:')) - (%.52s * (#preserved_waila_text - 'insight_block_waila:')) - '~')",
-                            "target_property_name": "#stored_entity_id"
+                            "target_property_name": "#stored_entity_id",
+                            "binding_condition": "always"
                         },
                         {
                             "binding_type": "view",
                             "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
-                            "target_property_name": "#visible"
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
                         }
                     ]
                 }
@@ -130,9 +128,10 @@
                                                         "bindings": [
                                                             {
                                                                 "binding_type": "view",
-                                                                "source_control_name": "block_stored_render_aux",
-                                                                "source_property_name": "((#stored_entity_id - 'block:') * 1)",
-                                                                "target_property_name": "#item_id_aux"
+                                                                "source_control_name": "block_display_background",
+                                                                "source_property_name": "((#waila_meta - 'block:') * 1)",
+                                                                "target_property_name": "#item_id_aux",
+                                                                "binding_condition": "always"
                                                             }
                                                         ]
                                                     }
@@ -141,9 +140,10 @@
                                             "bindings": [
                                                 {
                                                     "binding_type": "view",
-                                                    "source_control_name": "block_stored_render_aux",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id) and not ((#stored_entity_id - 'block:') = '0'))",
-                                                    "target_property_name": "#visible"
+                                                    "source_control_name": "block_display_background",
+                                                    "source_property_name": "(not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0'))",
+                                                    "target_property_name": "#visible",
+                                                    "binding_condition": "always"
                                                 }
                                             ]
                                         }
@@ -158,9 +158,10 @@
                                             "bindings": [
                                                 {
                                                     "binding_type": "view",
-                                                    "source_control_name": "block_stored_render_aux",
-                                                    "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id) and not ((#stored_entity_id - 'block:') = '0'))",
-                                                    "target_property_name": "#visible"
+                                                    "source_control_name": "block_display_background",
+                                                    "source_property_name": "(not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0'))",
+                                                    "target_property_name": "#visible",
+                                                    "binding_condition": "always"
                                                 }
                                             ]
                                         }
