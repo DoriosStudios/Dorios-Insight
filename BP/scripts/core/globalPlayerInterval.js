@@ -374,7 +374,7 @@ function sendWailaMessage(player, payload, mainSettings = DEFAULT_CORE_SETTINGS.
     const channel = payload?.channel ?? CHANNEL_WAILA;
 
     try {
-        setSubtitle(player, { rawtext: [{ text: subtitleText }] });
+        setSubtitle(player, subtitleText ? { rawtext: [{ text: subtitleText }] } : null);
 
         const previousChannel = playerWailaChannelCache.get(player.id);
         if (previousChannel && previousChannel !== channel && previousChannel !== CHANNEL_WAILA) {
@@ -400,9 +400,7 @@ function tickPlayers() {
 
             const targetPayload = composeTargetMessage(player, settings);
             sendWailaMessage(player, targetPayload, settings.main);
-            if (targetPayload.channel === CHANNEL_WAILA) {
-                updateDurabilityIndicator(player);
-            }
+            updateDurabilityIndicator(player);
         } catch {
             sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
         }

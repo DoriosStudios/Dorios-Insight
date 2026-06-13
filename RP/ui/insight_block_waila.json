@@ -216,7 +216,7 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "((not (#waila_text = '')) and not ((#current_subtitle_text - 'block:') = #current_subtitle_text) and not ((#current_title_text - 'insight_block_waila:') = #current_title_text))",
+                            "source_property_name": "((not (#waila_text = '')) and not ((#current_subtitle_text - 'block:') = #current_subtitle_text) and ((not ((#current_title_text - 'insight_block_waila:') = #current_title_text)) or (not ((#current_title_text - 'insight_hud') = #current_title_text))))",
                             "target_property_name": "#visible"
                         }
                     ]
