@@ -90,6 +90,7 @@ export const CORE_LIMITS = {
 
 export const WAILA_STYLE_TEXTURE_FIELD_LENGTH = 40;
 export const WAILA_FONT_SCALE_FIELD_LENGTH = 12;
+export const WAILA_META_FIELD_LENGTH = 64;
 
 export const WAILA_FONT_SCALE_OPTIONS = [
   {

@@ -21,10 +21,10 @@
                     },
                     "bindings": [
                         {
-                            "binding_name": "#hud_title_text_string"
+                            "binding_name": "#hud_subtitle_text_string"
                         },
                         {
-                            "binding_name": "#hud_title_text_string",
+                            "binding_name": "#hud_subtitle_text_string",
                             "binding_name_override": "#preserved_waila_text",
                             "binding_condition": "visible"
                         },
@@ -34,7 +34,7 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(not ((#hud_title_text_string - 'insight_block_waila:') = #hud_title_text_string) and not ((#stored_subtitle_text - 'block:') = #stored_subtitle_text))",
+                            "source_property_name": "(not ((#hud_subtitle_text_string - 'insight_block_waila:') = #hud_subtitle_text_string))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -58,7 +58,12 @@
                         {
                             "binding_type": "view",
                             "source_control_name": "data_control_block_waila",
-                            "source_property_name": "(not ((#preserved_waila_text - 'insight_block_waila:') = #preserved_waila_text) and not ((#stored_subtitle_text - 'block:') = #stored_subtitle_text))",
+                            "source_property_name": "((%.116s * (#preserved_waila_text - 'insight_block_waila:')) - (%.52s * (#preserved_waila_text - 'insight_block_waila:')) - '~')",
+                            "target_property_name": "#stored_entity_id"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(not ((#stored_entity_id - 'block:') = #stored_entity_id))",
                             "target_property_name": "#visible"
                         }
                     ]
@@ -201,22 +206,27 @@
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
-                            "target_property_name": "#waila_font_scale_id"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "(#waila_payload - (%.52s * #waila_payload))",
-                            "target_property_name": "#waila_text"
-                        },
-                        {
-                            "binding_type": "view",
                             "source_property_name": "#panel_texture",
                             "target_property_name": "#texture"
                         },
                         {
                             "binding_type": "view",
-                            "source_property_name": "((not (#waila_text = '')) and not ((#current_subtitle_text - 'block:') = #current_subtitle_text) and ((not ((#current_title_text - 'insight_block_waila:') = #current_title_text)) or (not ((#current_title_text - 'insight_hud') = #current_title_text))))",
+                            "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
+                            "target_property_name": "#waila_font_scale_id"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((%.116s * #waila_payload) - (%.52s * #waila_payload) - '~')",
+                            "target_property_name": "#waila_meta"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(#waila_payload - (%.116s * #waila_payload))",
+                            "target_property_name": "#waila_text"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((not (#waila_text = '')) and not ((#current_subtitle_text - 'insight_block_waila:') = #current_subtitle_text) and not ((#waila_meta - 'block:') = #waila_meta))",
                             "target_property_name": "#visible"
                         }
                     ]

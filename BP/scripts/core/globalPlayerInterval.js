@@ -12,6 +12,7 @@ import {
     PANEL_STYLES,
     WAILA_FONT_SCALE_FIELD_LENGTH,
     WAILA_FONT_SCALE_OPTIONS,
+    WAILA_META_FIELD_LENGTH,
     WAILA_STYLE_TEXTURE_FIELD_LENGTH
 } from "./const.js";
 import { resolvePlayerTarget, TargetKinds } from "./target.js";
@@ -325,6 +326,25 @@ function buildWailaPayload(title, subtitleText = "", channel = CHANNEL_WAILA) {
     };
 }
 
+function buildWailaSubtitlePayload(title, subtitleText = "") {
+    const rawtext = normalizeRawtextParts(title?.rawtext);
+    if (!rawtext.length || !subtitleText) {
+        return null;
+    }
+
+    const meta = String(subtitleText || "")
+        .slice(0, WAILA_META_FIELD_LENGTH)
+        .padEnd(WAILA_META_FIELD_LENGTH, "~");
+
+    const [header, ...content] = rawtext;
+    return {
+        rawtext: [
+            { text: `${String(header.text || "")}${meta}` },
+            ...content
+        ]
+    };
+}
+
 function getSafeBlockRenderAux(block, blockSettings) {
     if (!blockSettings.blockRender) {
         return 0;
@@ -371,18 +391,9 @@ function composeTargetMessage(player, settings) {
 function sendWailaMessage(player, payload, mainSettings = DEFAULT_CORE_SETTINGS.main) {
     const title = payload?.title ?? payload;
     const subtitleText = payload?.subtitleText ?? "";
-    const channel = payload?.channel ?? CHANNEL_WAILA;
 
     try {
-        setSubtitle(player, subtitleText ? { rawtext: [{ text: subtitleText }] } : null);
-
-        const previousChannel = playerWailaChannelCache.get(player.id);
-        if (previousChannel && previousChannel !== channel && previousChannel !== CHANNEL_WAILA) {
-            sendRaw(player, previousChannel, buildWailaClearMessage(mainSettings, previousChannel));
-        }
-
-        playerWailaChannelCache.set(player.id, channel);
-        sendRaw(player, channel, title);
+        setSubtitle(player, buildWailaSubtitlePayload(title, subtitleText));
     } catch {
         // Skip players that are not ready yet.
     }
@@ -422,6 +433,19 @@ export function initializeGlobalPlayerInterval() {
     initializeUIQueue();
     world.afterEvents.playerLeave.subscribe((event) => {
         playerWailaChannelCache.delete(event.playerId);
+    });
+    world.afterEvents.playerSpawn.subscribe((event) => {
+        if (!event.initialSpawn) {
+            return;
+        }
+
+        system.runTimeout(() => {
+            try {
+                updateDurabilityIndicator(event.player);
+            } catch {
+                // Player UI may not be ready on the first spawn tick.
+            }
+        }, 20);
     });
     system.runInterval(tickPlayers, 1);
 }

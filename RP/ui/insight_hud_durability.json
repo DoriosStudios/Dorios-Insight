@@ -9,6 +9,11 @@
             { "section_e@insight_hud_durability.section_e": {} },
             { "section_f@insight_hud_durability.section_f": {} },
             { "section_i@insight_hud_durability.section_i": {} },
+            { "equipment_head_data@insight_hud_durability.equipment_head_data": {} },
+            { "equipment_chest_data@insight_hud_durability.equipment_chest_data": {} },
+            { "equipment_legs_data@insight_hud_durability.equipment_legs_data": {} },
+            { "equipment_feet_data@insight_hud_durability.equipment_feet_data": {} },
+            { "equipment_offhand_data@insight_hud_durability.equipment_offhand_data": {} },
             { "durability_overlay@insight_hud_durability.durability_overlay": {} }
         ]
     },
@@ -143,6 +148,221 @@
                 "binding_type": "view",
                 "source_property_name": "(#data_i / 1) - (#dur_display_mode * 1000000) - (#dur_position * 10000) - (#dur_icon_visible * 100)",
                 "target_property_name": "#dur_reserved"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "equipment_head_data": {
+        "type": "panel",
+        "size": [0, 0],
+        "bindings": [
+            { "binding_name": "#hud_title_text_string" },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.92s' * (#stored_text - ('%.83s' * #stored_text))) - 'j')",
+                "target_property_name": "#equip_data"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000000)",
+                "target_property_name": "#equip_icon"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000) - (#equip_icon * 1000)",
+                "target_property_name": "#equip_current"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1) - (#equip_icon * 1000000) - (#equip_current * 1000)",
+                "target_property_name": "#equip_max"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_max > 0)",
+                "target_property_name": "#equip_visible"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "equipment_chest_data": {
+        "type": "panel",
+        "size": [0, 0],
+        "bindings": [
+            { "binding_name": "#hud_title_text_string" },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.101s' * (#stored_text - ('%.92s' * #stored_text))) - 'k')",
+                "target_property_name": "#equip_data"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000000)",
+                "target_property_name": "#equip_icon"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000) - (#equip_icon * 1000)",
+                "target_property_name": "#equip_current"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1) - (#equip_icon * 1000000) - (#equip_current * 1000)",
+                "target_property_name": "#equip_max"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_max > 0)",
+                "target_property_name": "#equip_visible"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "equipment_legs_data": {
+        "type": "panel",
+        "size": [0, 0],
+        "bindings": [
+            { "binding_name": "#hud_title_text_string" },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.110s' * (#stored_text - ('%.101s' * #stored_text))) - 'l')",
+                "target_property_name": "#equip_data"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000000)",
+                "target_property_name": "#equip_icon"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000) - (#equip_icon * 1000)",
+                "target_property_name": "#equip_current"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1) - (#equip_icon * 1000000) - (#equip_current * 1000)",
+                "target_property_name": "#equip_max"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_max > 0)",
+                "target_property_name": "#equip_visible"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "equipment_feet_data": {
+        "type": "panel",
+        "size": [0, 0],
+        "bindings": [
+            { "binding_name": "#hud_title_text_string" },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.119s' * (#stored_text - ('%.110s' * #stored_text))) - 'm')",
+                "target_property_name": "#equip_data"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000000)",
+                "target_property_name": "#equip_icon"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000) - (#equip_icon * 1000)",
+                "target_property_name": "#equip_current"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1) - (#equip_icon * 1000000) - (#equip_current * 1000)",
+                "target_property_name": "#equip_max"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_max > 0)",
+                "target_property_name": "#equip_visible"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'insight_hud') = #hud_title_text_string))",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "equipment_offhand_data": {
+        "type": "panel",
+        "size": [0, 0],
+        "bindings": [
+            { "binding_name": "#hud_title_text_string" },
+            {
+                "binding_name": "#hud_title_text_string",
+                "binding_name_override": "#stored_text",
+                "binding_condition": "visibility_changed"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(('%.128s' * (#stored_text - ('%.119s' * #stored_text))) - 'n')",
+                "target_property_name": "#equip_data"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000000)",
+                "target_property_name": "#equip_icon"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1000) - (#equip_icon * 1000)",
+                "target_property_name": "#equip_current"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_data / 1) - (#equip_icon * 1000000) - (#equip_current * 1000)",
+                "target_property_name": "#equip_max"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#equip_max > 0)",
+                "target_property_name": "#equip_visible"
             },
             {
                 "binding_type": "view",
@@ -423,11 +643,707 @@
         ]
     },
 
+    "equipment_durability_slot": {
+        "type": "stack_panel",
+        "orientation": "vertical",
+        "size": [32, 27],
+        "$data_control|default": "equipment_head_data",
+        "$slot_texture|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_1|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_2|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_3|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_4|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_5|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_6|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_7|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_8|default": "textures/ui/empty_armor_slot_helmet",
+        "$icon_texture_9|default": "textures/ui/empty_armor_slot_shield",
+        "$icon_texture_10|default": "textures/ui/empty_armor_slot_helmet",
+        "$bar_bindings|default": [],
+        "$values_visible_bindings|default": [],
+        "$current_text_bindings|default": [],
+        "$max_text_bindings|default": [],
+        "controls": [
+            {
+                "icon_panel": {
+                    "type": "panel",
+                    "size": [18, 18],
+                    "anchor_from": "top_middle",
+                    "anchor_to": "top_middle",
+                    "controls": [
+                        {
+                            "icon": {
+                                "type": "image",
+                                "texture": "$slot_texture",
+                                "size": [16, 16],
+                                "keep_ratio": true,
+                                "layer": 1,
+                                "bindings": [
+                                    {
+                                        "binding_type": "view",
+                                        "source_control_name": "$data_control",
+                                        "source_property_name": "(#equip_icon = 0)",
+                                        "target_property_name": "#visible",
+                                        "binding_condition": "always"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "icon_1@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_1",
+                                "$icon_code": 1
+                            }
+                        },
+                        {
+                            "icon_2@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_2",
+                                "$icon_code": 2
+                            }
+                        },
+                        {
+                            "icon_3@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_3",
+                                "$icon_code": 3
+                            }
+                        },
+                        {
+                            "icon_4@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_4",
+                                "$icon_code": 4
+                            }
+                        },
+                        {
+                            "icon_5@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_5",
+                                "$icon_code": 5
+                            }
+                        },
+                        {
+                            "icon_6@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_6",
+                                "$icon_code": 6
+                            }
+                        },
+                        {
+                            "icon_7@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_7",
+                                "$icon_code": 7
+                            }
+                        },
+                        {
+                            "icon_8@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_8",
+                                "$icon_code": 8
+                            }
+                        },
+                        {
+                            "icon_9@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_9",
+                                "$icon_code": 9
+                            }
+                        },
+                        {
+                            "icon_10@insight_hud_durability.equipment_icon_variant": {
+                                "$data_control": "$data_control",
+                                "$icon_texture": "$icon_texture_10",
+                                "$icon_code": 10
+                            }
+                        },
+                        {
+                            "durability_bar": {
+                                "type": "custom",
+                                "renderer": "progress_bar_renderer",
+                                "visible": false,
+                                "size": [14, 1],
+                                "anchor_from": "bottom_middle",
+                                "anchor_to": "bottom_middle",
+                                "offset": [0, -1],
+                                "layer": 3,
+                                "property_bag": {
+                                    "drop_shadow": true,
+                                    "is_durability": true,
+                                    "round_value": true,
+                                    "#touch_progress_bar_visible": true
+                                },
+                                "bindings": "$bar_bindings"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "values_row": {
+                    "type": "stack_panel",
+                    "visible": false,
+                    "orientation": "horizontal",
+                    "anchor_from": "top_middle",
+                    "anchor_to": "top_middle",
+                    "size": ["100%c", "100%cm"],
+                    "controls": [
+                        {
+                            "current": {
+                                "type": "label",
+                                "text": "#text",
+                                "shadow": true,
+                                "font_scale_factor": 0.55,
+                                "color": [0.92, 0.92, 0.92],
+                                "bindings": "$current_text_bindings"
+                            }
+                        },
+                        {
+                            "slash": {
+                                "type": "label",
+                                "text": "/",
+                                "shadow": true,
+                                "font_scale_factor": 0.55,
+                                "color": [0.55, 0.55, 0.55]
+                            }
+                        },
+                        {
+                            "max": {
+                                "type": "label",
+                                "text": "#text",
+                                "shadow": true,
+                                "font_scale_factor": 0.55,
+                                "color": [0.92, 0.92, 0.92],
+                                "bindings": "$max_text_bindings"
+                            }
+                        }
+                    ],
+                    "bindings": "$values_visible_bindings"
+                }
+            }
+        ]
+    },
+
+    "equipment_icon_variant": {
+        "type": "image",
+        "texture": "$icon_texture",
+        "visible": false,
+        "size": [16, 16],
+        "keep_ratio": true,
+        "layer": 2,
+        "$data_control|default": "equipment_head_data",
+        "$icon_code|default": 0,
+        "$icon_texture|default": "textures/ui/empty_armor_slot_helmet",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "$data_control",
+                "source_property_name": "(#equip_icon = $icon_code)",
+                "target_property_name": "#visible",
+                "binding_condition": "always"
+            }
+        ]
+    },
+
+    "equipment_spacer": {
+        "type": "panel",
+        "size": [1, -2]
+    },
+
+    "equipment_durability_column": {
+        "type": "panel",
+        "size": ["100%", "100%"],
+        "layer": 28,
+        "controls": [
+            {
+                "equipment_column_stack": {
+                    "type": "stack_panel",
+                    "orientation": "vertical",
+                    "anchor_from": "right_middle",
+                    "anchor_to": "right_middle",
+                    "offset": [0, 12],
+                    "size": [32, "100%c"],
+                    "controls": [
+                        {
+                            "head@insight_hud_durability.equipment_durability_slot": {
+                    "$data_control": "equipment_head_data",
+                    "$slot_texture": "textures/ui/empty_armor_slot_helmet",
+                    "$icon_texture_1": "textures/items/leather_helmet",
+                    "$icon_texture_2": "textures/items/chainmail_helmet",
+                    "$icon_texture_3": "textures/items/iron_helmet",
+                    "$icon_texture_4": "textures/items/gold_helmet",
+                    "$icon_texture_5": "textures/items/diamond_helmet",
+                    "$icon_texture_6": "textures/items/netherite_helmet",
+                    "$icon_texture_7": "textures/items/turtle_helmet",
+                    "$icon_texture_10": "textures/items/copper_helmet",
+                    "$texture_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "#equip_texture",
+                            "target_property_name": "#texture",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$bar_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#progress_bar_total_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#progress_bar_current_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#touch_progress_bar_visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$values_visible_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$current_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#equip_current_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_current_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$max_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_head_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#equip_max_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_max_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ]
+                }
+            },
+            { "spacer_1@insight_hud_durability.equipment_spacer": {} },
+            {
+                "chest@insight_hud_durability.equipment_durability_slot": {
+                    "$data_control": "equipment_chest_data",
+                    "$slot_texture": "textures/ui/empty_armor_slot_chestplate",
+                    "$icon_texture_1": "textures/items/leather_chestplate",
+                    "$icon_texture_2": "textures/items/chainmail_chestplate",
+                    "$icon_texture_3": "textures/items/iron_chestplate",
+                    "$icon_texture_4": "textures/items/gold_chestplate",
+                    "$icon_texture_5": "textures/items/diamond_chestplate",
+                    "$icon_texture_6": "textures/items/netherite_chestplate",
+                    "$icon_texture_8": "textures/items/elytra",
+                    "$icon_texture_10": "textures/items/copper_chestplate",
+                    "$texture_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "#equip_texture",
+                            "target_property_name": "#texture",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$bar_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#progress_bar_total_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#progress_bar_current_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#touch_progress_bar_visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$values_visible_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$current_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#equip_current_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_current_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$max_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_chest_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#equip_max_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_max_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ]
+                }
+            },
+            { "spacer_2@insight_hud_durability.equipment_spacer": {} },
+            {
+                "legs@insight_hud_durability.equipment_durability_slot": {
+                    "$data_control": "equipment_legs_data",
+                    "$slot_texture": "textures/ui/empty_armor_slot_leggings",
+                    "$icon_texture_1": "textures/items/leather_leggings",
+                    "$icon_texture_2": "textures/items/chainmail_leggings",
+                    "$icon_texture_3": "textures/items/iron_leggings",
+                    "$icon_texture_4": "textures/items/gold_leggings",
+                    "$icon_texture_5": "textures/items/diamond_leggings",
+                    "$icon_texture_6": "textures/items/netherite_leggings",
+                    "$icon_texture_10": "textures/items/copper_leggings",
+                    "$texture_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "#equip_texture",
+                            "target_property_name": "#texture",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$bar_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#progress_bar_total_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#progress_bar_current_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#touch_progress_bar_visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$values_visible_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$current_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#equip_current_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_current_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$max_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_legs_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#equip_max_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_max_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ]
+                }
+            },
+            { "spacer_3@insight_hud_durability.equipment_spacer": {} },
+            {
+                "feet@insight_hud_durability.equipment_durability_slot": {
+                    "$data_control": "equipment_feet_data",
+                    "$slot_texture": "textures/ui/empty_armor_slot_boots",
+                    "$icon_texture_1": "textures/items/leather_boots",
+                    "$icon_texture_2": "textures/items/chainmail_boots",
+                    "$icon_texture_3": "textures/items/iron_boots",
+                    "$icon_texture_4": "textures/items/gold_boots",
+                    "$icon_texture_5": "textures/items/diamond_boots",
+                    "$icon_texture_6": "textures/items/netherite_boots",
+                    "$icon_texture_10": "textures/items/copper_boots",
+                    "$texture_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "#equip_texture",
+                            "target_property_name": "#texture",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$bar_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#progress_bar_total_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#progress_bar_current_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#touch_progress_bar_visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$values_visible_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$current_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#equip_current_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_current_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$max_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_feet_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#equip_max_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_max_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ]
+                }
+            }
+                    ]
+                }
+            }
+        ]
+    },
+
+    "equipment_offhand_position_left_hotbar": {
+        "type": "panel",
+        "anchor_from": "bottom_middle",
+        "anchor_to": "bottom_middle",
+        "offset": [-112, 2],
+        "layer": 28,
+        "size": [32, 27],
+        "controls": [
+            {
+                "offhand@insight_hud_durability.equipment_durability_slot": {
+                    "$data_control": "equipment_offhand_data",
+                    "$slot_texture": "textures/ui/empty_armor_slot_shield",
+                    "$icon_texture_9": "textures/gui/shield_render",
+                    "$texture_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "#equip_texture",
+                            "target_property_name": "#texture",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$bar_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#progress_bar_total_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#progress_bar_current_amount",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#touch_progress_bar_visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$values_visible_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "(#equip_visible > 0)",
+                            "target_property_name": "#visible",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$current_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "#equip_current",
+                            "target_property_name": "#equip_current_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_current_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ],
+                    "$max_text_bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "equipment_offhand_data",
+                            "source_property_name": "#equip_max",
+                            "target_property_name": "#equip_max_value",
+                            "binding_condition": "always"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "('\u00a7z' + #equip_max_value)",
+                            "target_property_name": "#text",
+                            "binding_condition": "always"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+
     "durability_overlay": {
         "type": "panel",
         "size": ["100%", "100%"],
         "controls": [
-            { "right_hotbar@insight_hud_durability.durability_position_right_hotbar": {} }
+            { "right_hotbar@insight_hud_durability.durability_position_right_hotbar": {} },
+            { "left_hotbar_offhand@insight_hud_durability.equipment_offhand_position_left_hotbar": {} },
+            { "equipment_column@insight_hud_durability.equipment_durability_column": {} }
         ]
     }
 }

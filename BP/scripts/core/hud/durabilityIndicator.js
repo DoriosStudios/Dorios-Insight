@@ -1,6 +1,6 @@
 import { CHANNEL_HUD } from "../const.js";
 import { defineSchema, encodePayload } from "../uiDataEncoder.js";
-import { send } from "../uiQueue.js";
+import { forceRefresh, send } from "../uiQueue.js";
 
 const EMPTY_DURABILITY_DATA = {
     durPercent: 0,
@@ -14,6 +14,34 @@ const EMPTY_DURABILITY_DATA = {
     durIconVisible: 0,
     durReserved: 0
 };
+
+const EQUIPMENT_SLOT_CONFIGS = [
+    {
+        key: "head",
+        delimiter: "j",
+        slotNames: ["Head", "head", "slot.armor.head"]
+    },
+    {
+        key: "chest",
+        delimiter: "k",
+        slotNames: ["Chest", "chest", "slot.armor.chest"]
+    },
+    {
+        key: "legs",
+        delimiter: "l",
+        slotNames: ["Legs", "legs", "slot.armor.legs"]
+    },
+    {
+        key: "feet",
+        delimiter: "m",
+        slotNames: ["Feet", "feet", "slot.armor.feet"]
+    },
+    {
+        key: "offhand",
+        delimiter: "n",
+        slotNames: ["Offhand", "offhand", "slot.weapon.offhand"]
+    }
+];
 
 const HUD_SCHEMAS = [
     defineSchema("a", [
@@ -118,6 +146,25 @@ function getDurabilityComponent(itemStack) {
     }
 }
 
+function getEquipmentSlotItem(equippable, slotNames) {
+    if (!equippable || typeof equippable.getEquipment !== "function") {
+        return undefined;
+    }
+
+    for (const slotName of slotNames) {
+        try {
+            const item = equippable.getEquipment(slotName);
+            if (item) {
+                return item;
+            }
+        } catch {
+            // Try the next slot alias.
+        }
+    }
+
+    return undefined;
+}
+
 function collectDurabilityData(player) {
     const item = getMainhandItem(player);
     const durability = getDurabilityComponent(item);
@@ -150,11 +197,81 @@ function collectDurabilityData(player) {
     };
 }
 
+function collectEquipmentSlotData(equippable, config) {
+    const item = getEquipmentSlotItem(equippable, config.slotNames);
+    const durability = getDurabilityComponent(item);
+
+    if (!durability) {
+        return {
+            current: 0,
+            max: 0,
+            icon: 0
+        };
+    }
+
+    const max = Math.max(0, Math.round(Number(durability.maxDurability) || 0));
+    const damage = Math.max(0, Math.round(Number(durability.damage) || 0));
+    if (max <= 0) {
+        return {
+            current: 0,
+            max: 0,
+            icon: 0
+        };
+    }
+
+    return {
+        current: Math.max(0, Math.min(max, max - damage)),
+        max,
+        icon: getEquipmentIconCode(item)
+    };
+}
+
+function getEquipmentIconCode(itemStack) {
+    const typeId = String(itemStack?.typeId || "");
+    if (typeId.includes("leather_")) return 1;
+    if (typeId.includes("chainmail_")) return 2;
+    if (typeId.includes("iron_")) return 3;
+    if (typeId.includes("golden_") || typeId.includes("gold_")) return 4;
+    if (typeId.includes("diamond_")) return 5;
+    if (typeId.includes("netherite_")) return 6;
+    if (typeId === "minecraft:turtle_helmet") return 7;
+    if (typeId === "minecraft:elytra") return 8;
+    if (typeId === "minecraft:shield") return 9;
+    if (typeId.includes("copper_")) return 10;
+    return 0;
+}
+
+function encodeFixedNumber(value, digits) {
+    const maxValue = Math.pow(10, digits) - 1;
+    const safeValue = Math.max(0, Math.min(maxValue, Math.round(Number(value) || 0)));
+    return String(safeValue).padStart(digits, "0");
+}
+
+function encodeEquipmentData(player) {
+    let equippable;
+    try {
+        equippable = player.getComponent?.("minecraft:equippable");
+    } catch {
+        equippable = undefined;
+    }
+
+    return EQUIPMENT_SLOT_CONFIGS.map((config) => {
+        const slot = collectEquipmentSlotData(equippable, config);
+        return [
+            config.delimiter,
+            encodeFixedNumber(slot.icon, 2),
+            encodeFixedNumber(slot.current, 3),
+            encodeFixedNumber(slot.max, 3)
+        ].join("");
+    }).join("");
+}
+
 function encodeDurabilityData(data) {
     const fullPayload = encodePayload(HUD_SCHEMAS, data, CHANNEL_HUD);
     return fullPayload.slice(0, -CHANNEL_HUD.length);
 }
 
 export function updateDurabilityIndicator(player) {
-    send(player, CHANNEL_HUD, encodeDurabilityData(collectDurabilityData(player)));
+    send(player, CHANNEL_HUD, `${encodeDurabilityData(collectDurabilityData(player))}${encodeEquipmentData(player)}`);
+    forceRefresh(player, CHANNEL_HUD);
 }
