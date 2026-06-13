@@ -392,10 +392,9 @@
                     "controls": [
                         {
                             "top_row": {
-                                "type": "stack_panel",
-                                "orientation": "horizontal",
+                                "type": "panel",
                                 "offset": [0, 2],
-                                "size": ["100%c", "100%cm"],
+                                "size": [16, 16],
                                 "controls": [
                                     {
                                         "icon_panel": {
@@ -407,6 +406,54 @@
                                                         "$item_collection_name": "$item_collection_name",
                                                         "size": [14, 14],
                                                         "layer": 1
+                                                    }
+                                                },
+                                                {
+                                                    "durability_bar": {
+                                                        "type": "custom",
+                                                        "renderer": "progress_bar_renderer",
+                                                        "visible": false,
+                                                        "size": [14, 1],
+                                                        "anchor_from": "bottom_middle",
+                                                        "anchor_to": "bottom_middle",
+                                                        "offset": [0, -1],
+                                                        "layer": 3,
+                                                        "property_bag": {
+                                                            "drop_shadow": true,
+                                                            "is_durability": true,
+                                                            "round_value": true,
+                                                            "#touch_progress_bar_visible": true
+                                                        },
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "section_f",
+                                                                "source_property_name": "#dur_max",
+                                                                "target_property_name": "#progress_bar_total_amount",
+                                                                "binding_condition": "always"
+                                                            },
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "section_f",
+                                                                "source_property_name": "#dur_current",
+                                                                "target_property_name": "#progress_bar_current_amount",
+                                                                "binding_condition": "always"
+                                                            },
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "section_e",
+                                                                "source_property_name": "(#dur_visible > 0)",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            },
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "section_e",
+                                                                "source_property_name": "(#dur_visible > 0)",
+                                                                "target_property_name": "#touch_progress_bar_visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
                                                     }
                                                 }
                                             ],
@@ -422,23 +469,9 @@
                                         }
                                     },
                                     {
-                                        "icon_gap": {
-                                            "type": "panel",
-                                            "size": [2, 1],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "section_i",
-                                                    "source_property_name": "(#dur_icon_visible > 0)",
-                                                    "target_property_name": "#visible",
-                                                    "binding_condition": "always"
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    {
                                         "percent_text": {
                                             "type": "stack_panel",
+                                            "visible": false,
                                             "orientation": "horizontal",
                                             "size": ["100%c", "100%cm"],
                                             "controls": [
@@ -482,17 +515,26 @@
                             }
                         },
                         {
-                            "values_row": {
-                                "type": "stack_panel",
-                                "orientation": "horizontal",
-                                "size": ["100%c", "100%cm"],
+                            "values_positioner": {
+                                "type": "panel",
+                                "size": [16, "100%cm"],
                                 "controls": [
+                                    {
+                                        "values_row": {
+                                            "type": "stack_panel",
+                                            "orientation": "horizontal",
+                                            "anchor_from": "top_middle",
+                                            "anchor_to": "top_middle",
+                                            "size": [64, "100%cm"],
+                                            "controls": [
                                     {
                                         "current": {
                                             "type": "label",
                                             "text": "#text",
                                             "shadow": true,
-                                            "font_scale_factor": 0.65,
+                                            "font_scale_factor": 0.55,
+                                            "size": [30, "default"],
+                                            "text_alignment": "right",
                                             "color": [0.92, 0.92, 0.92],
                                             "bindings": [
                                                 {
@@ -516,7 +558,9 @@
                                             "type": "label",
                                             "text": "/",
                                             "shadow": true,
-                                            "font_scale_factor": 0.65,
+                                            "font_scale_factor": 0.55,
+                                            "size": [4, "default"],
+                                            "text_alignment": "center",
                                             "color": [0.55, 0.55, 0.55]
                                         }
                                     },
@@ -525,7 +569,9 @@
                                             "type": "label",
                                             "text": "#text",
                                             "shadow": true,
-                                            "font_scale_factor": 0.65,
+                                            "font_scale_factor": 0.55,
+                                            "size": [30, "default"],
+                                            "text_alignment": "left",
                                             "color": [0.92, 0.92, 0.92],
                                             "bindings": [
                                                 {
@@ -541,6 +587,9 @@
                                                     "target_property_name": "#text",
                                                     "binding_condition": "always"
                                                 }
+                                            ]
+                                        }
+                                    }
                                             ]
                                         }
                                     }
@@ -626,7 +675,7 @@
         "type": "panel",
         "anchor_from": "bottom_middle",
         "anchor_to": "bottom_middle",
-        "offset": [136, "-3.25%"],
+        "offset": [124, "-2.25%"],
         "layer": 28,
         "size": ["100%cm", "100%cm"],
         "controls": [
@@ -782,20 +831,27 @@
                 }
             },
             {
-                "values_row": {
-                    "type": "stack_panel",
-                    "visible": false,
-                    "orientation": "horizontal",
-                    "anchor_from": "top_middle",
-                    "anchor_to": "top_middle",
-                    "size": ["100%c", "100%cm"],
+                "values_positioner": {
+                    "type": "panel",
+                    "size": [18, "100%cm"],
                     "controls": [
+                        {
+                            "values_row": {
+                                "type": "stack_panel",
+                                "visible": false,
+                                "orientation": "horizontal",
+                                "anchor_from": "top_middle",
+                                "anchor_to": "top_middle",
+                                "size": [64, "100%cm"],
+                                "controls": [
                         {
                             "current": {
                                 "type": "label",
                                 "text": "#text",
                                 "shadow": true,
                                 "font_scale_factor": 0.55,
+                                "size": [30, "default"],
+                                "text_alignment": "right",
                                 "color": [0.92, 0.92, 0.92],
                                 "bindings": "$current_text_bindings"
                             }
@@ -806,6 +862,8 @@
                                 "text": "/",
                                 "shadow": true,
                                 "font_scale_factor": 0.55,
+                                "size": [4, "default"],
+                                "text_alignment": "center",
                                 "color": [0.55, 0.55, 0.55]
                             }
                         },
@@ -815,12 +873,17 @@
                                 "text": "#text",
                                 "shadow": true,
                                 "font_scale_factor": 0.55,
+                                "size": [30, "default"],
+                                "text_alignment": "left",
                                 "color": [0.92, 0.92, 0.92],
                                 "bindings": "$max_text_bindings"
                             }
                         }
-                    ],
-                    "bindings": "$values_visible_bindings"
+                                ],
+                                "bindings": "$values_visible_bindings"
+                            }
+                        }
+                    ]
                 }
             }
         ]
@@ -1245,7 +1308,7 @@
         "type": "panel",
         "anchor_from": "bottom_middle",
         "anchor_to": "bottom_middle",
-        "offset": [-112, 2],
+        "offset": [-108, 4.5],
         "layer": 28,
         "size": [32, 27],
         "controls": [
