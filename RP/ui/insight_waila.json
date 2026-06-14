@@ -1,15 +1,20 @@
 {
     "namespace": "insight_waila",
-
     "root_panel": {
         "$update_string": "insight_waila:",
         "type": "panel",
-        "size": ["100%", "100%"],
+        "size": [
+            "100%",
+            "100%"
+        ],
         "controls": [
             {
                 "data_control_waila": {
                     "type": "panel",
-                    "size": [0, 0],
+                    "size": [
+                        0,
+                        0
+                    ],
                     "property_bag": {
                         "#preserved_waila_text": "",
                         "#preserved_entity_id": ""
@@ -37,332 +42,801 @@
                 }
             },
             {
-                "display_background": {
-                    "type": "image",
-                    "texture": "textures/insight/style_default",
-                    "alpha": 0.85,
-                    "property_bag": {
-                        "#current_title_text": "",
-                        "#entity_id": ""
-                    },
-                    "anchor_from": "top_middle",
-                    "anchor_to": "top_middle",
-                    "offset": [0, "1%"],
-                    "size": ["100%c + 20px", "100%cm + 10px"],
-                    "nineslice_size": 4,
+                "desktop_waila": {
+                    "type": "panel",
+                    "size": [
+                        "100%",
+                        "100%"
+                    ],
                     "controls": [
                         {
-                            "display_stack": {
-                                "type": "stack_panel",
-                                "orientation": "horizontal",
-                                "anchor_from": "center",
-                                "anchor_to": "center",
-                                "size": ["100%c", "100%cm"],
-                                "layer": 5,
+                            "display_background": {
+                                "type": "image",
+                                "texture": "textures/insight/style_default",
+                                "alpha": 0.85,
+                                "property_bag": {
+                                    "#current_title_text": "",
+                                    "#entity_id": "",
+                                    "#waila_mobile_layout": "d"
+                                },
+                                "anchor_from": "top_middle",
+                                "anchor_to": "top_middle",
+                                "offset": [
+                                    0,
+                                    "1%"
+                                ],
+                                "size": [
+                                    "100%c + 20px",
+                                    "100%cm + 10px"
+                                ],
+                                "nineslice_size": 4,
                                 "controls": [
                                     {
-                                        "block_display_panel": {
-                                            "type": "panel",
-                                            "size": [32, "100%sm"],
-                                            "max_size": ["100%y", "100%sm"],
+                                        "display_stack": {
+                                            "type": "stack_panel",
+                                            "orientation": "horizontal",
+                                            "anchor_from": "center",
+                                            "anchor_to": "center",
+                                            "size": [
+                                                "100%c",
+                                                "100%cm"
+                                            ],
+                                            "layer": 5,
                                             "controls": [
                                                 {
-                                                    "block_display": {
-                                                        "type": "custom",
-                                                        "renderer": "inventory_item_renderer",
-                                                        "size": ["100% - 4px", "100%x"],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#item_id_aux": 0
-                                                        },
+                                                    "block_display_panel": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            32,
+                                                            "100%sm"
+                                                        ],
+                                                        "max_size": [
+                                                            "100%y",
+                                                            "100%sm"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "block_display": {
+                                                                    "type": "custom",
+                                                                    "renderer": "inventory_item_renderer",
+                                                                    "size": [
+                                                                        "100% - 4px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#item_id_aux": 0
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "((#waila_meta - 'block:') * 1)",
+                                                                            "target_property_name": "#item_id_aux",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ],
                                                         "bindings": [
                                                             {
                                                                 "binding_type": "view",
                                                                 "source_control_name": "display_background",
-                                                                "source_property_name": "((#waila_meta - 'block:') * 1)",
-                                                                "target_property_name": "#item_id_aux",
+                                                                "source_property_name": "(not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0'))",
+                                                                "target_property_name": "#visible",
                                                                 "binding_condition": "always"
                                                             }
                                                         ]
                                                     }
-                                                }
-                                            ],
-                                            "bindings": [
+                                                },
                                                 {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "display_background",
-                                                    "source_property_name": "(not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0'))",
-                                                    "target_property_name": "#visible",
-                                                    "binding_condition": "always"
+                                                    "entity_display_panel": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            32,
+                                                            "100%sm"
+                                                        ],
+                                                        "max_size": [
+                                                            "100%y",
+                                                            "100%sm"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "entity_display_h1": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 4px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        8
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h1:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h2": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 10px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        20
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h2:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h3": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 14px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        24
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h3:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h4": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 18px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        28
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h4:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h5": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 22px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        32
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h5:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ],
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "display_background",
+                                                                "source_property_name": "(not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = ''))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "render_gap": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            4,
+                                                            0
+                                                        ],
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "display_background",
+                                                                "source_property_name": "((not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0')) or (not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = '')))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "text_display_50@insight_waila.text_display_50": {}
+                                                },
+                                                {
+                                                    "text_display_75@insight_waila.text_display_75": {}
+                                                },
+                                                {
+                                                    "text_display_100@insight_waila.text_display_100": {}
+                                                },
+                                                {
+                                                    "text_display_125@insight_waila.text_display_125": {}
+                                                },
+                                                {
+                                                    "text_display_150@insight_waila.text_display_150": {}
                                                 }
                                             ]
                                         }
+                                    }
+                                ],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#hud_title_text_string",
+                                        "binding_name_override": "#current_title_text"
                                     },
                                     {
-                                        "entity_display_panel": {
-                                            "type": "panel",
-                                            "size": [32, "100%sm"],
-                                            "max_size": ["100%y", "100%sm"],
-                                            "controls": [
-                                                {
-                                                    "entity_display_h1": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 4px", "100%x"],
-                                                        "offset": [0, 8],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#entity_id": "#entity_id",
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "data_control_waila",
-                                                                "source_property_name": "#preserved_entity_id",
-                                                                "target_property_name": "#entity_id",
-                                                                "binding_condition": "always"
-                                                            },
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "display_background",
-                                                                "source_property_name": "(not ((#waila_meta - 'entity:h1:') = #waila_meta) and not (#entity_id = ''))",
-                                                                "target_property_name": "#visible",
-                                                                "binding_condition": "always"
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "entity_display_h2": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 10px", "100%x"],
-                                                        "offset": [0, 20],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#entity_id": "#entity_id",
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "data_control_waila",
-                                                                "source_property_name": "#preserved_entity_id",
-                                                                "target_property_name": "#entity_id",
-                                                                "binding_condition": "always"
-                                                            },
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "display_background",
-                                                                "source_property_name": "(not ((#waila_meta - 'entity:h2:') = #waila_meta) and not (#entity_id = ''))",
-                                                                "target_property_name": "#visible",
-                                                                "binding_condition": "always"
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "entity_display_h3": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 14px", "100%x"],
-                                                        "offset": [0, 24],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#entity_id": "#entity_id",
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "data_control_waila",
-                                                                "source_property_name": "#preserved_entity_id",
-                                                                "target_property_name": "#entity_id",
-                                                                "binding_condition": "always"
-                                                            },
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "display_background",
-                                                                "source_property_name": "(not ((#waila_meta - 'entity:h3:') = #waila_meta) and not (#entity_id = ''))",
-                                                                "target_property_name": "#visible",
-                                                                "binding_condition": "always"
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "entity_display_h4": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 18px", "100%x"],
-                                                        "offset": [0, 28],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#entity_id": "#entity_id",
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "data_control_waila",
-                                                                "source_property_name": "#preserved_entity_id",
-                                                                "target_property_name": "#entity_id",
-                                                                "binding_condition": "always"
-                                                            },
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "display_background",
-                                                                "source_property_name": "(not ((#waila_meta - 'entity:h4:') = #waila_meta) and not (#entity_id = ''))",
-                                                                "target_property_name": "#visible",
-                                                                "binding_condition": "always"
-                                                            }
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "entity_display_h5": {
-                                                        "type": "custom",
-                                                        "renderer": "live_horse_renderer",
-                                                        "size": ["100% - 22px", "100%x"],
-                                                        "offset": [0, 32],
-                                                        "anchor_from": "center",
-                                                        "anchor_to": "center",
-                                                        "property_bag": {
-                                                            "#entity_id": "#entity_id",
-                                                            "#look_at_cursor": false
-                                                        },
-                                                        "bindings": [
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "data_control_waila",
-                                                                "source_property_name": "#preserved_entity_id",
-                                                                "target_property_name": "#entity_id",
-                                                                "binding_condition": "always"
-                                                            },
-                                                            {
-                                                                "binding_type": "view",
-                                                                "source_control_name": "display_background",
-                                                                "source_property_name": "(not ((#waila_meta - 'entity:h5:') = #waila_meta) and not (#entity_id = ''))",
-                                                                "target_property_name": "#visible",
-                                                                "binding_condition": "always"
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            ],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "display_background",
-                                                    "source_property_name": "(not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = ''))",
-                                                    "target_property_name": "#visible",
-                                                    "binding_condition": "always"
-                                                }
-                                            ]
-                                        }
+                                        "binding_type": "view",
+                                        "source_control_name": "data_control_waila",
+                                        "source_property_name": "#preserved_entity_id",
+                                        "target_property_name": "#entity_id",
+                                        "binding_condition": "always"
                                     },
                                     {
-                                        "render_gap": {
-                                            "type": "panel",
-                                            "size": [4, 0],
-                                            "bindings": [
-                                                {
-                                                    "binding_type": "view",
-                                                    "source_control_name": "display_background",
-                                                    "source_property_name": "((not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0')) or (not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = '')))",
-                                                    "target_property_name": "#visible",
-                                                    "binding_condition": "always"
-                                                }
-                                            ]
-                                        }
+                                        "binding_type": "view",
+                                        "source_control_name": "data_control_waila",
+                                        "source_property_name": "(#preserved_waila_text - 'insight_waila:')",
+                                        "target_property_name": "#waila_payload"
                                     },
                                     {
-                                        "text_display_50@insight_waila.text_display_50": {}
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.40s * #waila_payload) - '~')",
+                                        "target_property_name": "#panel_texture"
                                     },
                                     {
-                                        "text_display_75@insight_waila.text_display_75": {}
+                                        "binding_type": "view",
+                                        "source_property_name": "#panel_texture",
+                                        "target_property_name": "#texture"
                                     },
                                     {
-                                        "text_display_100@insight_waila.text_display_100": {}
+                                        "binding_type": "view",
+                                        "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
+                                        "target_property_name": "#waila_font_scale_id"
                                     },
                                     {
-                                        "text_display_125@insight_waila.text_display_125": {}
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.53s * #waila_payload) - (%.52s * #waila_payload) - '~')",
+                                        "target_property_name": "#waila_mobile_layout"
                                     },
                                     {
-                                        "text_display_150@insight_waila.text_display_150": {}
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.117s * #waila_payload) - (%.53s * #waila_payload) - '~')",
+                                        "target_property_name": "#waila_meta"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "(#waila_payload - (%.117s * #waila_payload))",
+                                        "target_property_name": "#waila_text"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'insight_waila:')) and not (#waila_mobile_layout = 'm'))",
+                                        "target_property_name": "#visible"
                                     }
                                 ]
                             }
                         }
+                    ]
+                }
+            },
+            {
+                "mobile_waila": {
+                    "type": "panel",
+                    "size": [
+                        "100%",
+                        "100%"
                     ],
-                    "bindings": [
+                    "controls": [
                         {
-                            "binding_name": "#hud_title_text_string",
-                            "binding_name_override": "#current_title_text"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_control_name": "data_control_waila",
-                            "source_property_name": "#preserved_entity_id",
-                            "target_property_name": "#entity_id",
-                            "binding_condition": "always"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_control_name": "data_control_waila",
-                            "source_property_name": "(#preserved_waila_text - 'insight_waila:')",
-                            "target_property_name": "#waila_payload"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "((%.40s * #waila_payload) - '~')",
-                            "target_property_name": "#panel_texture"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "#panel_texture",
-                            "target_property_name": "#texture"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
-                            "target_property_name": "#waila_font_scale_id"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "((%.116s * #waila_payload) - (%.52s * #waila_payload) - '~')",
-                            "target_property_name": "#waila_meta"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "(#waila_payload - (%.116s * #waila_payload))",
-                            "target_property_name": "#waila_text"
-                        },
-                        {
-                            "binding_type": "view",
-                            "source_property_name": "((not (#waila_text = '')) and not (#preserved_waila_text = 'insight_waila:'))",
-                            "target_property_name": "#visible"
+                            "display_background": {
+                                "type": "image",
+                                "texture": "textures/insight/style_default",
+                                "alpha": 0.85,
+                                "property_bag": {
+                                    "#current_title_text": "",
+                                    "#entity_id": "",
+                                    "#waila_mobile_layout": "d"
+                                },
+                                "anchor_from": "top_middle",
+                                "anchor_to": "top_middle",
+                                "offset": [
+                                    0,
+                                    "7.5%"
+                                ],
+                                "size": [
+                                    "100%c + 20px",
+                                    "100%cm + 10px"
+                                ],
+                                "nineslice_size": 4,
+                                "controls": [
+                                    {
+                                        "display_stack": {
+                                            "type": "stack_panel",
+                                            "orientation": "horizontal",
+                                            "anchor_from": "center",
+                                            "anchor_to": "center",
+                                            "size": [
+                                                "100%c",
+                                                "100%cm"
+                                            ],
+                                            "layer": 5,
+                                            "controls": [
+                                                {
+                                                    "block_display_panel": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            32,
+                                                            "100%sm"
+                                                        ],
+                                                        "max_size": [
+                                                            "100%y",
+                                                            "100%sm"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "block_display": {
+                                                                    "type": "custom",
+                                                                    "renderer": "inventory_item_renderer",
+                                                                    "size": [
+                                                                        "100% - 4px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#item_id_aux": 0
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "((#waila_meta - 'block:') * 1)",
+                                                                            "target_property_name": "#item_id_aux",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ],
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "display_background",
+                                                                "source_property_name": "(not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0'))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "entity_display_panel": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            32,
+                                                            "100%sm"
+                                                        ],
+                                                        "max_size": [
+                                                            "100%y",
+                                                            "100%sm"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "entity_display_h1": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 4px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        8
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h1:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h2": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 10px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        20
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h2:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h3": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 14px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        24
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h3:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h4": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 18px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        28
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h4:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_h5": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 22px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        32
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:h5:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        ],
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "display_background",
+                                                                "source_property_name": "(not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = ''))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "render_gap": {
+                                                        "type": "panel",
+                                                        "size": [
+                                                            4,
+                                                            0
+                                                        ],
+                                                        "bindings": [
+                                                            {
+                                                                "binding_type": "view",
+                                                                "source_control_name": "display_background",
+                                                                "source_property_name": "((not ((#waila_meta - 'block:') = #waila_meta) and not ((#waila_meta - 'block:') = '0')) or (not ((#waila_meta - 'entity:') = #waila_meta) and not (#entity_id = '')))",
+                                                                "target_property_name": "#visible",
+                                                                "binding_condition": "always"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "text_display_50@insight_waila.text_display_50": {}
+                                                },
+                                                {
+                                                    "text_display_75@insight_waila.text_display_75": {}
+                                                },
+                                                {
+                                                    "text_display_100@insight_waila.text_display_100": {}
+                                                },
+                                                {
+                                                    "text_display_125@insight_waila.text_display_125": {}
+                                                },
+                                                {
+                                                    "text_display_150@insight_waila.text_display_150": {}
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#hud_title_text_string",
+                                        "binding_name_override": "#current_title_text"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_control_name": "data_control_waila",
+                                        "source_property_name": "#preserved_entity_id",
+                                        "target_property_name": "#entity_id",
+                                        "binding_condition": "always"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_control_name": "data_control_waila",
+                                        "source_property_name": "(#preserved_waila_text - 'insight_waila:')",
+                                        "target_property_name": "#waila_payload"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.40s * #waila_payload) - '~')",
+                                        "target_property_name": "#panel_texture"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "#panel_texture",
+                                        "target_property_name": "#texture"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
+                                        "target_property_name": "#waila_font_scale_id"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.53s * #waila_payload) - (%.52s * #waila_payload) - '~')",
+                                        "target_property_name": "#waila_mobile_layout"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "((%.117s * #waila_payload) - (%.53s * #waila_payload) - '~')",
+                                        "target_property_name": "#waila_meta"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "(#waila_payload - (%.117s * #waila_payload))",
+                                        "target_property_name": "#waila_text"
+                                    },
+                                    {
+                                        "binding_type": "view",
+                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'insight_waila:')) and (#waila_mobile_layout = 'm'))",
+                                        "target_property_name": "#visible"
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
             }
         ]
     },
-
     "text_display_50": {
         "type": "label",
         "text": "#waila_text",
         "shadow": true,
         "font_scale_factor": 0.5,
         "layer": 5,
-        "size": ["default", "default"],
-        "max_size": [260, "default"],
+        "size": [
+            "default",
+            "default"
+        ],
+        "max_size": [
+            260,
+            "default"
+        ],
         "bindings": [
             {
                 "binding_type": "view",
@@ -378,15 +852,20 @@
             }
         ]
     },
-
     "text_display_75": {
         "type": "label",
         "text": "#waila_text",
         "shadow": true,
         "font_scale_factor": 0.75,
         "layer": 5,
-        "size": ["default", "default"],
-        "max_size": [260, "default"],
+        "size": [
+            "default",
+            "default"
+        ],
+        "max_size": [
+            260,
+            "default"
+        ],
         "bindings": [
             {
                 "binding_type": "view",
@@ -402,15 +881,20 @@
             }
         ]
     },
-
     "text_display_100": {
         "type": "label",
         "text": "#waila_text",
         "shadow": true,
         "font_scale_factor": 1,
         "layer": 5,
-        "size": ["default", "default"],
-        "max_size": [260, "default"],
+        "size": [
+            "default",
+            "default"
+        ],
+        "max_size": [
+            260,
+            "default"
+        ],
         "bindings": [
             {
                 "binding_type": "view",
@@ -426,15 +910,20 @@
             }
         ]
     },
-
     "text_display_125": {
         "type": "label",
         "text": "#waila_text",
         "shadow": true,
         "font_scale_factor": 1.25,
         "layer": 5,
-        "size": ["default", "default"],
-        "max_size": [260, "default"],
+        "size": [
+            "default",
+            "default"
+        ],
+        "max_size": [
+            260,
+            "default"
+        ],
         "bindings": [
             {
                 "binding_type": "view",
@@ -450,15 +939,20 @@
             }
         ]
     },
-
     "text_display_150": {
         "type": "label",
         "text": "#waila_text",
         "shadow": true,
         "font_scale_factor": 1.5,
         "layer": 5,
-        "size": ["default", "default"],
-        "max_size": [260, "default"],
+        "size": [
+            "default",
+            "default"
+        ],
+        "max_size": [
+            260,
+            "default"
+        ],
         "bindings": [
             {
                 "binding_type": "view",

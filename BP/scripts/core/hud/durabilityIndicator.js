@@ -288,9 +288,12 @@ function encodeDurabilityData(data) {
 }
 
 export function updateDurabilityIndicator(player, settings = {}) {
-    const mainhandData = settings.mainhandDurability === false
-        ? EMPTY_DURABILITY_DATA
-        : collectDurabilityData(player);
+    const mainhandData = {
+        ...(settings.mainhandDurability === false
+            ? EMPTY_DURABILITY_DATA
+            : collectDurabilityData(player)),
+        durReserved: settings.durabilityMobileLayout ? 1 : 0
+    };
 
     sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(mainhandData)}${encodeEquipmentData(player, settings)}`);
 }

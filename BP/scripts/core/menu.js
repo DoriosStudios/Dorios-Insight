@@ -99,6 +99,14 @@ async function openMainSettingsMenu(player) {
         .toggle(infoLabel("Armor Durability"), {
             defaultValue: mainSettings.armorDurability,
             tooltip: "Shows helmet, chestplate, leggings, and boots durability HUD."
+        })
+        .toggle(infoLabel("WAILA Mobile Layout"), {
+            defaultValue: mainSettings.wailaMobileLayout,
+            tooltip: "Uses the phone layout for the WAILA panel. New players default to this automatically on Mobile platform."
+        })
+        .toggle(infoLabel("Durability Mobile Layout"), {
+            defaultValue: mainSettings.durabilityMobileLayout,
+            tooltip: "Uses the phone layout for the durability HUD. New players default to this automatically on Mobile platform."
         });
 
     const result = await form.show(player);
@@ -114,7 +122,9 @@ async function openMainSettingsMenu(player) {
         fontScaleIndex,
         mainhandDurability,
         offhandDurability,
-        armorDurability
+        armorDurability,
+        wailaMobileLayout,
+        durabilityMobileLayout
     ] = result.formValues;
     const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
     const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
@@ -127,7 +137,9 @@ async function openMainSettingsMenu(player) {
             fontScale,
             mainhandDurability: Boolean(mainhandDurability),
             offhandDurability: Boolean(offhandDurability),
-            armorDurability: Boolean(armorDurability)
+            armorDurability: Boolean(armorDurability),
+            wailaMobileLayout: Boolean(wailaMobileLayout),
+            durabilityMobileLayout: Boolean(durabilityMobileLayout)
         }
     });
 

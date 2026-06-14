@@ -8,6 +8,7 @@ import {
     PANEL_STYLES,
     WAILA_FONT_SCALE_FIELD_LENGTH,
     WAILA_FONT_SCALE_OPTIONS,
+    WAILA_LAYOUT_FIELD_LENGTH,
     WAILA_META_FIELD_LENGTH,
     WAILA_STYLE_TEXTURE_FIELD_LENGTH
 } from "./const.js";
@@ -64,13 +65,25 @@ function getNearestFontScale(value) {
     return nearest;
 }
 
+function isMobilePlatform(player) {
+    try {
+        return player?.clientSystemInfo?.platformType === "Mobile";
+    } catch {
+        return false;
+    }
+}
+
 function getSettingsSection(settings, key) {
     const section = settings?.[key];
     return section && typeof section === "object" ? section : settings;
 }
 
-function normalizeMainSettings(settings = {}) {
+function normalizeMainSettings(settings = {}, player) {
     const main = getSettingsSection(settings, "main");
+    const mobilePlatform = isMobilePlatform(player);
+    const legacyMobileLayout = typeof main.mobileLayout === "boolean"
+        ? main.mobileLayout
+        : undefined;
 
     return {
         enabled: main.enabled !== false,
@@ -95,7 +108,13 @@ function normalizeMainSettings(settings = {}) {
         fontScale: getNearestFontScale(main.fontScale),
         mainhandDurability: main.mainhandDurability !== false,
         offhandDurability: main.offhandDurability !== false,
-        armorDurability: main.armorDurability !== false
+        armorDurability: main.armorDurability !== false,
+        wailaMobileLayout: typeof main.wailaMobileLayout === "boolean"
+            ? main.wailaMobileLayout
+            : legacyMobileLayout ?? mobilePlatform,
+        durabilityMobileLayout: typeof main.durabilityMobileLayout === "boolean"
+            ? main.durabilityMobileLayout
+            : legacyMobileLayout ?? mobilePlatform
     };
 }
 
@@ -134,9 +153,9 @@ function normalizeEntitySettings(settings = {}) {
  * @param {Partial<CoreSettings> | Record<string, unknown>} [settings]
  * @returns {CoreSettings}
  */
-function normalizeSettings(settings = {}) {
+function normalizeSettings(settings = {}, player) {
     return {
-        main: normalizeMainSettings(settings),
+        main: normalizeMainSettings(settings, player),
         block: normalizeBlockSettings(settings),
         entity: normalizeEntitySettings(settings),
     };
@@ -150,11 +169,11 @@ function getPlayerSettingsCacheKey(player) {
     return String(player.id || player.name || "");
 }
 
-function readStoredSettings(source) {
+function readStoredSettings(source, player) {
     try {
         const raw = source?.getDynamicProperty?.(CORE_SETTINGS_DYNAMIC_PROPERTY);
         if (typeof raw === "string" && raw.length) {
-            return normalizeSettings(JSON.parse(raw));
+            return normalizeSettings(JSON.parse(raw), player);
         }
     } catch {
         // Use defaults when the property is missing or malformed.
@@ -168,9 +187,9 @@ function readStoredSettings(source) {
  * @returns {CoreSettings}
  */
 function loadSettings(player) {
-    return readStoredSettings(player)
-        ?? readStoredSettings(world)
-        ?? normalizeSettings(DEFAULT_CORE_SETTINGS);
+    return readStoredSettings(player, player)
+        ?? readStoredSettings(world, player)
+        ?? normalizeSettings({}, player);
 }
 
 /**
@@ -179,7 +198,7 @@ function loadSettings(player) {
  * @returns {CoreSettings}
  */
 function saveSettings(player, settings) {
-    const normalized = normalizeSettings(settings);
+    const normalized = normalizeSettings(settings, player);
 
     try {
         const target = player ?? world;
@@ -274,6 +293,13 @@ function buildFontScaleField(mainSettings) {
         .padEnd(WAILA_FONT_SCALE_FIELD_LENGTH, "~");
 }
 
+/** @param {MainSettings} mainSettings */
+function buildLayoutField(mainSettings) {
+    return (mainSettings.wailaMobileLayout ? "m" : "d")
+        .slice(0, WAILA_LAYOUT_FIELD_LENGTH)
+        .padEnd(WAILA_LAYOUT_FIELD_LENGTH, "d");
+}
+
 function normalizeRawtextParts(parts) {
     if (!Array.isArray(parts)) {
         return [];
@@ -307,7 +333,7 @@ function buildWailaRawMessage(parts, mainSettings, meta = "default:") {
 
     return {
         rawtext: [
-            { text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}${metaField}` },
+            { text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}${buildLayoutField(mainSettings)}${metaField}` },
             ...rawtext
         ]
     };

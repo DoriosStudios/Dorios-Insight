@@ -16,6 +16,8 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @property {boolean} mainhandDurability
  * @property {boolean} offhandDurability
  * @property {boolean} armorDurability
+ * @property {boolean} wailaMobileLayout
+ * @property {boolean} durabilityMobileLayout
  */
 
 /**
@@ -61,6 +63,8 @@ export const DEFAULT_CORE_SETTINGS = {
     mainhandDurability: true,
     offhandDurability: true,
     armorDurability: true,
+    wailaMobileLayout: false,
+    durabilityMobileLayout: false,
   },
   block: {
     energyContainers: false,
@@ -98,6 +102,7 @@ export const CORE_LIMITS = {
 
 export const WAILA_STYLE_TEXTURE_FIELD_LENGTH = 40;
 export const WAILA_FONT_SCALE_FIELD_LENGTH = 12;
+export const WAILA_LAYOUT_FIELD_LENGTH = 1;
 export const WAILA_META_FIELD_LENGTH = 64;
 
 export const WAILA_FONT_SCALE_OPTIONS = [
