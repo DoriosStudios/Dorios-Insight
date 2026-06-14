@@ -36,6 +36,7 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @property {boolean} entityRender
  * @property {boolean} health
  * @property {boolean} hostile
+ * @property {boolean} specialInfo
  * @property {boolean} identifier
  * @property {boolean} typeFamilies
  * @property {boolean} tags
@@ -76,6 +77,7 @@ export const DEFAULT_CORE_SETTINGS = {
     entityRender: true,
     health: true,
     hostile: false,
+    specialInfo: false,
     identifier: false,
     typeFamilies: false,
     tags: false,

@@ -5,6 +5,7 @@ import {
   safeTranslateOrText,
   shouldShowNamespaceLine,
 } from "../format.js";
+import { collectEntitySpecialInfo } from "./specialInfo.js";
 
 const HOSTILE_ENTITY_FAMILIES = [
   "monster",
@@ -174,6 +175,7 @@ export function collectEntityGeneral(entity) {
     showNamespaceLine: shouldShowNamespaceLine(typeId),
     health: getEntityHealth(entity),
     families,
+    entity,
     isHostile: isEntityHostile(entity, families),
     tags: getEntityTags(entity),
     properties: getEntityProperties(entity),
@@ -200,11 +202,15 @@ export function renderEntityGeneral(data, settings = {}) {
     details.push({ text: `\n§fHealth: §c${data.health.current}§7 / §c${data.health.max}§r` });
   }
 
-  if (settings.hostile) {
+  if (settings.hostile && data.typeId !== "minecraft:item") {
     details.push({ text: `\n§fHostile: ${data.isHostile ? "Yes" : "No"}§r` });
   }
 
   pushSection(rawtext, details);
+
+  if (settings.specialInfo) {
+    pushSection(rawtext, collectEntitySpecialInfo(data.entity, { families: data.families }));
+  }
 
   const technical = [];
 

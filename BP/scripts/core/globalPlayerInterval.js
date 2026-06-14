@@ -122,6 +122,7 @@ function normalizeEntitySettings(settings = {}) {
         entityRender: entity?.entityRender !== false,
         health: entity?.health !== false,
         hostile: entity?.hostile === true,
+        specialInfo: entity?.specialInfo === true,
         identifier: entity?.identifier === true,
         typeFamilies: entity?.typeFamilies === true,
         tags: entity?.tags === true,
@@ -337,7 +338,8 @@ function composeTargetMessage(player, settings) {
 
     if (target.kind === TargetKinds.Entity) {
         const entityTarget = composeEntityTarget(target.entity, settings.entity);
-        const renderMeta = settings.entity.entityRender
+        const shouldRenderEntity = settings.entity.entityRender && entityTarget.canRender;
+        const renderMeta = shouldRenderEntity
             ? `entity:${entityTarget.renderHeightClass}:${entityTarget.entityId}`
             : "default:";
         return buildWailaPayload(
@@ -346,7 +348,7 @@ function composeTargetMessage(player, settings) {
                 settings.main,
                 renderMeta
             ),
-            settings.entity.entityRender ? entityTarget.entityId : ""
+            shouldRenderEntity ? entityTarget.entityId : ""
         );
     }
 

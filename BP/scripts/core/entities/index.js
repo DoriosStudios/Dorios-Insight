@@ -1,5 +1,13 @@
 import { collectEntityGeneral, renderEntityGeneral } from "./general.js";
 
+const HIDDEN_RENDER_ENTITY_TYPE_IDS = new Set([
+    "minecraft:item",
+]);
+
+function shouldRenderEntity(entity) {
+    return !HIDDEN_RENDER_ENTITY_TYPE_IDS.has(String(entity?.typeId || "").trim());
+}
+
 function getEntityRenderHeightClass(entity) {
     try {
         const aabb = entity?.getAABB?.();
@@ -20,6 +28,7 @@ export function composeEntityTarget(entity, settings) {
 
     return {
         entityId: String(entity?.id || ""),
+        canRender: shouldRenderEntity(entity),
         renderHeightClass: getEntityRenderHeightClass(entity),
         headerText: general.headerText,
         rawtext: renderEntityGeneral(general, settings),

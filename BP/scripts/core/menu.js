@@ -214,6 +214,10 @@ async function openEntitySettingsMenu(player) {
             defaultValue: settings.entity.hostile,
             tooltip: "Shows whether Insight detects the entity as hostile from type families or attack components."
         })
+        .toggle(infoLabel("Special Info"), {
+            defaultValue: settings.entity.specialInfo,
+            tooltip: "Shows extra data for supported entity types, such as villager jobs or dropped item stacks."
+        })
         .toggle(infoLabel("Identifier"), {
             defaultValue: settings.entity.identifier,
             tooltip: "Shows the full entity type identifier."
@@ -236,12 +240,13 @@ async function openEntitySettingsMenu(player) {
         return;
     }
 
-    const [entityRender, health, hostile, identifier, typeFamilies, tags, properties] = result.formValues;
+    const [entityRender, health, hostile, specialInfo, identifier, typeFamilies, tags, properties] = result.formValues;
     setCoreSettings(player, {
         entity: {
             entityRender: Boolean(entityRender),
             health: Boolean(health),
             hostile: Boolean(hostile),
+            specialInfo: Boolean(specialInfo),
             identifier: Boolean(identifier),
             typeFamilies: Boolean(typeFamilies),
             tags: Boolean(tags),
