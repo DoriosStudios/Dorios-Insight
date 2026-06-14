@@ -9,6 +9,10 @@ function shouldRenderEntity(entity) {
 }
 
 function getEntityRenderHeightClass(entity) {
+    if (String(entity?.typeId || "").trim() === "minecraft:player") {
+        return "p2";
+    }
+
     try {
         const aabb = entity?.getAABB?.();
         const height = Number(aabb?.extent?.y) * 2;
@@ -27,6 +31,7 @@ export function composeEntityTarget(entity, settings) {
     const general = collectEntityGeneral(entity);
 
     return {
+        typeId: String(entity?.typeId || ""),
         entityId: String(entity?.id || ""),
         canRender: shouldRenderEntity(entity),
         renderHeightClass: getEntityRenderHeightClass(entity),

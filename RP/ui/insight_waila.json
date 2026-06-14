@@ -216,6 +216,42 @@
                                                                 }
                                                             },
                                                             {
+                                                                "entity_display_p2": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 10px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        -12
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:p2:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
                                                                 "entity_display_h3": {
                                                                     "type": "custom",
                                                                     "renderer": "live_horse_renderer",
@@ -599,6 +635,42 @@
                                                                             "binding_type": "view",
                                                                             "source_control_name": "display_background",
                                                                             "source_property_name": "(not ((#waila_meta - 'entity:h2:') = #waila_meta) and not (#entity_id = ''))",
+                                                                            "target_property_name": "#visible",
+                                                                            "binding_condition": "always"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            {
+                                                                "entity_display_p2": {
+                                                                    "type": "custom",
+                                                                    "renderer": "live_horse_renderer",
+                                                                    "size": [
+                                                                        "100% - 10px",
+                                                                        "100%x"
+                                                                    ],
+                                                                    "offset": [
+                                                                        0,
+                                                                        -12
+                                                                    ],
+                                                                    "anchor_from": "center",
+                                                                    "anchor_to": "center",
+                                                                    "property_bag": {
+                                                                        "#entity_id": "#entity_id",
+                                                                        "#look_at_cursor": false
+                                                                    },
+                                                                    "bindings": [
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "data_control_waila",
+                                                                            "source_property_name": "#preserved_entity_id",
+                                                                            "target_property_name": "#entity_id",
+                                                                            "binding_condition": "always"
+                                                                        },
+                                                                        {
+                                                                            "binding_type": "view",
+                                                                            "source_control_name": "display_background",
+                                                                            "source_property_name": "(not ((#waila_meta - 'entity:p2:') = #waila_meta) and not (#entity_id = ''))",
                                                                             "target_property_name": "#visible",
                                                                             "binding_condition": "always"
                                                                         }
