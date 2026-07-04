@@ -406,7 +406,7 @@ export const InsightComponentDefinitions = Object.freeze([
     Object.freeze({ key: "namespace", label: "Namespace Label" }),
     Object.freeze({ key: "customFields", label: "Custom Fields" }),
     Object.freeze({ key: "customEnergyInfo", label: "UtilityCraft: Energy Info" }),
-    Object.freeze({ key: "customFluidInfo", label: "Custom: Fluid Info" }),
+    Object.freeze({ key: "customFluidInfo", label: "Custom: Liquid Info" }),
     Object.freeze({ key: "customGasInfo", label: "Custom: Gas Info" }),
     Object.freeze({ key: "customRotationInfo", label: "UtilityCraft: Rotation Info" }),
     Object.freeze({ key: "customMachineProgress", label: "UtilityCraft: Machine Progress" }),
