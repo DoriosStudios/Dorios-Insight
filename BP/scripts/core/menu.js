@@ -158,6 +158,14 @@ async function openBlockSettingsMenu(player) {
             defaultValue: settings.block.fluidContainers,
             tooltip: "Shows stored fluids for blocks tagged dorios:fluid."
         })
+        .toggle(infoLabel("Gas Containers"), {
+            defaultValue: settings.block.gasContainers,
+            tooltip: "Shows stored gases for blocks tagged dorios:gas."
+        })
+        .toggle(infoLabel("Overclock Level"), {
+            defaultValue: settings.block.overclockLevel,
+            tooltip: "Shows the UtilityCraft machine overclock level."
+        })
         .toggle(infoLabel("Block Render"), {
             defaultValue: settings.block.blockRender,
             tooltip: "Shows the targeted block item render next to the WAILA text when Insight can resolve its aux id."
@@ -192,11 +200,13 @@ async function openBlockSettingsMenu(player) {
         return;
     }
 
-    const [energyContainers, fluidContainers, blockRender, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
+    const [energyContainers, fluidContainers, gasContainers, overclockLevel, blockRender, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
     setCoreSettings(player, {
         block: {
             energyContainers: Boolean(energyContainers),
             fluidContainers: Boolean(fluidContainers),
+            gasContainers: Boolean(gasContainers),
+            overclockLevel: Boolean(overclockLevel),
             blockRender: Boolean(blockRender),
             preferredTool: Boolean(preferredTool),
             toolTier: Boolean(toolTier),

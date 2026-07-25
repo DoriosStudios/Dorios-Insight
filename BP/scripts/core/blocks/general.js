@@ -1,6 +1,8 @@
 import { formatTypeIdToText, resolveNamespaceLabel, safeTranslateOrText, shouldShowNamespaceLine } from "../format.js";
 import { getEnergyLine } from "./energyContainers.js";
 import { getFluidLines } from "./fluidContainers.js";
+import { getGasLines } from "./gasContainers.js";
+import { getOverclockLine } from "./overclockLevel.js";
 
 /**
  * @typedef {object} RawTextPart
@@ -233,6 +235,17 @@ export function buildBlockLabel(block, settings = {}) {
 
   if (settings.fluidContainers) {
     containerDetails.push(...getFluidLines(block));
+  }
+
+  if (settings.gasContainers) {
+    containerDetails.push(...getGasLines(block));
+  }
+
+  if (settings.overclockLevel) {
+    const overclockLine = getOverclockLine(block);
+    if (overclockLine) {
+      containerDetails.push(overclockLine);
+    }
   }
 
   pushSection(rawtext, containerDetails);

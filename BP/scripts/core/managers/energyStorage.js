@@ -1,26 +1,24 @@
 import { world } from "@minecraft/server";
 
-const ENERGY_OBJECTIVES = {
-  energy: "energy",
-  energyExp: "energyExp",
-  energyCap: "energyCap",
-  energyCapExp: "energyCapExp",
-};
+const ENERGY_OBJECTIVE_DEFINITIONS = [
+  ["energy", "Energy"],
+  ["energyExp", "EnergyExp"],
+  ["energyCap", "Energy Max Capacity"],
+  ["energyCapExp", "Energy Max Capacity Exp"],
+];
+const objectives = Object.create(null);
 
 function getObjectiveScore(objectiveId, scoreId) {
   if (!scoreId) {
     return 0;
   }
 
-  try {
-    return world.scoreboard.getObjective(objectiveId)?.getScore(scoreId) || 0;
-  } catch {
-    return 0;
-  }
+  return objectives[objectiveId].getScore(scoreId) || 0;
 }
 
 export class EnergyStorage {
   constructor(entity) {
+    EnergyStorage.initializeObjectives();
     this.entity = entity;
     this.scoreId = entity?.scoreboardIdentity;
     this.cap = this.getCap();
@@ -28,6 +26,25 @@ export class EnergyStorage {
 
   static combineValue(value, exp) {
     return (Number(value) || 0) * 10 ** (Number(exp) || 0);
+  }
+
+  static initializeObjectives() {
+    for (const [id, displayName] of ENERGY_OBJECTIVE_DEFINITIONS) {
+      objectives[id] = world.scoreboard.getObjective(id)
+        ?? world.scoreboard.addObjective(id, displayName);
+    }
+  }
+
+  static normalizeValue(amount) {
+    let exp = 0;
+    let value = Math.max(0, Number(amount) || 0);
+
+    while (value > 1e9) {
+      value /= 1000;
+      exp += 3;
+    }
+
+    return { value: Math.floor(value), exp };
   }
 
   static formatEnergyToText(value) {
@@ -43,17 +60,29 @@ export class EnergyStorage {
   }
 
   getCap() {
-    const value = getObjectiveScore(ENERGY_OBJECTIVES.energyCap, this.scoreId);
-    const exp = getObjectiveScore(ENERGY_OBJECTIVES.energyCapExp, this.scoreId);
+    const { value, exp } = this.getCapNormalized();
 
     this.cap = EnergyStorage.combineValue(value, exp);
     return this.cap;
   }
 
+  getCapNormalized() {
+    return {
+      value: getObjectiveScore("energyCap", this.scoreId),
+      exp: getObjectiveScore("energyCapExp", this.scoreId),
+    };
+  }
+
   get() {
-    const value = getObjectiveScore(ENERGY_OBJECTIVES.energy, this.scoreId);
-    const exp = getObjectiveScore(ENERGY_OBJECTIVES.energyExp, this.scoreId);
+    const { value, exp } = this.getNormalized();
 
     return EnergyStorage.combineValue(value, exp);
+  }
+
+  getNormalized() {
+    return {
+      value: getObjectiveScore("energy", this.scoreId),
+      exp: getObjectiveScore("energyExp", this.scoreId),
+    };
   }
 }

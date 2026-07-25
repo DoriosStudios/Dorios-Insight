@@ -124,6 +124,8 @@ function normalizeBlockSettings(settings = {}) {
     return {
         energyContainers: block.energyContainers === true,
         fluidContainers: block.fluidContainers === true,
+        gasContainers: block.gasContainers === true,
+        overclockLevel: block.overclockLevel === true,
         blockRender: block.blockRender !== false,
         preferredTool: block.preferredTool === true,
         toolTier: block.toolTier === true,

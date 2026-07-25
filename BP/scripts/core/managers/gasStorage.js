@@ -1,8 +1,8 @@
 import { world } from "@minecraft/server";
 
-const EMPTY_FLUID_TYPE = "empty";
-const MAX_LIQUIDS_OBJECTIVE = "maxLiquids";
-let maxLiquidsData;
+const EMPTY_GAS_TYPE = "empty";
+const MAX_GASES_OBJECTIVE = "maxGases";
+let maxGasesData;
 const objectives = new Map();
 
 function getObjectiveScore(objective, scoreId) {
@@ -13,17 +13,17 @@ function getObjectiveScore(objective, scoreId) {
   return objective.getScore(scoreId) || 0;
 }
 
-export class FluidStorage {
+export class GasStorage {
   constructor(entity, index = 0) {
-    FluidStorage.initializeObjectives(index);
+    GasStorage.initializeObjectives(index);
     this.entity = entity;
     this.index = index;
     this.scoreId = entity?.scoreboardIdentity;
     this.scores = {
-      fluid: objectives.get(`fluid_${index}`),
-      fluidExp: objectives.get(`fluidExp_${index}`),
-      fluidCap: objectives.get(`fluidCap_${index}`),
-      fluidCapExp: objectives.get(`fluidCapExp_${index}`),
+      gas: objectives.get(`gas_${index}`),
+      gasExp: objectives.get(`gasExp_${index}`),
+      gasCap: objectives.get(`gasCap_${index}`),
+      gasCapExp: objectives.get(`gasCapExp_${index}`),
     };
     this.type = this.getType();
     this.cap = this.getCap();
@@ -46,14 +46,14 @@ export class FluidStorage {
   }
 
   static initializeObjectives(index = 0) {
-    maxLiquidsData = world.scoreboard.getObjective(MAX_LIQUIDS_OBJECTIVE)
-      ?? world.scoreboard.addObjective(MAX_LIQUIDS_OBJECTIVE, "Max Liquids");
+    maxGasesData = world.scoreboard.getObjective(MAX_GASES_OBJECTIVE)
+      ?? world.scoreboard.addObjective(MAX_GASES_OBJECTIVE, "Max Gases");
 
     const definitions = [
-      [`fluid_${index}`, `fluid ${index}`],
-      [`fluidExp_${index}`, `fluid Exp ${index}`],
-      [`fluidCap_${index}`, `fluid Cap ${index}`],
-      [`fluidCapExp_${index}`, `fluid Cap Exp ${index}`],
+      [`gas_${index}`, `gas ${index}`],
+      [`gasExp_${index}`, `gas Exp ${index}`],
+      [`gasCap_${index}`, `gas Cap ${index}`],
+      [`gasCapExp_${index}`, `gas Cap Exp ${index}`],
     ];
 
     for (const [id, displayName] of definitions) {
@@ -67,7 +67,7 @@ export class FluidStorage {
     }
   }
 
-  static formatFluid(value) {
+  static formatGas(value) {
     const safeValue = Math.max(0, Number(value) || 0);
 
     if (safeValue >= 1e21) return `${(safeValue / 1e21).toFixed(2)} EB`;
@@ -81,35 +81,36 @@ export class FluidStorage {
     return `${Math.floor(safeValue)} mB`;
   }
 
-  static getMaxLiquids(entity) {
-    FluidStorage.initializeObjectives();
+  static getMaxGases(entity) {
+    GasStorage.initializeObjectives();
     if (!entity) {
       return 1;
     }
 
-    const score = getObjectiveScore(maxLiquidsData, entity.scoreboardIdentity);
+    const score = getObjectiveScore(maxGasesData, entity.scoreboardIdentity);
     return score > 0 ? score : 1;
   }
 
   getCap() {
-    const value = getObjectiveScore(this.scores.fluidCap, this.scoreId);
-    const exp = getObjectiveScore(this.scores.fluidCapExp, this.scoreId);
+    const value = getObjectiveScore(this.scores.gasCap, this.scoreId);
+    const exp = getObjectiveScore(this.scores.gasCapExp, this.scoreId);
 
-    this.cap = FluidStorage.combineValue(value, exp);
+    this.cap = GasStorage.combineValue(value, exp);
     return this.cap;
   }
 
   get() {
-    const value = getObjectiveScore(this.scores.fluid, this.scoreId);
-    const exp = getObjectiveScore(this.scores.fluidExp, this.scoreId);
+    const value = getObjectiveScore(this.scores.gas, this.scoreId);
+    const exp = getObjectiveScore(this.scores.gasExp, this.scoreId);
 
-    return FluidStorage.combineValue(value, exp);
+    return GasStorage.combineValue(value, exp);
   }
 
   getType() {
-    const tag = this.entity?.getTags?.().find((entry) => String(entry || "").startsWith(`fluid${this.index}Type:`));
-    return tag ? String(tag).slice(`fluid${this.index}Type:`.length) : EMPTY_FLUID_TYPE;
+    const prefix = `gas${this.index}Type:`;
+    const tag = this.entity?.getTags?.().find((entry) => String(entry || "").startsWith(prefix));
+    return tag ? String(tag).slice(prefix.length) : EMPTY_GAS_TYPE;
   }
 }
 
-export { EMPTY_FLUID_TYPE };
+export { EMPTY_GAS_TYPE };

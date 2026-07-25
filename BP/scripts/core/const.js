@@ -24,6 +24,8 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @typedef {object} BlockSettings
  * @property {boolean} energyContainers
  * @property {boolean} fluidContainers
+ * @property {boolean} gasContainers
+ * @property {boolean} overclockLevel
  * @property {boolean} blockRender
  * @property {boolean} preferredTool
  * @property {boolean} toolTier
@@ -69,6 +71,8 @@ export const DEFAULT_CORE_SETTINGS = {
   block: {
     energyContainers: false,
     fluidContainers: false,
+    gasContainers: false,
+    overclockLevel: false,
     blockRender: true,
     preferredTool: false,
     toolTier: false,
