@@ -8,7 +8,7 @@
 	},
 	"header": {
 		"name": "§eDorios' Insight",
-		"description": "1.1.0 §6Dorios Studios",
+		"description": "1.2.0 §6Dorios Studios",
 		"min_engine_version": [
 			1,
 			20,
@@ -17,8 +17,8 @@
 		"uuid": "411955f3-73f5-424a-b23d-01d040de6340",
 		"version": [
 			1,
-			1,
-			2
+			2,
+			0
 		]
 	},
 	"modules": [
@@ -27,7 +27,7 @@
 			"uuid": "748dfa7a-c778-4ff6-85d0-2134cb94f2da",
 			"version": [
 				1,
-				1,
+				2,
 				0
 			]
 		}
@@ -37,8 +37,8 @@
 			"uuid": "9cae2113-07c4-4433-ad8f-eb687d290e26",
 			"version": [
 				1,
-				1,
-				2
+				2,
+				0
 			]
 		}
 	]
