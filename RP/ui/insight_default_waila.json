@@ -1,0 +1,244 @@
+{
+    "namespace": "insight_default_waila",
+
+    "root_panel": {
+        "$update_string": "insight_default_waila:",
+        "type": "panel",
+        "size": ["100%", "100%"],
+        "controls": [
+            {
+                "data_control_default_waila": {
+                    "type": "panel",
+                    "size": [0, 0],
+                    "property_bag": {
+                        "#preserved_waila_text": ""
+                    },
+                    "bindings": [
+                        {
+                            "binding_name": "#hud_subtitle_text_string"
+                        },
+                        {
+                            "binding_name": "#hud_subtitle_text_string",
+                            "binding_name_override": "#preserved_waila_text",
+                            "binding_condition": "visible"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(not ((#hud_subtitle_text_string - 'insight_default_waila:') = #hud_subtitle_text_string))",
+                            "target_property_name": "#visible"
+                        }
+                    ]
+                }
+            },
+            {
+                "default_display_background": {
+                    "type": "image",
+                    "texture": "textures/insight/style_default",
+                    "alpha": 0.85,
+                    "property_bag": {
+                        "#current_title_text": "",
+                        "#current_subtitle_text": ""
+                    },
+                    "anchor_from": "top_middle",
+                    "anchor_to": "top_middle",
+                    "offset": [0, "1%"],
+                    "size": ["100%c + 20px", "100%cm + 10px"],
+                    "nineslice_size": 4,
+                    "controls": [
+                        {
+                            "text_display_50@insight_default_waila.text_display_50": {}
+                        },
+                        {
+                            "text_display_75@insight_default_waila.text_display_75": {}
+                        },
+                        {
+                            "text_display_100@insight_default_waila.text_display_100": {}
+                        },
+                        {
+                            "text_display_125@insight_default_waila.text_display_125": {}
+                        },
+                        {
+                            "text_display_150@insight_default_waila.text_display_150": {}
+                        }
+                    ],
+                    "bindings": [
+                        {
+                            "binding_name": "#hud_title_text_string",
+                            "binding_name_override": "#current_title_text"
+                        },
+                        {
+                            "binding_name": "#hud_subtitle_text_string",
+                            "binding_name_override": "#current_subtitle_text"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_control_name": "data_control_default_waila",
+                            "source_property_name": "(#preserved_waila_text - 'insight_default_waila:')",
+                            "target_property_name": "#waila_payload"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((%.40s * #waila_payload) - '~')",
+                            "target_property_name": "#panel_texture"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "#panel_texture",
+                            "target_property_name": "#texture"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(((%.52s * #waila_payload) - (%.40s * #waila_payload) - '~') * 1)",
+                            "target_property_name": "#waila_font_scale_id"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((%.116s * #waila_payload) - (%.52s * #waila_payload) - '~')",
+                            "target_property_name": "#waila_meta"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(#waila_payload - (%.116s * #waila_payload))",
+                            "target_property_name": "#waila_text"
+                        },
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "((not (#waila_text = '')) and not ((#current_subtitle_text - 'insight_default_waila:') = #current_subtitle_text) and not ((#waila_meta - 'default:') = #waila_meta))",
+                            "target_property_name": "#visible"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+
+    "text_display_50": {
+        "type": "label",
+        "text": "#waila_text",
+        "shadow": true,
+        "font_scale_factor": 0.5,
+        "layer": 5,
+        "size": ["default", "default"],
+        "max_size": [260, "default"],
+        "anchor_from": "center",
+        "anchor_to": "center",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "#waila_text",
+                "target_property_name": "#waila_text"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "(#waila_font_scale_id = 50)",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "text_display_75": {
+        "type": "label",
+        "text": "#waila_text",
+        "shadow": true,
+        "font_scale_factor": 0.75,
+        "layer": 5,
+        "size": ["default", "default"],
+        "max_size": [260, "default"],
+        "anchor_from": "center",
+        "anchor_to": "center",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "#waila_text",
+                "target_property_name": "#waila_text"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "(#waila_font_scale_id = 75)",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "text_display_100": {
+        "type": "label",
+        "text": "#waila_text",
+        "shadow": true,
+        "font_scale_factor": 1,
+        "layer": 5,
+        "size": ["default", "default"],
+        "max_size": [260, "default"],
+        "anchor_from": "center",
+        "anchor_to": "center",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "#waila_text",
+                "target_property_name": "#waila_text"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "(#waila_font_scale_id = 100)",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "text_display_125": {
+        "type": "label",
+        "text": "#waila_text",
+        "shadow": true,
+        "font_scale_factor": 1.25,
+        "layer": 5,
+        "size": ["default", "default"],
+        "max_size": [260, "default"],
+        "anchor_from": "center",
+        "anchor_to": "center",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "#waila_text",
+                "target_property_name": "#waila_text"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "(#waila_font_scale_id = 125)",
+                "target_property_name": "#visible"
+            }
+        ]
+    },
+
+    "text_display_150": {
+        "type": "label",
+        "text": "#waila_text",
+        "shadow": true,
+        "font_scale_factor": 1.5,
+        "layer": 5,
+        "size": ["default", "default"],
+        "max_size": [260, "default"],
+        "anchor_from": "center",
+        "anchor_to": "center",
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "#waila_text",
+                "target_property_name": "#waila_text"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "default_display_background",
+                "source_property_name": "(#waila_font_scale_id = 150)",
+                "target_property_name": "#visible"
+            }
+        ]
+    }
+}

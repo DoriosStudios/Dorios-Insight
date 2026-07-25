@@ -1,0 +1,358 @@
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
+import { system } from "@minecraft/server";
+import { PANEL_STYLES, WAILA_FONT_SCALE_OPTIONS } from "./const.js";
+import { getCoreSettings, setCoreSettings } from "./globalPlayerInterval.js";
+
+let initialized = false;
+
+const UI = {
+    info: "§b",
+    warn: "§e",
+    muted: "§7",
+    reset: "§r"
+};
+
+function infoLabel(text) {
+    return `${UI.info}${text}${UI.reset}`;
+}
+
+function mutedText(text) {
+    return `${UI.muted}${text}${UI.reset}`;
+}
+
+function sendMessage(player, message) {
+    try {
+        player.sendMessage(message);
+    } catch {
+        // Ignore.
+    }
+}
+
+function getPlayerFromOrigin(origin) {
+    const player = origin?.sourceEntity;
+    return player?.typeId === "minecraft:player" ? player : undefined;
+}
+
+function getPanelStyleIndex(styleId) {
+    const index = PANEL_STYLES.findIndex((style) => style.id === Number(styleId));
+    return index >= 0 ? index : 0;
+}
+
+function getFontScaleIndex(fontScale) {
+    const scale = Number(fontScale);
+    if (!Number.isFinite(scale)) {
+        return WAILA_FONT_SCALE_OPTIONS.findIndex((option) => option.scale === 1);
+    }
+
+    let nearestIndex = 0;
+    let nearestDistance = Infinity;
+    for (let i = 0; i < WAILA_FONT_SCALE_OPTIONS.length; i += 1) {
+        const distance = Math.abs(WAILA_FONT_SCALE_OPTIONS[i].scale - scale);
+        if (distance < nearestDistance) {
+            nearestIndex = i;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearestIndex;
+}
+
+/** @typedef {import("./const.js").CoreSettings} CoreSettings */
+
+function getPanelStyleLabel(styleId) {
+    return PANEL_STYLES[getPanelStyleIndex(styleId)]?.label ?? PANEL_STYLES[0].label;
+}
+
+async function openMainSettingsMenu(player) {
+    const settings = getCoreSettings(player);
+    const mainSettings = settings.main;
+    const form = new ModalFormData()
+        .title(`${UI.info}Main Settings${UI.reset}`)
+        .toggle(infoLabel("Enabled"), {
+            defaultValue: mainSettings.enabled,
+            tooltip: "Turns Dorios Insight target labels on or off for you."
+        })
+        .slider(infoLabel("Update Interval"), 1, 40, {
+            defaultValue: mainSettings.updateIntervalTicks,
+            tooltip: "How often Insight refreshes labels, measured in ticks."
+        })
+        .slider(infoLabel("Max Distance"), 1, 32, {
+            defaultValue: mainSettings.maxDistance,
+            tooltip: "Maximum block distance used to find what the player is looking at."
+        })
+        .dropdown(infoLabel("Panel Style"), PANEL_STYLES.map((style) => style.label), {
+            defaultValueIndex: getPanelStyleIndex(mainSettings.panelStyleId),
+            tooltip: "Visual style used by the WAILA panel."
+        })
+        .dropdown(infoLabel("Font Size"), WAILA_FONT_SCALE_OPTIONS.map((option) => option.label), {
+            defaultValueIndex: getFontScaleIndex(mainSettings.fontScale),
+            tooltip: "Text scale used by block and entity WAILA labels: 0.5, 0.75, 1, 1.25, 1.5."
+        })
+        .toggle(infoLabel("Mainhand Durability"), {
+            defaultValue: mainSettings.mainhandDurability,
+            tooltip: "Shows the selected main hand item durability HUD."
+        })
+        .toggle(infoLabel("Offhand Durability"), {
+            defaultValue: mainSettings.offhandDurability,
+            tooltip: "Shows the offhand item durability HUD."
+        })
+        .toggle(infoLabel("Armor Durability"), {
+            defaultValue: mainSettings.armorDurability,
+            tooltip: "Shows helmet, chestplate, leggings, and boots durability HUD."
+        })
+        .toggle(infoLabel("WAILA Mobile Layout"), {
+            defaultValue: mainSettings.wailaMobileLayout,
+            tooltip: "Uses the phone layout for the WAILA panel. New players default to this automatically on Mobile platform."
+        })
+        .toggle(infoLabel("Durability Mobile Layout"), {
+            defaultValue: mainSettings.durabilityMobileLayout,
+            tooltip: "Uses the phone layout for the durability HUD. New players default to this automatically on Mobile platform."
+        });
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    const [
+        enabled,
+        updateIntervalTicks,
+        maxDistance,
+        panelStyleIndex,
+        fontScaleIndex,
+        mainhandDurability,
+        offhandDurability,
+        armorDurability,
+        wailaMobileLayout,
+        durabilityMobileLayout
+    ] = result.formValues;
+    const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
+    const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
+    const next = setCoreSettings(player, {
+        main: {
+            enabled: Boolean(enabled),
+            updateIntervalTicks: Number(updateIntervalTicks),
+            maxDistance: Number(maxDistance),
+            panelStyleId: panelStyle.id,
+            fontScale,
+            mainhandDurability: Boolean(mainhandDurability),
+            offhandDurability: Boolean(offhandDurability),
+            armorDurability: Boolean(armorDurability),
+            wailaMobileLayout: Boolean(wailaMobileLayout),
+            durabilityMobileLayout: Boolean(durabilityMobileLayout)
+        }
+    });
+
+    sendMessage(player, `§aMain settings updated: ${next.main.enabled ? "enabled" : "disabled"}, ${next.main.updateIntervalTicks} ticks, ${next.main.maxDistance} blocks, ${getPanelStyleLabel(next.main.panelStyleId)} style.`);
+}
+
+async function openBlockSettingsMenu(player) {
+    const settings = getCoreSettings(player);
+    const form = new ModalFormData()
+        .title(`${UI.info}Block Settings${UI.reset}`)
+        .toggle(infoLabel("Energy Containers"), {
+            defaultValue: settings.block.energyContainers,
+            tooltip: "Shows stored energy for blocks tagged dorios:energy."
+        })
+        .toggle(infoLabel("Fluid Containers"), {
+            defaultValue: settings.block.fluidContainers,
+            tooltip: "Shows stored fluids for blocks tagged dorios:fluid."
+        })
+        .toggle(infoLabel("Gas Containers"), {
+            defaultValue: settings.block.gasContainers,
+            tooltip: "Shows stored gases for blocks tagged dorios:gas."
+        })
+        .toggle(infoLabel("Overclock Level"), {
+            defaultValue: settings.block.overclockLevel,
+            tooltip: "Shows the UtilityCraft machine overclock level."
+        })
+        .toggle(infoLabel("Block Render"), {
+            defaultValue: settings.block.blockRender,
+            tooltip: "Shows the targeted block item render next to the WAILA text when Insight can resolve its aux id."
+        })
+        .toggle(infoLabel("Preferred Tool"), {
+            defaultValue: settings.block.preferredTool,
+            tooltip: "Shows the tool type associated with block destructible tags, such as Pickaxe or Shovel."
+        })
+        .toggle(infoLabel("Tool Tier"), {
+            defaultValue: settings.block.toolTier,
+            tooltip: "Shows the destructible tier tag. Blocks without a tier show Hand."
+        })
+        .toggle(infoLabel("Location"), {
+            defaultValue: settings.block.location,
+            tooltip: "Shows the targeted block coordinates as X Y Z."
+        })
+        .toggle(infoLabel("Identifier"), {
+            defaultValue: settings.block.identifier,
+            tooltip: "Shows the full block type identifier."
+        })
+        .toggle(infoLabel("Block Tags"), {
+            defaultValue: settings.block.blockTags,
+            tooltip: "Shows all tags found on the targeted block."
+        })
+        .toggle(infoLabel("States"), {
+            defaultValue: settings.block.states,
+            tooltip: "Shows every state on the targeted block, one per line."
+        });
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    const [energyContainers, fluidContainers, gasContainers, overclockLevel, blockRender, preferredTool, toolTier, location, identifier, blockTags, states] = result.formValues;
+    setCoreSettings(player, {
+        block: {
+            energyContainers: Boolean(energyContainers),
+            fluidContainers: Boolean(fluidContainers),
+            gasContainers: Boolean(gasContainers),
+            overclockLevel: Boolean(overclockLevel),
+            blockRender: Boolean(blockRender),
+            preferredTool: Boolean(preferredTool),
+            toolTier: Boolean(toolTier),
+            location: Boolean(location),
+            identifier: Boolean(identifier),
+            blockTags: Boolean(blockTags),
+            states: Boolean(states)
+        }
+    });
+
+    sendMessage(player, "§aBlock settings updated.");
+}
+
+async function openEntitySettingsMenu(player) {
+    const settings = getCoreSettings(player);
+    const form = new ModalFormData()
+        .title(`${UI.info}Entity Settings${UI.reset}`)
+        .toggle(infoLabel("Entity Render"), {
+            defaultValue: settings.entity.entityRender,
+            tooltip: "Shows the targeted entity render next to the WAILA text."
+        })
+        .toggle(infoLabel("Health"), {
+            defaultValue: settings.entity.health,
+            tooltip: "Shows the entity current and max health when the entity has a health component."
+        })
+        .toggle(infoLabel("Hostile"), {
+            defaultValue: settings.entity.hostile,
+            tooltip: "Shows whether Insight detects the entity as hostile from type families or attack components."
+        })
+        .toggle(infoLabel("Special Info"), {
+            defaultValue: settings.entity.specialInfo,
+            tooltip: "Shows extra data for supported entity types, such as villager jobs or dropped item stacks."
+        })
+        .toggle(infoLabel("Identifier"), {
+            defaultValue: settings.entity.identifier,
+            tooltip: "Shows the full entity type identifier."
+        })
+        .toggle(infoLabel("Type Families"), {
+            defaultValue: settings.entity.typeFamilies,
+            tooltip: "Shows all type families found on the targeted entity."
+        })
+        .toggle(infoLabel("Tags"), {
+            defaultValue: settings.entity.tags,
+            tooltip: "Shows all runtime tags found on the targeted entity."
+        })
+        .toggle(infoLabel("Properties"), {
+            defaultValue: settings.entity.properties,
+            tooltip: "Shows normal entity properties, not dynamic properties."
+        });
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    const [entityRender, health, hostile, specialInfo, identifier, typeFamilies, tags, properties] = result.formValues;
+    setCoreSettings(player, {
+        entity: {
+            entityRender: Boolean(entityRender),
+            health: Boolean(health),
+            hostile: Boolean(hostile),
+            specialInfo: Boolean(specialInfo),
+            identifier: Boolean(identifier),
+            typeFamilies: Boolean(typeFamilies),
+            tags: Boolean(tags),
+            properties: Boolean(properties)
+        }
+    });
+
+    sendMessage(player, "§aEntity settings updated.");
+}
+
+export async function openCoreMenu(player) {
+    const form = new ActionFormData()
+        .title(`${UI.info}Dorios Insight Core${UI.reset}`)
+        .body(mutedText("Choose the personal settings group to edit."))
+        .button(`Main Settings\n${mutedText("Core behavior and panel style")}`, "textures/ui/icon_setting")
+        .button(`Block Settings\n${mutedText("Tools, tiers, and tags")}`, "textures/ui/Wrenches1")
+        .button(`Entity Settings\n${mutedText("Health, families, and tags")}`, "textures/ui/gear");
+
+    const result = await form.show(player);
+    if (result.canceled) {
+        return;
+    }
+
+    if (result.selection === 0) {
+        await openMainSettingsMenu(player);
+        return;
+    }
+
+    if (result.selection === 1) {
+        await openBlockSettingsMenu(player);
+        return;
+    }
+
+    if (result.selection === 2) {
+        await openEntitySettingsMenu(player);
+    }
+}
+
+function registerCommand(definition) {
+    try {
+        globalThis.DoriosAPI?.register?.command?.(definition);
+    } catch (error) {
+        console.warn(`[Dorios Insight Core] Failed to register command ${definition?.name}: ${error}`);
+    }
+}
+
+export function initializeCoreMenu() {
+    if (initialized) {
+        return;
+    }
+
+    initialized = true;
+
+    registerCommand({
+        name: "insightmenu",
+        description: "Open Dorios Insight Core settings",
+        permissionLevel: "any",
+        parameters: [],
+        callback(origin) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            system.run(async () => {
+                await openCoreMenu(player);
+            });
+        }
+    });
+
+    registerCommand({
+        name: "insightcore",
+        description: "Open Dorios Insight Core settings",
+        permissionLevel: "any",
+        parameters: [],
+        callback(origin) {
+            const player = getPlayerFromOrigin(origin);
+            if (!player) {
+                return;
+            }
+
+            system.run(async () => {
+                await openCoreMenu(player);
+            });
+        }
+    });
+}

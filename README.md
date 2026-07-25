@@ -14,41 +14,13 @@ A Minecraft Bedrock addon that shows a lot of configurable info of what are you 
 - `/utilitycraft:insightmode <essential|detailed|debug>` — set global mode
 - `/utilitycraft:insightactivate <on|off|toggle>` — local toggle
 - `/utilitycraft:insightglobal <on|off|toggle|status>` — global toggle/status
-- `/utilitycraft:insightwaila <status|style|anchor|horizontal|vertical|render|reset>` — WAILA controls
-- `/utilitycraft:insightqc <status|toggle|icon|first|second|reset>` — quick counter controls
 - `/utilitycraft:insightnamespace <add|set> <namespace> <displayName>` — namespace alias
-
-### New command highlights
-- `/utilitycraft:insightwaila style <default|dark|copper|magenta|cyan|blood|ascane>`
-- `/utilitycraft:insightwaila anchor <top_left|top_middle|top_right|left_middle|right_middle|bottom_left|bottom_right>`
-- `/utilitycraft:insightwaila horizontal <left|center|right>`
-- `/utilitycraft:insightwaila vertical <up|center|down>`
-- `/utilitycraft:insightwaila render <on|off|toggle|status>`
-- `/utilitycraft:insightqc first <selected|total|durability|durability_max|durability_percent|xp|speed|hidden|reset>`
-- `/utilitycraft:insightqc second <selected|total|durability|durability_max|durability_percent|xp|speed|hidden|reset>`
-
-### Automatic admin/host recognition
-- On load/first spawn, Insight now tries to recognize the world host/admin automatically.
-- When a player is recognized as the admin authority, the addon links the `admin` tag for compatibility with global Insight controls.
 
 ### Secondary Objectives:
 #### V1.2+
-- [x] Move main system to UI Queue for a better style of display, as well as compatibility with vanilla title and actionbar.
-- [x] Improve Insight to have more features other the "Seeing What Is the Player Looking At", like inventory display and modifiers, HUD modifications with more icons and configs and etc.
-  - [x] Inventory Popup
-  - [x] Crosshair Counter
-  - [x] Item Durability Viewer
-  - [ ] Configurable Styles for "Coordinates" and "Days Played"
-  - [ ] Clear Versions for elements
-- [x] Make "What Is the Player Looking At" movable, as well configurable. Changing styles should also be possible.
-  - [ ] Add a better "Custom Namespace" system, with more options for display and management.
-  - [ ] Add a "Custom Field" system, with support for custom fields added by other addons, as well as custom fields defined by the user.
-  - [ ] Add a "Custom Component" system, with support for custom components added by other addons, as well as custom components defined by the user.
-  - [ ] Add a simple "Namespace Color" for general color coding of the namespace of the entity, block or item for every minecraft color.
-  - [ ] Add "Identifiers" using for the case where the content is mapped instead of using the item/block identifier namespace as the main namespace.
-    - To better explain this: Add-ons that share the same namespace for their content (for example, UtilityCraft and UtilityCraft: Ascendant Technology) can be hard to differentiate. Addind this dedicated feature would allow users to manage namespaces sent my script, customizing color, display name and "identifier-based" display.
-  - Make the separator between fields configurable, with options for different characters and spacing.
-- [ ] Make the position of the Insight's message configurable. 
+- [ ] Move main system to UI Queue for a better style of display, as well as compatibility with vanilla title and actionbar.
+- [ ] Improve Insight to have more features other the "Seeing What the Player Us Looking At", like inventory display and modifiers, HUD modifications with more icons and configs and etc.
+- [ ] Make the position of the Insight's message configurable. *(Currently impossible. Needs manifest V3.)*
 - [ ] Fix Custom Field Injector.
 
 #### V1.1

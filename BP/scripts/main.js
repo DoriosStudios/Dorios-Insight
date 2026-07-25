@@ -1,2 +1,2 @@
 import "./DoriosAPI/main.js";
-import "./display.js";
+import "./core/index.js";
