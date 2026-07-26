@@ -43,7 +43,7 @@ export function getGasLines(block) {
     const current = GasStorage.formatGas(amount);
     const max = GasStorage.formatGas(cap);
 
-    lines.push({ text: `\nÂ§fGas (${name}): ${current} / ${max}Â§r` });
+    lines.push({ text: `\n§fGas (${name}): ${current} / ${max}§r` });
   }
 
   return lines;
