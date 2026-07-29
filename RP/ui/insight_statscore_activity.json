@@ -1,0 +1,178 @@
+{
+  "namespace": "insight_statscore_activity",
+  "root_panel": {
+    "$update_string": "insight_statscore:",
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 20,
+    "controls": [
+      {
+        "activity_data": {
+          "type": "panel",
+          "size": [0, 0],
+          "property_bag": {
+            "#stored_activity": ""
+          },
+          "bindings": [
+            {
+              "binding_name": "#hud_title_text_string"
+            },
+            {
+              "binding_name": "#hud_title_text_string",
+              "binding_name_override": "#stored_activity",
+              "binding_condition": "visibility_changed"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not (#hud_title_text_string = #stored_activity) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      },
+      {
+        "activity_panel": {
+          "type": "image",
+          "texture": "textures/insight/style_default",
+          "nineslice_size": 4,
+          "alpha": 0,
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "offset": [0, 32],
+          "size": [160, 60],
+          "controls": [
+            {
+              "primary_line": {
+                "type": "label",
+                "text": "#text",
+                "localize": false,
+                "shadow": true,
+                "font_scale_factor": 1,
+                "text_alignment": "center",
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle",
+                "offset": [0, 3],
+                "size": ["100% - 12px", 20],
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "activity_panel",
+                    "source_property_name": "#primary_text",
+                    "target_property_name": "#text"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not (#text = ''))",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            },
+            {
+              "attributes_line": {
+                "type": "label",
+                "text": "#text",
+                "localize": false,
+                "shadow": true,
+                "font_scale_factor": 0.75,
+                "text_alignment": "center",
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "offset": [0, 0],
+                "size": ["100% - 12px", 20],
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "activity_panel",
+                    "source_property_name": "#attributes_text",
+                    "target_property_name": "#text"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not (#text = ''))",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            },
+            {
+              "level_up_line": {
+                "type": "label",
+                "text": "#text",
+                "localize": false,
+                "shadow": true,
+                "font_scale_factor": 0.75,
+                "text_alignment": "center",
+                "anchor_from": "bottom_middle",
+                "anchor_to": "bottom_middle",
+                "offset": [0, -3],
+                "size": ["100% - 12px", 20],
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "activity_panel",
+                    "source_property_name": "#level_up_text",
+                    "target_property_name": "#text"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not (#text = ''))",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "activity_data",
+              "source_property_name": "(#stored_activity - $update_string)",
+              "target_property_name": "#activity_payload"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(%.128s * #activity_payload)",
+              "target_property_name": "#primary_payload"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#activity_payload - #primary_payload)",
+              "target_property_name": "#remaining_payload"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(%.256s * #remaining_payload)",
+              "target_property_name": "#attributes_payload"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#remaining_payload - #attributes_payload)",
+              "target_property_name": "#level_up_payload"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#primary_payload - '~')",
+              "target_property_name": "#primary_text"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#attributes_payload - '~')",
+              "target_property_name": "#attributes_text"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#level_up_payload - '~')",
+              "target_property_name": "#level_up_text"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not (#primary_text = '') or not (#attributes_text = '') or not (#level_up_text = ''))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

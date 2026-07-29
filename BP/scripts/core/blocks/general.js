@@ -1,4 +1,9 @@
-import { formatTypeIdToText, resolveNamespaceLabel, safeTranslateOrText, shouldShowNamespaceLine } from "../format.js";
+import {
+  formatTypeIdToText,
+  resolveNamespaceLabel,
+  safeTranslateOrText,
+  shouldShowNamespaceLine,
+} from "../format.js";
 import { getEnergyLine } from "./energyContainers.js";
 import { getFluidLines } from "./fluidContainers.js";
 import { getGasLines } from "./gasContainers.js";
@@ -15,46 +20,76 @@ import { getOverclockLine } from "./overclockLevel.js";
 const BLOCK_TOOL_DESCRIPTORS = [
   {
     label: "Pickaxe",
-    tags: ["minecraft:is_pickaxe_item_destructible", "minecraft:pickaxe_item_destructible"],
+    tags: [
+      "minecraft:is_pickaxe_item_destructible",
+      "minecraft:pickaxe_item_destructible",
+    ],
   },
   {
     label: "Axe",
-    tags: ["minecraft:is_axe_item_destructible", "minecraft:axe_item_destructible"],
+    tags: [
+      "minecraft:is_axe_item_destructible",
+      "minecraft:axe_item_destructible",
+    ],
   },
   {
     label: "Shovel",
-    tags: ["minecraft:is_shovel_item_destructible", "minecraft:shovel_item_destructible"],
+    tags: [
+      "minecraft:is_shovel_item_destructible",
+      "minecraft:shovel_item_destructible",
+    ],
   },
   {
     label: "Hoe",
-    tags: ["minecraft:is_hoe_item_destructible", "minecraft:hoe_item_destructible"],
+    tags: [
+      "minecraft:is_hoe_item_destructible",
+      "minecraft:hoe_item_destructible",
+    ],
   },
   {
     label: "Shears",
-    tags: ["minecraft:is_shears_item_destructible", "minecraft:shears_item_destructible"],
+    tags: [
+      "minecraft:is_shears_item_destructible",
+      "minecraft:shears_item_destructible",
+    ],
   },
   {
     label: "Sword",
-    tags: ["minecraft:is_sword_item_destructible", "minecraft:sword_item_destructible"],
+    tags: [
+      "minecraft:is_sword_item_destructible",
+      "minecraft:sword_item_destructible",
+    ],
   },
 ];
 
 const BLOCK_TOOL_TIER_DESCRIPTORS = [
   {
     label: "Netherite",
-    tags: ["minecraft:netherite_tier_destructible", "minecraft:is_netherite_tier_destructible"],
+    tags: [
+      "minecraft:netherite_tier_destructible",
+      "minecraft:is_netherite_tier_destructible",
+    ],
   },
   {
     label: "Diamond",
-    tags: ["minecraft:diamond_tier_destructible", "minecraft:is_diamond_tier_destructible"],
+    tags: [
+      "minecraft:diamond_tier_destructible",
+      "minecraft:is_diamond_tier_destructible",
+    ],
   },
   {
     label: "Iron",
-    tags: ["minecraft:iron_tier_destructible", "minecraft:is_iron_tier_destructible"],
+    tags: [
+      "minecraft:iron_tier_destructible",
+      "minecraft:is_iron_tier_destructible",
+    ],
   },
   {
     label: "Stone",
-    tags: ["minecraft:stone_tier_destructible", "minecraft:is_stone_tier_destructible"],
+    tags: [
+      "minecraft:stone_tier_destructible",
+      "minecraft:is_stone_tier_destructible",
+    ],
   },
 ];
 
@@ -66,12 +101,15 @@ function getDividerLine() {
  * @param {RawTextPart[]} rawtext
  * @param {RawTextPart[]} lines
  */
-function pushSection(rawtext, lines) {
+function pushSection(rawtext, lines, showSeparator) {
   if (!lines.length) {
     return;
   }
 
-  rawtext.push(getDividerLine(), ...lines);
+  if (showSeparator) {
+    rawtext.push(getDividerLine());
+  }
+  rawtext.push(...lines);
 }
 
 /**
@@ -81,7 +119,9 @@ function pushSection(rawtext, lines) {
 function getBlockName(block) {
   const typeId = String(block?.typeId || "").trim();
   const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
-  const localizationKey = typeof block?.localizationKey === "string" ? block.localizationKey.trim() : "";
+  const localizationKey = typeof block?.localizationKey === "string"
+    ? block.localizationKey.trim()
+    : "";
   const rawtext = [safeTranslateOrText(localizationKey, fallbackName)];
 
   if (shouldShowNamespaceLine(typeId)) {
@@ -102,7 +142,9 @@ function getBlockTags(block) {
       return [];
     }
 
-    return tags.map((tag) => String(tag || "").trim()).filter((tag) => tag.length > 0);
+    return tags.map((tag) => String(tag || "").trim()).filter((tag) =>
+      tag.length > 0
+    );
   } catch {
     return [];
   }
@@ -123,7 +165,9 @@ function getPreferredToolLine(tagSet) {
  * @returns {string[]}
  */
 function getPreferredTools(tagSet) {
-  return BLOCK_TOOL_DESCRIPTORS.filter((descriptor) => descriptor.tags.some((tag) => tagSet.has(tag))).map((descriptor) => descriptor.label);
+  return BLOCK_TOOL_DESCRIPTORS.filter((descriptor) =>
+    descriptor.tags.some((tag) => tagSet.has(tag))
+  ).map((descriptor) => descriptor.label);
 }
 
 /**
@@ -131,9 +175,12 @@ function getPreferredTools(tagSet) {
  * @returns {RawTextPart}
  */
 function getToolTierLine(tagSet) {
-  const tier = BLOCK_TOOL_TIER_DESCRIPTORS.find((descriptor) => descriptor.tags.some((tag) => tagSet.has(tag)));
+  const tier = BLOCK_TOOL_TIER_DESCRIPTORS.find((descriptor) =>
+    descriptor.tags.some((tag) => tagSet.has(tag))
+  );
   const tools = getPreferredTools(tagSet);
-  const onlyHandTierTools = tools.length > 0 && tools.every((tool) => tool === "Shovel" || tool === "Hoe");
+  const onlyHandTierTools = tools.length > 0 &&
+    tools.every((tool) => tool === "Shovel" || tool === "Hoe");
   const fallbackTier = !tools.length || onlyHandTierTools ? "Hand" : "Wood";
 
   return { text: `\n§fTier: ${tier?.label || fallbackTier}§r` };
@@ -149,7 +196,11 @@ function getBlockLocationLine(block) {
     return undefined;
   }
 
-  return { text: `\n§fLocation: ${Math.floor(location.x)} ${Math.floor(location.y)} ${Math.floor(location.z)}§r` };
+  return {
+    text: `\n§fLocation: ${Math.floor(location.x)} ${Math.floor(location.y)} ${
+      Math.floor(location.z)
+    }§r`,
+  };
 }
 
 /**
@@ -203,7 +254,9 @@ function getBlockStatesLine(block) {
     const stateLines = Object.entries(states)
       .filter(([stateName]) => String(stateName || "").trim().length > 0)
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([stateName, value]) => `\n§7${stateName}: ${formatStateValue(value)}§r`);
+      .map(([stateName, value]) =>
+        `\n§7${stateName}: ${formatStateValue(value)}§r`
+      );
 
     if (!stateLines.length) {
       return undefined;
@@ -225,6 +278,7 @@ export function buildBlockLabel(block, settings = {}) {
   const tagSet = new Set(blockTags);
   const rawtext = [{ text: "§f" }, ...getBlockName(block)];
   const containerDetails = [];
+  const showSeparators = settings.separators !== false;
 
   if (settings.energyContainers) {
     const energyLine = getEnergyLine(block);
@@ -248,7 +302,7 @@ export function buildBlockLabel(block, settings = {}) {
     }
   }
 
-  pushSection(rawtext, containerDetails);
+  pushSection(rawtext, containerDetails, showSeparators);
 
   const details = [];
 
@@ -267,7 +321,7 @@ export function buildBlockLabel(block, settings = {}) {
     }
   }
 
-  pushSection(rawtext, details);
+  pushSection(rawtext, details, showSeparators);
 
   const tagDetails = [];
 
@@ -285,12 +339,12 @@ export function buildBlockLabel(block, settings = {}) {
     }
   }
 
-  pushSection(rawtext, tagDetails);
+  pushSection(rawtext, tagDetails, showSeparators);
 
   if (settings.states) {
     const statesLine = getBlockStatesLine(block);
     if (statesLine) {
-      pushSection(rawtext, [statesLine]);
+      pushSection(rawtext, [statesLine], showSeparators);
     }
   }
 

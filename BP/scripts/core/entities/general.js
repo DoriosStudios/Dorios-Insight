@@ -5,7 +5,15 @@ import {
   safeTranslateOrText,
   shouldShowNamespaceLine,
 } from "../format.js";
-import { collectEntitySpecialInfo } from "./specialInfo.js";
+import {
+  collectEntitySpecialInfo,
+  collectItemStackInfo,
+  getItemStackFromEntity,
+} from "./specialInfo.js";
+import {
+  collectEntityGlyphStats,
+  renderEntityGlyphStats,
+} from "./glyphStats.js";
 
 const HOSTILE_ENTITY_FAMILIES = [
   "monster",
@@ -27,32 +35,12 @@ function getDividerLine() {
   return { text: "\n§7--------------------§r" };
 }
 
-function pushSection(rawtext, lines) {
+function pushSection(rawtext, lines, showSeparator) {
   if (lines.length) {
-    rawtext.push(getDividerLine(), ...lines);
-  }
-}
-
-function getEntityHealth(entity) {
-  try {
-    const health = entity?.getComponent?.("minecraft:health");
-    if (!health) {
-      return undefined;
+    if (showSeparator) {
+      rawtext.push(getDividerLine());
     }
-
-    const current = Number(health.currentValue);
-    const max = Number(health.effectiveMax ?? health.defaultValue ?? health.value);
-
-    if (!Number.isFinite(current) || !Number.isFinite(max) || max <= 0) {
-      return undefined;
-    }
-
-    return {
-      current: Math.max(0, Math.round(current * 10) / 10),
-      max: Math.max(1, Math.round(max * 10) / 10),
-    };
-  } catch {
-    return undefined;
+    rawtext.push(...lines);
   }
 }
 
@@ -91,6 +79,16 @@ function getEntityTags(entity) {
   }
 }
 
+function getItemStackTags(itemStack) {
+  try {
+    return (itemStack?.getTags?.() || [])
+      .map((tag) => String(tag || "").trim())
+      .filter((tag) => tag.length > 0);
+  } catch {
+    return [];
+  }
+}
+
 function hasEntityComponent(entity, componentId) {
   try {
     return Boolean(entity?.getComponent?.(componentId));
@@ -100,21 +98,29 @@ function hasEntityComponent(entity, componentId) {
 }
 
 function isEntityHostile(entity, families) {
-  const normalizedFamilies = new Set(families.map((family) => family.toLowerCase()));
-  if (HOSTILE_ENTITY_FAMILIES.some((family) => normalizedFamilies.has(family))) {
+  const normalizedFamilies = new Set(
+    families.map((family) => family.toLowerCase()),
+  );
+  if (
+    HOSTILE_ENTITY_FAMILIES.some((family) => normalizedFamilies.has(family))
+  ) {
     return true;
   }
 
   try {
     const typeFamily = entity?.getComponent?.("minecraft:type_family");
     if (typeFamily && typeof typeFamily.hasTypeFamily === "function") {
-      return HOSTILE_ENTITY_FAMILIES.some((family) => typeFamily.hasTypeFamily(family));
+      return HOSTILE_ENTITY_FAMILIES.some((family) =>
+        typeFamily.hasTypeFamily(family)
+      );
     }
   } catch {
     // Try components fallback.
   }
 
-  return HOSTILE_COMPONENT_IDS.some((componentId) => hasEntityComponent(entity, componentId));
+  return HOSTILE_COMPONENT_IDS.some((componentId) =>
+    hasEntityComponent(entity, componentId)
+  );
 }
 
 function formatEntityPropertyValue(value) {
@@ -143,8 +149,8 @@ function getEntityProperties(entity) {
     const ids = typeof entity?.getPropertyIds === "function"
       ? entity.getPropertyIds()
       : typeof entity?.getPropertyNames === "function"
-        ? entity.getPropertyNames()
-        : [];
+      ? entity.getPropertyNames()
+      : [];
 
     return (ids || [])
       .map((id) => String(id || "").trim())
@@ -156,29 +162,48 @@ function getEntityProperties(entity) {
 }
 
 export function collectEntityGeneral(entity) {
-  const typeId = String(entity?.typeId || "").trim();
+  const entityTypeId = String(entity?.typeId || "").trim();
+  const itemStack = entityTypeId === "minecraft:item"
+    ? getItemStackFromEntity(entity)
+    : undefined;
+  const isDroppedItem = Boolean(itemStack);
+  const typeId = String(itemStack?.typeId || entityTypeId).trim();
   const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
-  const nameTag = normalizeHeaderText(entity?.nameTag, "");
-  const localizationKey = typeof entity?.localizationKey === "string"
-    ? entity.localizationKey.trim()
-    : "";
+  const nameTag = normalizeHeaderText(
+    isDroppedItem ? itemStack?.nameTag : entity?.nameTag,
+    "",
+  );
+  const localizationKey =
+    typeof (isDroppedItem
+        ? itemStack?.localizationKey
+        : entity?.localizationKey) === "string"
+      ? (isDroppedItem ? itemStack.localizationKey : entity.localizationKey)
+        .trim()
+      : "";
   const headerText = nameTag || fallbackName;
-  const families = getEntityTypeFamilies(entity);
+  const families = isDroppedItem ? [] : getEntityTypeFamilies(entity);
+  const glyphStats = isDroppedItem
+    ? undefined
+    : collectEntityGlyphStats(entity);
 
   return {
     typeId,
+    entityTypeId,
     headerText: normalizeHeaderText(headerText, "Entity"),
     name: nameTag
       ? { text: nameTag }
       : safeTranslateOrText(localizationKey, fallbackName),
     namespaceLabel: resolveNamespaceLabel(typeId),
     showNamespaceLine: shouldShowNamespaceLine(typeId),
-    health: getEntityHealth(entity),
+    health: glyphStats?.health,
+    glyphStats,
     families,
     entity,
-    isHostile: isEntityHostile(entity, families),
-    tags: getEntityTags(entity),
-    properties: getEntityProperties(entity),
+    itemStack,
+    isDroppedItem,
+    isHostile: isDroppedItem ? false : isEntityHostile(entity, families),
+    tags: isDroppedItem ? getItemStackTags(itemStack) : getEntityTags(entity),
+    properties: isDroppedItem ? [] : getEntityProperties(entity),
   };
 }
 
@@ -198,18 +223,24 @@ export function renderEntityGeneral(data, settings = {}) {
 
   const details = [];
 
-  if (settings.health !== false && data.health) {
-    details.push({ text: `\n§fHealth: §c${data.health.current}§7 / §c${data.health.max}§r` });
+  details.push(...renderEntityGlyphStats(data.glyphStats, settings));
+  if (data.isDroppedItem) {
+    details.push(...collectItemStackInfo(data.itemStack));
   }
 
-  if (settings.hostile && data.typeId !== "minecraft:item") {
+  if (settings.hostile && !data.isDroppedItem) {
     details.push({ text: `\n§fHostile: ${data.isHostile ? "Yes" : "No"}§r` });
   }
 
-  pushSection(rawtext, details);
+  const showSeparators = settings.separators !== false;
+  pushSection(rawtext, details, showSeparators);
 
-  if (settings.specialInfo) {
-    pushSection(rawtext, collectEntitySpecialInfo(data.entity, { families: data.families }));
+  if (settings.specialInfo && !data.isDroppedItem) {
+    pushSection(
+      rawtext,
+      collectEntitySpecialInfo(data.entity, { families: data.families }),
+      showSeparators,
+    );
   }
 
   const technical = [];
@@ -226,14 +257,16 @@ export function renderEntityGeneral(data, settings = {}) {
     technical.push({ text: `\n§7Tags: ${data.tags.join(", ")}§r` });
   }
 
-  pushSection(rawtext, technical);
+  pushSection(rawtext, technical, showSeparators);
 
   if (settings.properties && data.properties.length) {
     const propertyLines = data.properties
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([name, value]) => `\n§7${name}: ${formatEntityPropertyValue(value)}§r`);
+      .map(([name, value]) =>
+        `\n§7${name}: ${formatEntityPropertyValue(value)}§r`
+      );
 
-    pushSection(rawtext, [{ text: propertyLines.join("") }]);
+    pushSection(rawtext, [{ text: propertyLines.join("") }], showSeparators);
   }
 
   return rawtext;

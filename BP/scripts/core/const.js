@@ -3,8 +3,15 @@ export const CHANNEL_ENTITY_WAILA = CHANNEL_WAILA;
 export const CHANNEL_BLOCK_WAILA = CHANNEL_WAILA;
 export const CHANNEL_DEFAULT_WAILA = CHANNEL_WAILA;
 export const CHANNEL_HUD = "insight_hud:";
+export const CHANNEL_STATSCORE_ACTIVITY = "insight_statscore:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
+
+export const STAT_DISPLAY_STYLES = [
+  { id: "glyphs", label: "Only Icons" },
+  { id: "text", label: "Only Text" },
+  { id: "both", label: "Both" },
+];
 
 /**
  * @typedef {object} MainSettings
@@ -33,18 +40,37 @@ export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
  * @property {boolean} identifier
  * @property {boolean} blockTags
  * @property {boolean} states
+ * @property {boolean} separators
  */
 
 /**
  * @typedef {object} EntitySettings
  * @property {boolean} entityRender
  * @property {boolean} health
+ * @property {number} maxHeartDisplayHealth
+ * @property {boolean} effectHearts
+ * @property {boolean} tamedHearts
+ * @property {boolean} absorption
+ * @property {boolean} hunger
+ * @property {boolean} saturation
+ * @property {boolean} armor
+ * @property {boolean} air
+ * @property {boolean} attackDamage
+ * @property {boolean} movementSpeed
+ * @property {boolean} effects
+ * @property {number} maxVisibleEffects
  * @property {boolean} hostile
  * @property {boolean} specialInfo
  * @property {boolean} identifier
  * @property {boolean} typeFamilies
  * @property {boolean} tags
  * @property {boolean} properties
+ * @property {boolean} separators
+ * @property {"glyphs"|"text"|"both"} healthDisplayStyle
+ * @property {"glyphs"|"text"|"both"} hungerDisplayStyle
+ * @property {"glyphs"|"text"|"both"} armorAirDisplayStyle
+ * @property {"glyphs"|"text"|"both"} effectsDisplayStyle
+ * @property {"glyphs"|"text"|"both"} attributesDisplayStyle
  */
 
 /**
@@ -80,16 +106,35 @@ export const DEFAULT_CORE_SETTINGS = {
     identifier: false,
     blockTags: false,
     states: false,
+    separators: true,
   },
   entity: {
     entityRender: true,
     health: true,
+    maxHeartDisplayHealth: 40,
+    effectHearts: true,
+    tamedHearts: true,
+    absorption: true,
+    hunger: true,
+    saturation: true,
+    armor: true,
+    air: true,
+    attackDamage: true,
+    movementSpeed: false,
+    effects: true,
+    maxVisibleEffects: 4,
     hostile: false,
     specialInfo: false,
     identifier: false,
     typeFamilies: false,
     tags: false,
     properties: false,
+    separators: true,
+    healthDisplayStyle: "glyphs",
+    hungerDisplayStyle: "glyphs",
+    armorAirDisplayStyle: "glyphs",
+    effectsDisplayStyle: "glyphs",
+    attributesDisplayStyle: "glyphs",
   },
 };
 
@@ -102,6 +147,10 @@ export const CORE_LIMITS = {
   maxPanelStyleId: 6,
   minFontScale: 0.5,
   maxFontScale: 1.5,
+  minHeartDisplayHealth: 20,
+  maxHeartDisplayHealth: 200,
+  minVisibleEffects: 1,
+  maxVisibleEffects: 10,
 };
 
 export const WAILA_STYLE_TEXTURE_FIELD_LENGTH = 40;
@@ -174,6 +223,11 @@ export const NAMESPACE_LABELS = {
   minecraft: "Minecraft",
 };
 
-export const HIDDEN_NAMESPACE_LINE_NAMESPACES = ["dorios", "utilitycraft", "better_smelters", "modular_energistics"];
+export const HIDDEN_NAMESPACE_LINE_NAMESPACES = [
+  "dorios",
+  "utilitycraft",
+  "better_smelters",
+  "modular_energistics",
+];
 
 export const EMPTY_WAILA_TEXT = CHANNEL_WAILA;

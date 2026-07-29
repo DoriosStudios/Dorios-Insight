@@ -1,5 +1,3 @@
-import { formatTypeIdToText, safeTranslateOrText } from "../format.js";
-
 const VILLAGER_PROFESSION_KEYS = Object.freeze({
   farmer: "entity.villager.farmer",
   fisherman: "entity.villager.fisherman",
@@ -37,7 +35,9 @@ function normalizeFamilyToken(value) {
 }
 
 function getVillagerJobRawtext(families = []) {
-  const familyTokens = families.map(normalizeFamilyToken).filter((family) => family.length);
+  const familyTokens = families.map(normalizeFamilyToken).filter((family) =>
+    family.length
+  );
 
   if (familyTokens.includes("nitwit")) {
     return { text: "Nitwit" };
@@ -50,7 +50,10 @@ function getVillagerJobRawtext(families = []) {
     }
   }
 
-  if (!familyTokens.length || familyTokens.some((family) => VILLAGER_UNSKILLED_FAMILIES.has(family))) {
+  if (
+    !familyTokens.length ||
+    familyTokens.some((family) => VILLAGER_UNSKILLED_FAMILIES.has(family))
+  ) {
     return { translate: "entity.villager.unskilled" };
   }
 
@@ -65,7 +68,7 @@ function collectVillagerSpecialInfo(_entity, context = {}) {
   ];
 }
 
-function getItemStackFromEntity(entity) {
+export function getItemStackFromEntity(entity) {
   try {
     const itemComponent = entity?.getComponent?.("minecraft:item");
     const itemStack = itemComponent?.itemStack;
@@ -80,26 +83,35 @@ function getItemStackFromEntity(entity) {
   }
 }
 
-function collectItemEntitySpecialInfo(entity) {
-  const itemStack = getItemStackFromEntity(entity);
+export function collectItemStackInfo(itemStack) {
   if (!itemStack) {
     return [];
   }
 
-  const typeId = String(itemStack.typeId || "").trim();
-  const localizationKey = typeof itemStack.localizationKey === "string" ? itemStack.localizationKey.trim() : "";
   const amount = Number(itemStack.amount);
   const count = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 1;
+  const lines = [{ text: `\n§r§7Count: ${count}§r` }];
 
-  return [
-    { text: "\n§fItemStack: §r" },
-    safeTranslateOrText(localizationKey, formatTypeIdToText(typeId || "minecraft:item")),
-    { text: `\n§fCount: §e${count}§r` },
-  ];
+  try {
+    const durability = itemStack.getComponent?.("minecraft:durability");
+    const max = Number(durability?.maxDurability);
+    const damage = Number(durability?.damage);
+
+    if (Number.isFinite(max) && max > 0 && Number.isFinite(damage)) {
+      lines.push({
+        text: `\n§r§7Durability: §e${
+          Math.max(0, Math.floor(max - damage))
+        }§7/§g${Math.floor(max)}§r`,
+      });
+    }
+  } catch {
+    // Count is still useful when this stack has no durability component.
+  }
+
+  return lines;
 }
 
 const ENTITY_SPECIAL_INFO_HANDLERS = Object.freeze({
-  "minecraft:item": collectItemEntitySpecialInfo,
   "minecraft:villager_v2": collectVillagerSpecialInfo,
 });
 
@@ -112,7 +124,9 @@ export function collectEntitySpecialInfo(entity, context = {}) {
   }
 
   try {
-    return handler(entity, context).filter((part) => part?.text || part?.translate);
+    return handler(entity, context).filter((part) =>
+      part?.text || part?.translate
+    );
   } catch {
     return [];
   }

@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "Dorios' Insight",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "insight_book": {
+      "textures": "textures/items/insight_book"
+    }
+  }
+}
