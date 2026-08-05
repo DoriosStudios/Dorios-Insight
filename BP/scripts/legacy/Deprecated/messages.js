@@ -14,6 +14,7 @@
  */
 
 import { EntityHealthComponent, EntityIsBabyComponent, world } from "@minecraft/server";
+import { integerToRoman } from "../../DoriosLib/math/index.js";
 import { BlockNames, BlockPrefixes, ItemTranslationKeys } from "../const.js";
 import {
     DisplayStyles,
@@ -2060,13 +2061,9 @@ function getEffectLevel(effect) {
 
 function toRomanNumeral(value) {
     const integerValue = Math.max(1, Math.floor(value));
-    const doriosApiConverter = globalThis?.DoriosAPI?.math?.integerToRoman;
-
-    if (typeof doriosApiConverter === "function") {
-        const converted = doriosApiConverter(integerValue);
-        if (typeof converted === "string" && converted.length) {
-            return converted;
-        }
+    const converted = integerToRoman(integerValue);
+    if (converted) {
+        return converted;
     }
 
     const numerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];

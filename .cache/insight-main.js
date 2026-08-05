@@ -1,0 +1,6060 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\metadata.js
+var INSIGHT_METADATA = {
+  name: "Dorios' Insight",
+  author: "Dorios Studios",
+  identifier: "dorios_insight",
+  version: "1.2.0",
+  dependencies: {}
+};
+var INSIGHT_DEPENDENCY_OPTIONS = {
+  validationDelayTicks: 300,
+  announceSuccess: true
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\dependencies\index.js
+var dependencies_exports = {};
+__export(dependencies_exports, {
+  SCRIPT_EVENT_ID: () => SCRIPT_EVENT_ID,
+  compareVersions: () => compareVersions,
+  formatReport: () => formatReport,
+  get: () => get,
+  getAll: () => getAll,
+  initialize: () => initialize,
+  report: () => report,
+  validate: () => validate
+});
+import { system, world } from "@minecraft/server";
+var SCRIPT_EVENT_ID = "dorios:dependency_checker";
+var registry = /* @__PURE__ */ new Map();
+var localAddons = /* @__PURE__ */ new Map();
+var listenersInstalled = false;
+function initialize(metadata, options = {}) {
+  validateMetadata(metadata);
+  installListeners();
+  const snapshot = cloneMetadata(metadata);
+  registry.set(snapshot.identifier, snapshot);
+  localAddons.set(snapshot.identifier, { metadata: snapshot, options });
+  return () => {
+    localAddons.delete(snapshot.identifier);
+  };
+}
+function get(identifier) {
+  const metadata = registry.get(identifier);
+  return metadata ? cloneMetadata(metadata) : void 0;
+}
+function getAll() {
+  return [...registry.values()].map(cloneMetadata);
+}
+function validate(metadata, available = registry) {
+  const missing = [];
+  const outdated = [];
+  for (const [identifier, requirement] of Object.entries(metadata.dependencies ?? {})) {
+    const installed = available.get(identifier);
+    const baseIssue = {
+      identifier,
+      name: requirement.name ?? installed?.name ?? identifier,
+      required: requirement.version,
+      warning: requirement.warning
+    };
+    if (!installed) {
+      missing.push({ ...baseIssue, found: void 0 });
+      continue;
+    }
+    if (requirement.version && compareVersions(installed.version, requirement.version) < 0) {
+      outdated.push({ ...baseIssue, found: installed.version });
+    }
+  }
+  return { ok: missing.length === 0 && outdated.length === 0, missing, outdated };
+}
+function compareVersions(left, right) {
+  const a = parseVersion(left);
+  const b = parseVersion(right);
+  const length = Math.max(a.core.length, b.core.length);
+  for (let index = 0; index < length; index++) {
+    const aPart = a.core[index] ?? 0;
+    const bPart = b.core[index] ?? 0;
+    if (aPart < bPart) return -1;
+    if (aPart > bPart) return 1;
+  }
+  if (a.prerelease.length === 0 && b.prerelease.length > 0) return 1;
+  if (a.prerelease.length > 0 && b.prerelease.length === 0) return -1;
+  const prereleaseLength = Math.max(a.prerelease.length, b.prerelease.length);
+  for (let index = 0; index < prereleaseLength; index++) {
+    const aPart = a.prerelease[index];
+    const bPart = b.prerelease[index];
+    if (aPart === void 0) return -1;
+    if (bPart === void 0) return 1;
+    if (aPart === bPart) continue;
+    const aNumber = /^\d+$/.test(aPart) ? Number(aPart) : void 0;
+    const bNumber = /^\d+$/.test(bPart) ? Number(bPart) : void 0;
+    if (aNumber !== void 0 && bNumber !== void 0) return aNumber < bNumber ? -1 : 1;
+    if (aNumber !== void 0) return -1;
+    if (bNumber !== void 0) return 1;
+    return aPart < bPart ? -1 : 1;
+  }
+  return 0;
+}
+function formatReport(addon, result) {
+  if (result.ok) return `\xA7a${addon.name} initialized correctly!\xA7r`;
+  const lines = ["\xA7e[ Warning! ]", `\xA77${addon.name} has dependency problems.\xA7r`];
+  if (result.missing.length > 0) {
+    lines.push("\xA7cMissing:\xA7r");
+    for (const issue of result.missing) appendIssue(lines, issue);
+  }
+  if (result.outdated.length > 0) {
+    lines.push("\xA7eOutdated:\xA7r");
+    for (const issue of result.outdated) appendIssue(lines, issue);
+  }
+  return lines.join("\n");
+}
+function report(addon, result, options = {}) {
+  if (result.ok && !options.announceSuccess) return;
+  world.sendMessage(formatReport(addon, result));
+}
+function installListeners() {
+  if (listenersInstalled) return;
+  listenersInstalled = true;
+  system.afterEvents.scriptEventReceive.subscribe(({ id, message }) => {
+    if (id !== SCRIPT_EVENT_ID) return;
+    try {
+      const metadata = (
+        /** @type {AddonMetadata} */
+        JSON.parse(message)
+      );
+      validateMetadata(metadata);
+      registry.set(metadata.identifier, cloneMetadata(metadata));
+    } catch (error) {
+      console.warn("[DoriosLib:dependencies] Ignored invalid dependency metadata", error);
+    }
+  });
+  world.afterEvents.worldLoad.subscribe(() => {
+    for (const { metadata, options } of localAddons.values()) {
+      system.sendScriptEvent(SCRIPT_EVENT_ID, JSON.stringify(metadata));
+      system.runTimeout(() => {
+        const result = validate(metadata);
+        if (options.onResult) options.onResult(result, cloneMetadata(metadata));
+        else report(metadata, result, { announceSuccess: options.announceSuccess });
+      }, options.validationDelayTicks ?? 300);
+    }
+  });
+}
+function validateMetadata(metadata) {
+  if (!metadata || typeof metadata !== "object") throw new TypeError("Addon metadata is required");
+  if (!metadata.name || typeof metadata.name !== "string") throw new TypeError("Addon name is required");
+  if (!metadata.identifier || typeof metadata.identifier !== "string") {
+    throw new TypeError("Addon identifier is required");
+  }
+  if (!metadata.version || typeof metadata.version !== "string") throw new TypeError("Addon version is required");
+}
+function cloneMetadata(metadata) {
+  return {
+    ...metadata,
+    dependencies: metadata.dependencies ? Object.fromEntries(Object.entries(metadata.dependencies).map(([id, value]) => [id, { ...value }])) : void 0
+  };
+}
+function appendIssue(lines, issue) {
+  lines.push(`- \xA7e${issue.name}\xA7r`);
+  if (issue.required) lines.push(`  \xA77Requires: \xA7e${issue.required}\xA7r`);
+  lines.push(`  \xA77Found: \xA7c${issue.found ?? "None"}\xA7r`);
+  if (issue.warning) lines.push(`  \xA77${issue.warning}\xA7r`);
+}
+function parseVersion(value) {
+  const normalized = String(value).trim().replace(/^v/i, "").split("+")[0];
+  const [coreRaw, prereleaseRaw = ""] = normalized.split("-", 2);
+  const core = coreRaw.split(".").map((part) => {
+    if (!/^\d+$/.test(part)) throw new TypeError(`Invalid version: ${value}`);
+    return Number(part);
+  });
+  return { core, prerelease: prereleaseRaw ? prereleaseRaw.split(".") : [] };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\block\index.js
+import { BlockTypes } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\constants\index.js
+import {
+  CommandPermissionLevel,
+  CustomCommandParamType,
+  EquipmentSlot
+} from "@minecraft/server";
+var PERMISSION_LEVELS = {
+  any: CommandPermissionLevel.Any,
+  gamedirector: CommandPermissionLevel.GameDirectors,
+  gameDirectors: CommandPermissionLevel.GameDirectors,
+  admin: CommandPermissionLevel.Admin,
+  host: CommandPermissionLevel.Host,
+  owner: CommandPermissionLevel.Owner
+};
+var COMMAND_PARAMETER_TYPES = {
+  string: CustomCommandParamType.String,
+  int: CustomCommandParamType.Integer,
+  integer: CustomCommandParamType.Integer,
+  float: CustomCommandParamType.Float,
+  bool: CustomCommandParamType.Boolean,
+  boolean: CustomCommandParamType.Boolean,
+  enum: CustomCommandParamType.Enum,
+  block: CustomCommandParamType.BlockType,
+  item: CustomCommandParamType.ItemType,
+  location: CustomCommandParamType.Location,
+  entity: CustomCommandParamType.EntitySelector,
+  target: CustomCommandParamType.EntitySelector,
+  entityType: CustomCommandParamType.EntityType,
+  player: CustomCommandParamType.PlayerSelector
+};
+var EQUIPMENT_SLOTS = Object.values(EquipmentSlot);
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\containers\index.js
+import {
+  BlockComponentTypes,
+  EntityComponentTypes,
+  ItemStack,
+  system as system3,
+  world as world3
+} from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\linkNodes\io.js
+import { system as system2, world as world2 } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\containers\constants.js
+var SCRIPT_EVENT_NAMESPACE = "dorios_container";
+var SET_CONFIG_EVENT_ID = `${SCRIPT_EVENT_NAMESPACE}:set_config`;
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\linkNodes\io.js
+var LINK_NODE_IO_EVENT_NAMESPACE = "dorios_link_node";
+var SET_LINK_NODE_IO_EVENT_ID = `${LINK_NODE_IO_EVENT_NAMESPACE}:set_io`;
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\entity\index.js
+import { EntityComponentTypes as EntityComponentTypes2, EquipmentSlot as EquipmentSlot2, ItemStack as ItemStack3 } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\item\index.js
+import { ItemStack as ItemStack2, ItemTypes } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\item\durability.js
+import { ItemComponentTypes } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\entity\index.js
+var EQUIPMENT_SLOTS2 = new Set(Object.values(EquipmentSlot2));
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\messages\index.js
+import { system as system4, world as world4 } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\player\index.js
+import { GameMode } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\registry\index.js
+var registry_exports = {};
+__export(registry_exports, {
+  COMMAND_PARAMETER_TYPES: () => COMMAND_PARAMETER_TYPES,
+  PARAMETER_TYPES: () => PARAMETER_TYPES,
+  PERMISSION_LEVELS: () => PERMISSION_LEVELS,
+  REGISTRATION_EVENT_IDS: () => REGISTRATION_EVENT_IDS,
+  blockComponent: () => blockComponent,
+  createRegistrar: () => createRegistrar,
+  customCommand: () => customCommand,
+  install: () => install,
+  itemComponent: () => itemComponent,
+  registerAutoFisherDrop: () => registerAutoFisherDrop,
+  registerBonsai: () => registerBonsai,
+  registerCoolant: () => registerCoolant,
+  registerCrafterRecipe: () => registerCrafterRecipe,
+  registerCrusherRecipe: () => registerCrusherRecipe,
+  registerFluidHolder: () => registerFluidHolder,
+  registerFluidItem: () => registerFluidItem,
+  registerFuel: () => registerFuel,
+  registerFurnaceRecipe: () => registerFurnaceRecipe,
+  registerGasHolder: () => registerGasHolder,
+  registerGasItem: () => registerGasItem,
+  registerInfuserRecipe: () => registerInfuserRecipe,
+  registerItemDuctChest: () => registerItemDuctChest,
+  registerItemDuctCompatibility: () => registerItemDuctCompatibility,
+  registerMachineUpgrade: () => registerMachineUpgrade,
+  registerMelterRecipe: () => registerMelterRecipe,
+  registerPlant: () => registerPlant,
+  registerPressRecipe: () => registerPressRecipe,
+  registerSieveDrop: () => registerSieveDrop,
+  registerSpecialContainerSlots: () => registerSpecialContainerSlots,
+  unregisterItemDuctCompatibility: () => unregisterItemDuctCompatibility
+});
+import {
+  CommandPermissionLevel as CommandPermissionLevel2,
+  CustomCommandParamType as CustomCommandParamType2,
+  system as system5,
+  world as world5
+} from "@minecraft/server";
+var PARAMETER_TYPES = COMMAND_PARAMETER_TYPES;
+var REGISTRATION_EVENT_IDS = Object.freeze({
+  AUTO_FISHER_DROP: "utilitycraft:register_autofisher_drop",
+  BONSAI: "utilitycraft:register_bonsai",
+  COOLANT: "utilitycraft:register_coolant",
+  CRAFTER_RECIPE: "utilitycraft:register_crafter_recipe",
+  CRUSHER_RECIPE: "utilitycraft:register_crusher_recipe",
+  FLUID_HOLDER: "utilitycraft:register_fluid_holder",
+  FLUID_ITEM: "utilitycraft:register_fluid_item",
+  FUEL: "utilitycraft:register_fuel",
+  FURNACE_RECIPE: "utilitycraft:register_furnace_recipe",
+  GAS_HOLDER: "utilitycraft:register_gas_holder",
+  GAS_ITEM: "utilitycraft:register_gas_item",
+  INFUSER_RECIPE: "utilitycraft:register_infuser_recipe",
+  ITEM_DUCT_REGISTER: "item_ducts:register",
+  ITEM_DUCT_UNREGISTER: "item_ducts:unregister",
+  MELTER_RECIPE: "utilitycraft:register_melter_recipe",
+  MACHINE_UPGRADE: "utilitycraft:register_machine_upgrade",
+  PLANT: "utilitycraft:register_plant",
+  PRESS_RECIPE: "utilitycraft:register_press_recipe",
+  SIEVE_DROP: "utilitycraft:register_sieve_drop",
+  SPECIAL_CONTAINER_SLOTS: "utilitycraft:register_special_container_slots"
+});
+function registerAutoFisherDrop(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.AUTO_FISHER_DROP, payload);
+}
+function registerBonsai(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.BONSAI, payload);
+}
+function registerCoolant(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.COOLANT, payload);
+}
+function registerCrafterRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.CRAFTER_RECIPE, payload);
+}
+function registerCrusherRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.CRUSHER_RECIPE, payload);
+}
+function registerFluidHolder(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.FLUID_HOLDER, payload);
+}
+function registerFluidItem(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.FLUID_ITEM, payload);
+}
+function registerFuel(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.FUEL, payload);
+}
+function registerFurnaceRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.FURNACE_RECIPE, payload);
+}
+function registerGasHolder(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.GAS_HOLDER, payload);
+}
+function registerGasItem(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.GAS_ITEM, payload);
+}
+function registerInfuserRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.INFUSER_RECIPE, payload);
+}
+function registerItemDuctCompatibility(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.ITEM_DUCT_REGISTER, payload);
+}
+function registerItemDuctChest(typeId) {
+  assertTypeId(typeId);
+  enqueueRegistration(REGISTRATION_EVENT_IDS.ITEM_DUCT_REGISTER, {
+    typeId,
+    mode: "chest"
+  });
+}
+function unregisterItemDuctCompatibility(typeId) {
+  assertTypeId(typeId);
+  enqueueRegistrationMessage(REGISTRATION_EVENT_IDS.ITEM_DUCT_UNREGISTER, typeId);
+}
+function registerMelterRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.MELTER_RECIPE, payload);
+}
+function registerMachineUpgrade(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.MACHINE_UPGRADE, payload);
+}
+function registerPlant(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.PLANT, payload);
+}
+function registerPressRecipe(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.PRESS_RECIPE, payload);
+}
+function registerSieveDrop(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.SIEVE_DROP, payload);
+}
+function registerSpecialContainerSlots(payload) {
+  enqueueRegistration(REGISTRATION_EVENT_IDS.SPECIAL_CONTAINER_SLOTS, payload);
+}
+var registrationQueue = [];
+var registrationDispatchEnabled = false;
+var registrationDispatchScheduled = false;
+world5.afterEvents.worldLoad.subscribe(() => {
+  registrationDispatchEnabled = true;
+  scheduleNextRegistration();
+});
+function enqueueRegistration(eventId, payload) {
+  if (payload === null || typeof payload !== "object") {
+    throw new TypeError(`Registration payload for ${eventId} must be an object`);
+  }
+  const message = JSON.stringify(payload);
+  if (typeof message !== "string") {
+    throw new TypeError(`Registration payload for ${eventId} must be JSON serializable`);
+  }
+  enqueueRegistrationMessage(eventId, message);
+}
+function enqueueRegistrationMessage(eventId, message) {
+  registrationQueue.push({ eventId, message });
+  scheduleNextRegistration();
+}
+function assertTypeId(typeId) {
+  if (typeof typeId !== "string" || typeId.length === 0 || !typeId.includes(":")) {
+    throw new TypeError(`A fully qualified block typeId is required: ${typeId}`);
+  }
+}
+function scheduleNextRegistration() {
+  if (!registrationDispatchEnabled || registrationDispatchScheduled || registrationQueue.length === 0) return;
+  registrationDispatchScheduled = true;
+  system5.run(() => {
+    const registration = registrationQueue.shift();
+    try {
+      if (registration) system5.sendScriptEvent(registration.eventId, registration.message);
+    } catch (error) {
+      console.warn(`[DoriosLib:registry] Failed to dispatch ${registration?.eventId}:`, error);
+    } finally {
+      registrationDispatchScheduled = false;
+      scheduleNextRegistration();
+    }
+  });
+}
+var sharedRegistrars = /* @__PURE__ */ new Map();
+var sharedRegistryInstalled = false;
+function createRegistrar(options) {
+  const normalized = typeof options === "string" ? { namespace: options } : options;
+  const namespace = validateNamespace(normalized.namespace);
+  const onError = normalized.onError ?? defaultErrorHandler;
+  const blocks = [];
+  const items = [];
+  const commands = [];
+  let installed = false;
+  const registrar = {
+    block(id, handlers) {
+      assertMutable(installed);
+      blocks.push({ id: qualify(namespace, id), handlers });
+      return registrar;
+    },
+    item(id, handlers) {
+      assertMutable(installed);
+      items.push({ id: qualify(namespace, id), handlers });
+      return registrar;
+    },
+    command(definition) {
+      assertMutable(installed);
+      if (!definition || typeof definition.callback !== "function") {
+        throw new TypeError("A command callback is required");
+      }
+      commands.push({ ...definition, name: qualify(namespace, definition.name) });
+      return registrar;
+    },
+    install() {
+      if (installed) return false;
+      installed = true;
+      system5.beforeEvents.startup.subscribe((event) => {
+        for (const { id, handlers } of blocks) {
+          event.blockComponentRegistry.registerCustomComponent(id, handlers);
+        }
+        for (const { id, handlers } of items) {
+          event.itemComponentRegistry.registerCustomComponent(id, handlers);
+        }
+        for (const command of commands) {
+          installCommand(event.customCommandRegistry, command, namespace, onError);
+        }
+      });
+      return true;
+    },
+    isInstalled() {
+      return installed;
+    }
+  };
+  return registrar;
+}
+function blockComponent(id, handlers) {
+  assertSharedMutable();
+  const namespace = getIdentifierNamespace(id);
+  getSharedRegistrar(namespace).block(id, handlers);
+}
+function itemComponent(id, handlers) {
+  assertSharedMutable();
+  const namespace = getIdentifierNamespace(id);
+  getSharedRegistrar(namespace).item(id, handlers);
+}
+function customCommand(definition) {
+  assertSharedMutable();
+  const namespace = getIdentifierNamespace(definition?.name);
+  getSharedRegistrar(namespace).command(definition);
+}
+function install() {
+  if (sharedRegistryInstalled) return false;
+  sharedRegistryInstalled = true;
+  for (const registrar of sharedRegistrars.values()) registrar.install();
+  return true;
+}
+function getSharedRegistrar(namespace) {
+  let registrar = sharedRegistrars.get(namespace);
+  if (!registrar) {
+    registrar = createRegistrar(namespace);
+    sharedRegistrars.set(namespace, registrar);
+  }
+  return registrar;
+}
+function getIdentifierNamespace(id) {
+  const separator = typeof id === "string" ? id.indexOf(":") : -1;
+  if (separator <= 0 || separator === id.length - 1) {
+    throw new TypeError(`A fully qualified identifier is required: ${id}`);
+  }
+  return validateNamespace(id.slice(0, separator));
+}
+function assertSharedMutable() {
+  if (sharedRegistryInstalled) {
+    throw new Error("Cannot add definitions after DoriosLib.registry.install()");
+  }
+}
+function installCommand(registry2, command, namespace, onError) {
+  const mandatoryParameters = [];
+  const optionalParameters = [];
+  for (const parameter of command.parameters ?? []) {
+    const target = parameter.optional ? optionalParameters : mandatoryParameters;
+    if (parameter.type === "enum") {
+      if (!Array.isArray(parameter.values) || parameter.values.length === 0) {
+        throw new TypeError(`Enum parameter ${parameter.name} requires values`);
+      }
+      const enumName = `${namespace}:${localName(command.name)}_${parameter.name}`;
+      registry2.registerEnum(enumName, parameter.values);
+      target.push({ name: enumName, type: CustomCommandParamType2.Enum });
+      continue;
+    }
+    const type = PARAMETER_TYPES[parameter.type];
+    if (!type) throw new RangeError(`Unknown command parameter type: ${parameter.type}`);
+    target.push({ name: parameter.name, type });
+  }
+  const permissionLevel = typeof command.permissionLevel === "number" ? command.permissionLevel : PERMISSION_LEVELS[command.permissionLevel ?? "any"];
+  const definition = {
+    name: command.name,
+    description: command.description ?? "",
+    permissionLevel,
+    cheatsRequired: command.cheatsRequired ?? false,
+    ...mandatoryParameters.length > 0 ? { mandatoryParameters } : {},
+    ...optionalParameters.length > 0 ? { optionalParameters } : {}
+  };
+  registry2.registerCommand(definition, (origin, ...args) => {
+    system5.run(() => {
+      try {
+        command.callback(origin, ...args);
+      } catch (error) {
+        onError(error, `command:${command.name}`);
+      }
+    });
+  });
+}
+function validateNamespace(namespace) {
+  if (!/^[a-z0-9_.-]+$/.test(namespace)) {
+    throw new TypeError(`Invalid namespace: ${namespace}`);
+  }
+  return namespace;
+}
+function qualify(namespace, id) {
+  if (!id || typeof id !== "string") throw new TypeError("A non-empty identifier is required");
+  if (!id.includes(":")) return `${namespace}:${id}`;
+  if (!id.startsWith(`${namespace}:`)) {
+    throw new RangeError(`Identifier ${id} does not belong to namespace ${namespace}`);
+  }
+  return id;
+}
+function localName(id) {
+  return id.includes(":") ? id.slice(id.indexOf(":") + 1) : id;
+}
+function assertMutable(installed) {
+  if (installed) throw new Error("Cannot add definitions after registrar.install()");
+}
+function defaultErrorHandler(error, context) {
+  console.warn(`[DoriosLib:${context}]`, error);
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\time\index.js
+import { system as system6 } from "@minecraft/server";
+var TICKS_PER_SECOND = 20;
+var TICKS = {
+  second: TICKS_PER_SECOND,
+  minute: TICKS_PER_SECOND * 60,
+  hour: TICKS_PER_SECOND * 60 * 60,
+  day: TICKS_PER_SECOND * 60 * 60 * 24
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\DoriosLib\index.js
+initialize(INSIGHT_METADATA, INSIGHT_DEPENDENCY_OPTIONS);
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\globalPlayerInterval.js
+import { system as system9, world as world11 } from "@minecraft/server";
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\const.js
+var CHANNEL_WAILA = "insight_waila:";
+var CHANNEL_HUD = "insight_hud:";
+var CHANNEL_STATSCORE_ACTIVITY = "insight_statscore:";
+var CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
+var STAT_DISPLAY_STYLES = [
+  { id: "glyphs", label: "Only Icons" },
+  { id: "text", label: "Only Text" },
+  { id: "both", label: "Both" }
+];
+var DEFAULT_CORE_SETTINGS = {
+  main: {
+    enabled: true,
+    updateIntervalTicks: 4,
+    maxDistance: 8,
+    panelStyleId: 0,
+    fontScale: 1,
+    mainhandDurability: true,
+    offhandDurability: true,
+    armorDurability: true,
+    wailaMobileLayout: false,
+    durabilityMobileLayout: false
+  },
+  block: {
+    energyContainers: false,
+    fluidContainers: false,
+    gasContainers: false,
+    overclockLevel: false,
+    blockRender: true,
+    preferredTool: false,
+    toolTier: false,
+    location: false,
+    identifier: false,
+    blockTags: false,
+    states: false,
+    separators: true
+  },
+  entity: {
+    entityRender: true,
+    health: true,
+    maxHeartDisplayHealth: 40,
+    effectHearts: true,
+    tamedHearts: true,
+    absorption: true,
+    hunger: true,
+    saturation: true,
+    armor: true,
+    air: true,
+    attackDamage: true,
+    movementSpeed: false,
+    effects: true,
+    maxVisibleEffects: 4,
+    hostile: false,
+    specialInfo: false,
+    identifier: false,
+    typeFamilies: false,
+    tags: false,
+    properties: false,
+    separators: true,
+    healthDisplayStyle: "glyphs",
+    hungerDisplayStyle: "glyphs",
+    armorAirDisplayStyle: "glyphs",
+    effectsDisplayStyle: "glyphs",
+    attributesDisplayStyle: "glyphs"
+  }
+};
+var CORE_LIMITS = {
+  minUpdateIntervalTicks: 1,
+  maxUpdateIntervalTicks: 40,
+  minMaxDistance: 1,
+  maxMaxDistance: 32,
+  minPanelStyleId: 0,
+  maxPanelStyleId: 6,
+  minFontScale: 0.5,
+  maxFontScale: 1.5,
+  minHeartDisplayHealth: 20,
+  maxHeartDisplayHealth: 200,
+  minVisibleEffects: 1,
+  maxVisibleEffects: 10
+};
+var WAILA_STYLE_TEXTURE_FIELD_LENGTH = 40;
+var WAILA_FONT_SCALE_FIELD_LENGTH = 12;
+var WAILA_LAYOUT_FIELD_LENGTH = 1;
+var WAILA_META_FIELD_LENGTH = 64;
+var WAILA_FONT_SCALE_OPTIONS = [
+  {
+    label: "Extra Small",
+    scale: 0.5
+  },
+  {
+    label: "Small",
+    scale: 0.75
+  },
+  {
+    label: "Normal",
+    scale: 1
+  },
+  {
+    label: "Large",
+    scale: 1.25
+  },
+  {
+    label: "Extra Large",
+    scale: 1.5
+  }
+];
+var PANEL_STYLES = [
+  {
+    id: 0,
+    label: "Default",
+    texture: "textures/insight/style_default"
+  },
+  {
+    id: 1,
+    label: "Dark",
+    texture: "textures/insight/style_dark"
+  },
+  {
+    id: 2,
+    label: "Copper",
+    texture: "textures/insight/style_copper"
+  },
+  {
+    id: 3,
+    label: "Magenta",
+    texture: "textures/insight/style_magenta"
+  },
+  {
+    id: 4,
+    label: "Cyan",
+    texture: "textures/insight/style_cyan"
+  },
+  {
+    id: 5,
+    label: "Blood",
+    texture: "textures/insight/style_blood"
+  },
+  {
+    id: 6,
+    label: "Ascane",
+    texture: "textures/insight/style_ascane"
+  }
+];
+var NAMESPACE_LABELS = {
+  minecraft: "Minecraft"
+};
+var HIDDEN_NAMESPACE_LINE_NAMESPACES = [
+  "dorios",
+  "utilitycraft",
+  "better_smelters",
+  "modular_energistics"
+];
+var EMPTY_WAILA_TEXT = CHANNEL_WAILA;
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\target.js
+var TargetKinds = {
+  None: "none",
+  Block: "block",
+  Entity: "entity"
+};
+var IGNORED_ENTITY_TARGET_FAMILIES = ["inanimate"];
+var TARGET_DISTANCE_EPSILON = 0.1;
+function getDistanceBetween(left, right) {
+  if (!left || !right) {
+    return Number.POSITIVE_INFINITY;
+  }
+  const dx = Number(left.x) - Number(right.x);
+  const dy = Number(left.y) - Number(right.y);
+  const dz = Number(left.z) - Number(right.z);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy) || !Number.isFinite(dz)) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+function getBlockHitDistance(player, blockHit) {
+  if (!blockHit?.block) {
+    return Number.POSITIVE_INFINITY;
+  }
+  const origin = player.getHeadLocation?.() ?? player.location;
+  const blockLocation = blockHit.block.location;
+  return getDistanceBetween(origin, {
+    x: blockLocation.x + 0.5,
+    y: blockLocation.y + 0.5,
+    z: blockLocation.z + 0.5
+  });
+}
+function getEntityHitDistance(player, entityHit) {
+  if (typeof entityHit?.distance === "number" && Number.isFinite(entityHit.distance)) {
+    return entityHit.distance;
+  }
+  return getDistanceBetween(player.getHeadLocation?.() ?? player.location, entityHit?.entity?.location);
+}
+function hasTypeFamily(entity, family) {
+  try {
+    return entity?.getComponent("minecraft:type_family")?.hasTypeFamily(family) === true;
+  } catch {
+    return false;
+  }
+}
+function shouldIgnoreEntityTarget(entity) {
+  return IGNORED_ENTITY_TARGET_FAMILIES.some((family) => hasTypeFamily(entity, family));
+}
+function resolvePlayerTarget(player, settings) {
+  const maxDistance = Math.max(1, Number(settings?.maxDistance) || 8);
+  let entityHit;
+  let blockHit;
+  try {
+    const entityHits = player.getEntitiesFromViewDirection({
+      maxDistance,
+      includeLiquidBlocks: true,
+      includePassableBlocks: true
+    });
+    if (Array.isArray(entityHits) && entityHits.length > 0) {
+      entityHit = entityHits.find((candidate) => candidate?.entity && !shouldIgnoreEntityTarget(candidate.entity));
+    }
+  } catch {
+  }
+  try {
+    blockHit = player.getBlockFromViewDirection({
+      maxDistance,
+      includeLiquidBlocks: true,
+      includePassableBlocks: true
+    });
+  } catch {
+  }
+  if (entityHit?.entity && blockHit?.block) {
+    const entityDistance = getEntityHitDistance(player, entityHit);
+    const blockDistance = getBlockHitDistance(player, blockHit);
+    if (blockDistance <= entityDistance + TARGET_DISTANCE_EPSILON) {
+      return {
+        kind: TargetKinds.Block,
+        block: blockHit.block
+      };
+    }
+    return {
+      kind: TargetKinds.Entity,
+      entity: entityHit.entity
+    };
+  }
+  if (entityHit?.entity) {
+    return {
+      kind: TargetKinds.Entity,
+      entity: entityHit.entity
+    };
+  }
+  if (blockHit?.block) {
+    return {
+      kind: TargetKinds.Block,
+      block: blockHit.block
+    };
+  }
+  return {
+    kind: TargetKinds.None
+  };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\format.js
+function splitTypeId(typeId) {
+  const raw = String(typeId || "").trim();
+  const separatorIndex = raw.indexOf(":");
+  if (separatorIndex === -1) {
+    return {
+      namespace: "minecraft",
+      id: raw
+    };
+  }
+  return {
+    namespace: raw.slice(0, separatorIndex) || "minecraft",
+    id: raw.slice(separatorIndex + 1)
+  };
+}
+function toTitleWords(value) {
+  const source = Array.isArray(value) ? value.join("_") : String(value || "");
+  return source.replace(/[:.]/g, "_").split("_").filter((part) => part.length > 0).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+function formatTypeIdToText(typeId) {
+  const { id } = splitTypeId(typeId);
+  return toTitleWords(id || typeId || "Unknown");
+}
+function resolveNamespaceLabel(typeId) {
+  const { namespace } = splitTypeId(typeId);
+  return NAMESPACE_LABELS[namespace] || toTitleWords(namespace);
+}
+function resolveNamespaceId(typeId) {
+  return splitTypeId(typeId).namespace;
+}
+function shouldShowNamespaceLine(typeId) {
+  const namespace = resolveNamespaceId(typeId).toLowerCase();
+  return !HIDDEN_NAMESPACE_LINE_NAMESPACES.includes(namespace);
+}
+function normalizeHeaderText(value, fallback = "Unknown") {
+  const normalized = String(value ?? "").replace(/[\r\n\t]+/g, " ").trim();
+  return normalized.length ? normalized : fallback;
+}
+function safeTranslateOrText(localizationKey, fallbackText) {
+  const key = String(localizationKey || "").trim();
+  if (key.length) {
+    return { translate: key };
+  }
+  return { text: normalizeHeaderText(fallbackText) };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\managers\energyStorage.js
+import { world as world6 } from "@minecraft/server";
+var ENERGY_OBJECTIVE_DEFINITIONS = [
+  ["energy", "Energy"],
+  ["energyExp", "EnergyExp"],
+  ["energyCap", "Energy Max Capacity"],
+  ["energyCapExp", "Energy Max Capacity Exp"]
+];
+var objectives = /* @__PURE__ */ Object.create(null);
+function getObjectiveScore(objectiveId, scoreId) {
+  if (!scoreId) {
+    return 0;
+  }
+  return objectives[objectiveId].getScore(scoreId) || 0;
+}
+var EnergyStorage = class _EnergyStorage {
+  constructor(entity) {
+    _EnergyStorage.initializeObjectives();
+    this.entity = entity;
+    this.scoreId = entity?.scoreboardIdentity;
+    this.cap = this.getCap();
+  }
+  static combineValue(value, exp) {
+    return (Number(value) || 0) * 10 ** (Number(exp) || 0);
+  }
+  static initializeObjectives() {
+    for (const [id, displayName] of ENERGY_OBJECTIVE_DEFINITIONS) {
+      objectives[id] = world6.scoreboard.getObjective(id) ?? world6.scoreboard.addObjective(id, displayName);
+    }
+  }
+  static normalizeValue(amount) {
+    let exp = 0;
+    let value = Math.max(0, Number(amount) || 0);
+    while (value > 1e9) {
+      value /= 1e3;
+      exp += 3;
+    }
+    return { value: Math.floor(value), exp };
+  }
+  static formatEnergyToText(value) {
+    const safeValue = Math.max(0, Number(value) || 0);
+    if (safeValue >= 1e15) return `${(safeValue / 1e15).toFixed(2)} PDE`;
+    if (safeValue >= 1e12) return `${(safeValue / 1e12).toFixed(2)} TDE`;
+    if (safeValue >= 1e9) return `${(safeValue / 1e9).toFixed(2)} GDE`;
+    if (safeValue >= 1e6) return `${(safeValue / 1e6).toFixed(2)} MDE`;
+    if (safeValue >= 1e3) return `${(safeValue / 1e3).toFixed(1)} kDE`;
+    return `${Math.floor(safeValue)} DE`;
+  }
+  getCap() {
+    const { value, exp } = this.getCapNormalized();
+    this.cap = _EnergyStorage.combineValue(value, exp);
+    return this.cap;
+  }
+  getCapNormalized() {
+    return {
+      value: getObjectiveScore("energyCap", this.scoreId),
+      exp: getObjectiveScore("energyCapExp", this.scoreId)
+    };
+  }
+  get() {
+    const { value, exp } = this.getNormalized();
+    return _EnergyStorage.combineValue(value, exp);
+  }
+  getNormalized() {
+    return {
+      value: getObjectiveScore("energy", this.scoreId),
+      exp: getObjectiveScore("energyExp", this.scoreId)
+    };
+  }
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\blocks\energyContainers.js
+function getEntityAtBlockLocation(block, family) {
+  const entities = block?.dimension?.getEntitiesAtBlockLocation?.(block.location);
+  if (!Array.isArray(entities)) {
+    return void 0;
+  }
+  return entities.find((entity) => {
+    try {
+      const typeFamily = entity.getComponent("minecraft:type_family");
+      return typeFamily?.hasTypeFamily(family[0]) || typeFamily?.hasTypeFamily(family[1]);
+    } catch {
+      return false;
+    }
+  });
+}
+function getEnergyLine(block) {
+  if (!block?.hasTag?.("dorios:energy")) {
+    return void 0;
+  }
+  const entity = getEntityAtBlockLocation(block, ["dorios:energy_container", "dorios:energy_source"]);
+  if (!entity) {
+    return void 0;
+  }
+  const energy = new EnergyStorage(entity);
+  const current = EnergyStorage.formatEnergyToText(energy.get());
+  const max = EnergyStorage.formatEnergyToText(energy.cap);
+  return { text: `
+\xA7fEnergy: ${current} / ${max}\xA7r` };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\managers\fluidStorage.js
+import { world as world7 } from "@minecraft/server";
+var EMPTY_FLUID_TYPE = "empty";
+var MAX_LIQUIDS_OBJECTIVE = "maxLiquids";
+var maxLiquidsData;
+var objectives2 = /* @__PURE__ */ new Map();
+function getObjectiveScore2(objective, scoreId) {
+  if (!scoreId) {
+    return 0;
+  }
+  return objective.getScore(scoreId) || 0;
+}
+var FluidStorage = class _FluidStorage {
+  constructor(entity, index = 0) {
+    _FluidStorage.initializeObjectives(index);
+    this.entity = entity;
+    this.index = index;
+    this.scoreId = entity?.scoreboardIdentity;
+    this.scores = {
+      fluid: objectives2.get(`fluid_${index}`),
+      fluidExp: objectives2.get(`fluidExp_${index}`),
+      fluidCap: objectives2.get(`fluidCap_${index}`),
+      fluidCapExp: objectives2.get(`fluidCapExp_${index}`)
+    };
+    this.type = this.getType();
+    this.cap = this.getCap();
+  }
+  static combineValue(value, exp) {
+    return (Number(value) || 0) * 10 ** (Number(exp) || 0);
+  }
+  static normalizeValue(amount) {
+    let exp = 0;
+    let value = Math.max(0, Number(amount) || 0);
+    while (value > 1e9) {
+      value /= 1e3;
+      exp += 3;
+    }
+    return { value: Math.floor(value), exp };
+  }
+  static initializeObjectives(index = 0) {
+    maxLiquidsData = world7.scoreboard.getObjective(MAX_LIQUIDS_OBJECTIVE) ?? world7.scoreboard.addObjective(MAX_LIQUIDS_OBJECTIVE, "Max Liquids");
+    const definitions = [
+      [`fluid_${index}`, `fluid ${index}`],
+      [`fluidExp_${index}`, `fluid Exp ${index}`],
+      [`fluidCap_${index}`, `fluid Cap ${index}`],
+      [`fluidCapExp_${index}`, `fluid Cap Exp ${index}`]
+    ];
+    for (const [id, displayName] of definitions) {
+      if (!objectives2.has(id)) {
+        objectives2.set(
+          id,
+          world7.scoreboard.getObjective(id) ?? world7.scoreboard.addObjective(id, displayName)
+        );
+      }
+    }
+  }
+  static formatFluid(value) {
+    const safeValue = Math.max(0, Number(value) || 0);
+    if (safeValue >= 1e21) return `${(safeValue / 1e21).toFixed(2)} EB`;
+    if (safeValue >= 1e18) return `${(safeValue / 1e18).toFixed(2)} PB`;
+    if (safeValue >= 1e15) return `${(safeValue / 1e15).toFixed(2)} TB`;
+    if (safeValue >= 1e12) return `${(safeValue / 1e12).toFixed(2)} GB`;
+    if (safeValue >= 1e9) return `${(safeValue / 1e9).toFixed(2)} MB`;
+    if (safeValue >= 1e6) return `${(safeValue / 1e6).toFixed(2)} KB`;
+    if (safeValue >= 1e3) return `${(safeValue / 1e3).toFixed(1)} B`;
+    return `${Math.floor(safeValue)} mB`;
+  }
+  static getMaxLiquids(entity) {
+    _FluidStorage.initializeObjectives();
+    if (!entity) {
+      return 1;
+    }
+    const score = getObjectiveScore2(maxLiquidsData, entity.scoreboardIdentity);
+    return score > 0 ? score : 1;
+  }
+  getCap() {
+    const value = getObjectiveScore2(this.scores.fluidCap, this.scoreId);
+    const exp = getObjectiveScore2(this.scores.fluidCapExp, this.scoreId);
+    this.cap = _FluidStorage.combineValue(value, exp);
+    return this.cap;
+  }
+  get() {
+    const value = getObjectiveScore2(this.scores.fluid, this.scoreId);
+    const exp = getObjectiveScore2(this.scores.fluidExp, this.scoreId);
+    return _FluidStorage.combineValue(value, exp);
+  }
+  getType() {
+    const tag = this.entity?.getTags?.().find((entry) => String(entry || "").startsWith(`fluid${this.index}Type:`));
+    return tag ? String(tag).slice(`fluid${this.index}Type:`.length) : EMPTY_FLUID_TYPE;
+  }
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\blocks\fluidContainers.js
+function getEntityAtBlockLocation2(block, family) {
+  const entities = block?.dimension?.getEntitiesAtBlockLocation?.(block.location);
+  if (!Array.isArray(entities)) {
+    return void 0;
+  }
+  return entities.find((entity) => {
+    try {
+      return entity.getComponent("minecraft:type_family")?.hasTypeFamily(family);
+    } catch {
+      return false;
+    }
+  });
+}
+function getFluidLines(block) {
+  if (!block?.hasTag?.("dorios:fluid")) {
+    return [];
+  }
+  const entity = getEntityAtBlockLocation2(block, "dorios:fluid_container");
+  if (!entity) {
+    return [];
+  }
+  const lines = [];
+  const maxLiquids = FluidStorage.getMaxLiquids(entity);
+  for (let index = 0; index < maxLiquids; index++) {
+    const fluid = new FluidStorage(entity, index);
+    const type = fluid.getType();
+    const amount = fluid.get();
+    const cap = fluid.getCap();
+    if (type === EMPTY_FLUID_TYPE) {
+      continue;
+    }
+    const name = formatTypeIdToText(type);
+    const current = FluidStorage.formatFluid(amount);
+    const max = FluidStorage.formatFluid(cap);
+    lines.push({ text: `
+\xA7f${name}: ${current} / ${max}\xA7r` });
+  }
+  return lines;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\managers\gasStorage.js
+import { world as world8 } from "@minecraft/server";
+var EMPTY_GAS_TYPE = "empty";
+var MAX_GASES_OBJECTIVE = "maxGases";
+var maxGasesData;
+var objectives3 = /* @__PURE__ */ new Map();
+function getObjectiveScore3(objective, scoreId) {
+  if (!scoreId) {
+    return 0;
+  }
+  return objective.getScore(scoreId) || 0;
+}
+var GasStorage = class _GasStorage {
+  constructor(entity, index = 0) {
+    _GasStorage.initializeObjectives(index);
+    this.entity = entity;
+    this.index = index;
+    this.scoreId = entity?.scoreboardIdentity;
+    this.scores = {
+      gas: objectives3.get(`gas_${index}`),
+      gasExp: objectives3.get(`gasExp_${index}`),
+      gasCap: objectives3.get(`gasCap_${index}`),
+      gasCapExp: objectives3.get(`gasCapExp_${index}`)
+    };
+    this.type = this.getType();
+    this.cap = this.getCap();
+  }
+  static combineValue(value, exp) {
+    return (Number(value) || 0) * 10 ** (Number(exp) || 0);
+  }
+  static normalizeValue(amount) {
+    let exp = 0;
+    let value = Math.max(0, Number(amount) || 0);
+    while (value > 1e9) {
+      value /= 1e3;
+      exp += 3;
+    }
+    return { value: Math.floor(value), exp };
+  }
+  static initializeObjectives(index = 0) {
+    maxGasesData = world8.scoreboard.getObjective(MAX_GASES_OBJECTIVE) ?? world8.scoreboard.addObjective(MAX_GASES_OBJECTIVE, "Max Gases");
+    const definitions = [
+      [`gas_${index}`, `gas ${index}`],
+      [`gasExp_${index}`, `gas Exp ${index}`],
+      [`gasCap_${index}`, `gas Cap ${index}`],
+      [`gasCapExp_${index}`, `gas Cap Exp ${index}`]
+    ];
+    for (const [id, displayName] of definitions) {
+      if (!objectives3.has(id)) {
+        objectives3.set(
+          id,
+          world8.scoreboard.getObjective(id) ?? world8.scoreboard.addObjective(id, displayName)
+        );
+      }
+    }
+  }
+  static formatGas(value) {
+    const safeValue = Math.max(0, Number(value) || 0);
+    if (safeValue >= 1e21) return `${(safeValue / 1e21).toFixed(2)} EB`;
+    if (safeValue >= 1e18) return `${(safeValue / 1e18).toFixed(2)} PB`;
+    if (safeValue >= 1e15) return `${(safeValue / 1e15).toFixed(2)} TB`;
+    if (safeValue >= 1e12) return `${(safeValue / 1e12).toFixed(2)} GB`;
+    if (safeValue >= 1e9) return `${(safeValue / 1e9).toFixed(2)} MB`;
+    if (safeValue >= 1e6) return `${(safeValue / 1e6).toFixed(2)} KB`;
+    if (safeValue >= 1e3) return `${(safeValue / 1e3).toFixed(1)} B`;
+    return `${Math.floor(safeValue)} mB`;
+  }
+  static getMaxGases(entity) {
+    _GasStorage.initializeObjectives();
+    if (!entity) {
+      return 1;
+    }
+    const score = getObjectiveScore3(maxGasesData, entity.scoreboardIdentity);
+    return score > 0 ? score : 1;
+  }
+  getCap() {
+    const value = getObjectiveScore3(this.scores.gasCap, this.scoreId);
+    const exp = getObjectiveScore3(this.scores.gasCapExp, this.scoreId);
+    this.cap = _GasStorage.combineValue(value, exp);
+    return this.cap;
+  }
+  get() {
+    const value = getObjectiveScore3(this.scores.gas, this.scoreId);
+    const exp = getObjectiveScore3(this.scores.gasExp, this.scoreId);
+    return _GasStorage.combineValue(value, exp);
+  }
+  getType() {
+    const prefix = `gas${this.index}Type:`;
+    const tag = this.entity?.getTags?.().find((entry) => String(entry || "").startsWith(prefix));
+    return tag ? String(tag).slice(prefix.length) : EMPTY_GAS_TYPE;
+  }
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\blocks\gasContainers.js
+function getEntityAtBlockLocation3(block, family) {
+  const entities = block?.dimension?.getEntitiesAtBlockLocation?.(block.location);
+  if (!Array.isArray(entities)) {
+    return void 0;
+  }
+  return entities.find((entity) => {
+    try {
+      return entity.getComponent("minecraft:type_family")?.hasTypeFamily(family);
+    } catch {
+      return false;
+    }
+  });
+}
+function getGasLines(block) {
+  if (!block?.hasTag?.("dorios:gas")) {
+    return [];
+  }
+  const entity = getEntityAtBlockLocation3(block, "dorios:gas_container");
+  if (!entity) {
+    return [];
+  }
+  const lines = [];
+  const maxGases = GasStorage.getMaxGases(entity);
+  for (let index = 0; index < maxGases; index++) {
+    const gas = new GasStorage(entity, index);
+    const type = gas.getType();
+    const amount = gas.get();
+    const cap = gas.getCap();
+    if (type === EMPTY_GAS_TYPE) {
+      continue;
+    }
+    const name = formatTypeIdToText(type);
+    const current = GasStorage.formatGas(amount);
+    const max = GasStorage.formatGas(cap);
+    lines.push({ text: `
+\xC2\xA7fGas (${name}): ${current} / ${max}\xC2\xA7r` });
+  }
+  return lines;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\blocks\overclockLevel.js
+function getMachineEntityAtBlockLocation(block) {
+  const entities = block?.dimension?.getEntitiesAtBlockLocation?.(block.location);
+  if (!Array.isArray(entities)) {
+    return void 0;
+  }
+  return entities.find((entity) => {
+    try {
+      return entity.getComponent("minecraft:type_family")?.hasTypeFamily("dorios:machine");
+    } catch {
+      return false;
+    }
+  });
+}
+function getOverclockLine(block) {
+  if (!block?.hasTag?.("dorios:machine")) {
+    return void 0;
+  }
+  const entity = getMachineEntityAtBlockLocation(block);
+  if (!entity) {
+    return void 0;
+  }
+  const level = Number(entity.getProperty("utilitycraft:overclock") ?? 0);
+  return { text: `
+\xA7fOverclock Level: ${level}\xA7r` };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\blocks\general.js
+var BLOCK_TOOL_DESCRIPTORS = [
+  {
+    label: "Pickaxe",
+    tags: [
+      "minecraft:is_pickaxe_item_destructible",
+      "minecraft:pickaxe_item_destructible"
+    ]
+  },
+  {
+    label: "Axe",
+    tags: [
+      "minecraft:is_axe_item_destructible",
+      "minecraft:axe_item_destructible"
+    ]
+  },
+  {
+    label: "Shovel",
+    tags: [
+      "minecraft:is_shovel_item_destructible",
+      "minecraft:shovel_item_destructible"
+    ]
+  },
+  {
+    label: "Hoe",
+    tags: [
+      "minecraft:is_hoe_item_destructible",
+      "minecraft:hoe_item_destructible"
+    ]
+  },
+  {
+    label: "Shears",
+    tags: [
+      "minecraft:is_shears_item_destructible",
+      "minecraft:shears_item_destructible"
+    ]
+  },
+  {
+    label: "Sword",
+    tags: [
+      "minecraft:is_sword_item_destructible",
+      "minecraft:sword_item_destructible"
+    ]
+  }
+];
+var BLOCK_TOOL_TIER_DESCRIPTORS = [
+  {
+    label: "Netherite",
+    tags: [
+      "minecraft:netherite_tier_destructible",
+      "minecraft:is_netherite_tier_destructible"
+    ]
+  },
+  {
+    label: "Diamond",
+    tags: [
+      "minecraft:diamond_tier_destructible",
+      "minecraft:is_diamond_tier_destructible"
+    ]
+  },
+  {
+    label: "Iron",
+    tags: [
+      "minecraft:iron_tier_destructible",
+      "minecraft:is_iron_tier_destructible"
+    ]
+  },
+  {
+    label: "Stone",
+    tags: [
+      "minecraft:stone_tier_destructible",
+      "minecraft:is_stone_tier_destructible"
+    ]
+  }
+];
+function getDividerLine() {
+  return { text: "\n\xA77--------------------\xA7r" };
+}
+function pushSection(rawtext, lines, showSeparator) {
+  if (!lines.length) {
+    return;
+  }
+  if (showSeparator) {
+    rawtext.push(getDividerLine());
+  }
+  rawtext.push(...lines);
+}
+function getBlockName(block) {
+  const typeId = String(block?.typeId || "").trim();
+  const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
+  const localizationKey = typeof block?.localizationKey === "string" ? block.localizationKey.trim() : "";
+  const rawtext = [safeTranslateOrText(localizationKey, fallbackName)];
+  if (shouldShowNamespaceLine(typeId)) {
+    rawtext.push({ text: `
+\xA7o\xA79@${resolveNamespaceLabel(typeId)}\xA7r` });
+  }
+  return rawtext;
+}
+function getBlockTags(block) {
+  try {
+    const tags = block?.getTags?.();
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+    return tags.map((tag) => String(tag || "").trim()).filter(
+      (tag) => tag.length > 0
+    );
+  } catch {
+    return [];
+  }
+}
+function getPreferredToolLine(tagSet) {
+  const tools = getPreferredTools(tagSet);
+  return { text: `
+\xA7fTool: ${tools.length ? tools.join(", ") : "Hand"}\xA7r` };
+}
+function getPreferredTools(tagSet) {
+  return BLOCK_TOOL_DESCRIPTORS.filter(
+    (descriptor) => descriptor.tags.some((tag) => tagSet.has(tag))
+  ).map((descriptor) => descriptor.label);
+}
+function getToolTierLine(tagSet) {
+  const tier = BLOCK_TOOL_TIER_DESCRIPTORS.find(
+    (descriptor) => descriptor.tags.some((tag) => tagSet.has(tag))
+  );
+  const tools = getPreferredTools(tagSet);
+  const onlyHandTierTools = tools.length > 0 && tools.every((tool) => tool === "Shovel" || tool === "Hoe");
+  const fallbackTier = !tools.length || onlyHandTierTools ? "Hand" : "Wood";
+  return { text: `
+\xA7fTier: ${tier?.label || fallbackTier}\xA7r` };
+}
+function getBlockLocationLine(block) {
+  const location = block?.location;
+  if (!location) {
+    return void 0;
+  }
+  return {
+    text: `
+\xA7fLocation: ${Math.floor(location.x)} ${Math.floor(location.y)} ${Math.floor(location.z)}\xA7r`
+  };
+}
+function getBlockIdentifierLine(block) {
+  const typeId = String(block?.typeId || "").trim();
+  if (!typeId) {
+    return void 0;
+  }
+  return { text: `
+\xA77ID: ${typeId}\xA7r` };
+}
+function getBlockTagsLine(blockTags) {
+  if (!blockTags.length) {
+    return void 0;
+  }
+  return { text: `
+\xA77Tags: ${blockTags.join(", ")}\xA7r` };
+}
+function formatStateValue(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+  return String(value);
+}
+function getBlockStatesLine(block) {
+  try {
+    const states = block?.permutation?.getAllStates?.();
+    if (!states || typeof states !== "object") {
+      return void 0;
+    }
+    const stateLines = Object.entries(states).filter(([stateName]) => String(stateName || "").trim().length > 0).sort(([left], [right]) => left.localeCompare(right)).map(
+      ([stateName, value]) => `
+\xA77${stateName}: ${formatStateValue(value)}\xA7r`
+    );
+    if (!stateLines.length) {
+      return void 0;
+    }
+    return { text: stateLines.join("") };
+  } catch {
+    return void 0;
+  }
+}
+function buildBlockLabel(block, settings = {}) {
+  const blockTags = getBlockTags(block);
+  const tagSet = new Set(blockTags);
+  const rawtext = [{ text: "\xA7f" }, ...getBlockName(block)];
+  const containerDetails = [];
+  const showSeparators = settings.separators !== false;
+  if (settings.energyContainers) {
+    const energyLine = getEnergyLine(block);
+    if (energyLine) {
+      containerDetails.push(energyLine);
+    }
+  }
+  if (settings.fluidContainers) {
+    containerDetails.push(...getFluidLines(block));
+  }
+  if (settings.gasContainers) {
+    containerDetails.push(...getGasLines(block));
+  }
+  if (settings.overclockLevel) {
+    const overclockLine = getOverclockLine(block);
+    if (overclockLine) {
+      containerDetails.push(overclockLine);
+    }
+  }
+  pushSection(rawtext, containerDetails, showSeparators);
+  const details = [];
+  if (settings.preferredTool) {
+    details.push(getPreferredToolLine(tagSet));
+  }
+  if (settings.toolTier) {
+    details.push(getToolTierLine(tagSet));
+  }
+  if (settings.location) {
+    const locationLine = getBlockLocationLine(block);
+    if (locationLine) {
+      details.push(locationLine);
+    }
+  }
+  pushSection(rawtext, details, showSeparators);
+  const tagDetails = [];
+  if (settings.identifier) {
+    const identifierLine = getBlockIdentifierLine(block);
+    if (identifierLine) {
+      tagDetails.push(identifierLine);
+    }
+  }
+  if (settings.blockTags) {
+    const tagsLine = getBlockTagsLine(blockTags);
+    if (tagsLine) {
+      tagDetails.push(tagsLine);
+    }
+  }
+  pushSection(rawtext, tagDetails, showSeparators);
+  if (settings.states) {
+    const statesLine = getBlockStatesLine(block);
+    if (statesLine) {
+      pushSection(rawtext, [statesLine], showSeparators);
+    }
+  }
+  return rawtext;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\entities\specialInfo.js
+var VILLAGER_PROFESSION_KEYS = Object.freeze({
+  farmer: "entity.villager.farmer",
+  fisherman: "entity.villager.fisherman",
+  shepherd: "entity.villager.shepherd",
+  fletcher: "entity.villager.fletcher",
+  librarian: "entity.villager.librarian",
+  cartographer: "entity.villager.cartographer",
+  cleric: "entity.villager.cleric",
+  armorer: "entity.villager.armor",
+  armor: "entity.villager.armor",
+  weaponsmith: "entity.villager.weapon",
+  weapon: "entity.villager.weapon",
+  toolsmith: "entity.villager.tool",
+  tool: "entity.villager.tool",
+  butcher: "entity.villager.butcher",
+  leatherworker: "entity.villager.leather",
+  leather: "entity.villager.leather",
+  mason: "entity.villager.mason",
+  stone_mason: "entity.villager.mason"
+});
+var VILLAGER_UNSKILLED_FAMILIES = /* @__PURE__ */ new Set([
+  "peasant",
+  "unemployed",
+  "unskilled"
+]);
+function normalizeFamilyToken(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized.length) {
+    return "";
+  }
+  return normalized.includes(":") ? normalized.split(":").pop() : normalized;
+}
+function getVillagerJobRawtext(families = []) {
+  const familyTokens = families.map(normalizeFamilyToken).filter(
+    (family) => family.length
+  );
+  if (familyTokens.includes("nitwit")) {
+    return { text: "Nitwit" };
+  }
+  for (const family of familyTokens) {
+    const localizationKey = VILLAGER_PROFESSION_KEYS[family];
+    if (localizationKey) {
+      return { translate: localizationKey };
+    }
+  }
+  if (!familyTokens.length || familyTokens.some((family) => VILLAGER_UNSKILLED_FAMILIES.has(family))) {
+    return { translate: "entity.villager.unskilled" };
+  }
+  return { translate: "entity.villager.unskilled" };
+}
+function collectVillagerSpecialInfo(_entity, context = {}) {
+  return [
+    { text: "\n\xA7fJob: \xA7r" },
+    getVillagerJobRawtext(context.families),
+    { text: "\xA7r" }
+  ];
+}
+function getItemStackFromEntity(entity) {
+  try {
+    const itemComponent2 = entity?.getComponent?.("minecraft:item");
+    const itemStack = itemComponent2?.itemStack;
+    if (!itemStack?.typeId) {
+      return void 0;
+    }
+    return itemStack;
+  } catch {
+    return void 0;
+  }
+}
+function collectItemStackInfo(itemStack) {
+  if (!itemStack) {
+    return [];
+  }
+  const amount = Number(itemStack.amount);
+  const count = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 1;
+  const lines = [{ text: `
+\xA7r\xA77Count: ${count}\xA7r` }];
+  try {
+    const durability = itemStack.getComponent?.("minecraft:durability");
+    const max = Number(durability?.maxDurability);
+    const damage = Number(durability?.damage);
+    if (Number.isFinite(max) && max > 0 && Number.isFinite(damage)) {
+      lines.push({
+        text: `
+\xA7r\xA77Durability: \xA7e${Math.max(0, Math.floor(max - damage))}\xA77/\xA7g${Math.floor(max)}\xA7r`
+      });
+    }
+  } catch {
+  }
+  return lines;
+}
+var ENTITY_SPECIAL_INFO_HANDLERS = Object.freeze({
+  "minecraft:villager_v2": collectVillagerSpecialInfo
+});
+function collectEntitySpecialInfo(entity, context = {}) {
+  const typeId = String(entity?.typeId || "").trim();
+  const handler = ENTITY_SPECIAL_INFO_HANDLERS[typeId];
+  if (!handler) {
+    return [];
+  }
+  try {
+    return handler(entity, context).filter(
+      (part) => part?.text || part?.translate
+    );
+  } catch {
+    return [];
+  }
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\entities\glyphStats.js
+var GLYPHS = Object.freeze({
+  armorFull: "\uF5B9",
+  armorHalf: "\uF5BA",
+  armorEmpty: "\uF5BB",
+  heartFull: "\uF50D",
+  heartHalf: "\uF50E",
+  heartEmpty: "\uF50F",
+  heartFireFull: "\uF5A9",
+  heartFireHalf: "\uF5AA",
+  heartAnimalFull: "\uF5CB",
+  heartAnimalHalf: "\uF5CC",
+  heartWitherFull: "\uF5CD",
+  heartWitherHalf: "\uF5CE",
+  heartAbsorptionFull: "\uF5D9",
+  heartAbsorptionHalf: "\uF5DA",
+  heartFrozenFull: "\uF5DB",
+  heartFrozenHalf: "\uF5DC",
+  heartPoisonFull: "\uF5DD",
+  heartPoisonHalf: "\uF5DE",
+  hungerFull: "\uF5E9",
+  hungerHalf: "\uF5EA",
+  hungerEmpty: "\uF5EB",
+  hungerEffectFull: "\uF5ED",
+  hungerEffectHalf: "\uF5EC",
+  hungerEffectEmpty: "\uF5EE",
+  hungerFullSaturationFull: "\uF5AB",
+  hungerFullSaturationHalf: "\uF5AC",
+  hungerHalfSaturationFull: "\uF5AD",
+  hungerHalfSaturationHalf: "\uF5AE",
+  hungerEmptySaturationFull: "\uF5AF",
+  hungerEmptySaturationHalf: "\uF5BF",
+  bubbleFull: "\uF5BC",
+  bubblePopping: "\uF5BD",
+  bubbleEmpty: "\uF5BE",
+  attackDamage: "\uF517",
+  walkingSpeed: "\uF518",
+  swimmingSpeed: "\uF519",
+  fire: "\uF54D"
+});
+var HEART_GLYPH_SETS = Object.freeze({
+  normal: Object.freeze({
+    full: GLYPHS.heartFull,
+    half: GLYPHS.heartHalf,
+    empty: GLYPHS.heartEmpty
+  }),
+  fire: Object.freeze({
+    full: GLYPHS.heartFireFull,
+    half: GLYPHS.heartFireHalf,
+    empty: GLYPHS.heartEmpty
+  }),
+  animal: Object.freeze({
+    full: GLYPHS.heartAnimalFull,
+    half: GLYPHS.heartAnimalHalf,
+    empty: GLYPHS.heartEmpty
+  }),
+  wither: Object.freeze({
+    full: GLYPHS.heartWitherFull,
+    half: GLYPHS.heartWitherHalf,
+    empty: GLYPHS.heartEmpty
+  }),
+  frozen: Object.freeze({
+    full: GLYPHS.heartFrozenFull,
+    half: GLYPHS.heartFrozenHalf,
+    empty: GLYPHS.heartEmpty
+  }),
+  poison: Object.freeze({
+    full: GLYPHS.heartPoisonFull,
+    half: GLYPHS.heartPoisonHalf,
+    empty: GLYPHS.heartEmpty
+  })
+});
+var HUNGER_GLYPH_SETS = Object.freeze({
+  normal: Object.freeze({
+    full: GLYPHS.hungerFull,
+    half: GLYPHS.hungerHalf,
+    empty: GLYPHS.hungerEmpty
+  }),
+  effect: Object.freeze({
+    full: GLYPHS.hungerEffectFull,
+    half: GLYPHS.hungerEffectHalf,
+    empty: GLYPHS.hungerEffectEmpty
+  })
+});
+var SATURATION_GLYPHS = Object.freeze({
+  fullSaturationFull: GLYPHS.hungerFullSaturationFull,
+  fullSaturationHalf: GLYPHS.hungerFullSaturationHalf,
+  halfSaturationFull: GLYPHS.hungerHalfSaturationFull,
+  halfSaturationHalf: GLYPHS.hungerHalfSaturationHalf,
+  emptySaturationFull: GLYPHS.hungerEmptySaturationFull,
+  emptySaturationHalf: GLYPHS.hungerEmptySaturationHalf
+});
+var ARMOR_GLYPHS = Object.freeze({
+  full: GLYPHS.armorFull,
+  half: GLYPHS.armorHalf,
+  empty: GLYPHS.armorEmpty
+});
+var BUBBLE_GLYPHS = Object.freeze({
+  full: GLYPHS.bubbleFull,
+  half: GLYPHS.bubblePopping,
+  empty: GLYPHS.bubbleEmpty
+});
+var EFFECT_GLYPHS = Object.freeze({
+  bad_omen: "\uF548",
+  blindness: "\uF51C",
+  conduit: "\uF51D",
+  conduit_power: "\uF51D",
+  darkness: "\uF51F",
+  dolphins_grace: "\uF528",
+  fatal_poison: "\uF547",
+  fire_resistance: "\uF529",
+  haste: "\uF51E",
+  health_boost: "\uF54F",
+  hunger: "\uF52B",
+  infested: "\uF527",
+  invisibility: "\uF52C",
+  jump_boost: "\uF52D",
+  levitation: "\uF52E",
+  mining_fatigue: "\uF52F",
+  poison: "\uF54C",
+  raid_omen: "\uF54E",
+  resistance: "\uF539",
+  slow_falling: "\uF53A",
+  slowness: "\uF53C",
+  speed: "\uF53B",
+  sticky: "\uF537",
+  strength: "\uF53D",
+  trial_omen: "\uF538",
+  village_hero: "\uF53F",
+  water_breathing: "\uF54A",
+  weakness: "\uF53E",
+  weaving: "\uF526",
+  wind_charged: "\uF536",
+  wither: "\uF54B",
+  decay: "\uF54B"
+});
+function asFiniteNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : void 0;
+}
+function safeGetComponent(entity, componentId) {
+  try {
+    return entity?.getComponent?.(componentId);
+  } catch {
+    return void 0;
+  }
+}
+function getAttributeRange(entity, componentId) {
+  const component = safeGetComponent(entity, componentId);
+  if (!component) {
+    return void 0;
+  }
+  const current = asFiniteNumber(component.currentValue ?? component.value);
+  const max = asFiniteNumber(
+    component.effectiveMax ?? component.defaultValue ?? component.maxValue ?? component.value
+  );
+  if (current === void 0 || max === void 0 || max <= 0) {
+    return void 0;
+  }
+  return {
+    current: Math.max(0, current),
+    max: Math.max(1, max)
+  };
+}
+function getAttributeCurrentValue(entity, componentId) {
+  const component = safeGetComponent(entity, componentId);
+  const current = asFiniteNumber(component?.currentValue ?? component?.value);
+  return current === void 0 ? void 0 : Math.max(0, current);
+}
+function getArmorInfo(entity) {
+  const equippable = safeGetComponent(entity, "minecraft:equippable");
+  const equippedArmor = asFiniteNumber(equippable?.totalArmor);
+  if (equippedArmor !== void 0) {
+    return {
+      current: Math.max(0, equippedArmor),
+      max: Math.max(20, equippedArmor)
+    };
+  }
+  const armorAttribute = getAttributeRange(entity, "minecraft:armor") ?? getAttributeRange(entity, "minecraft:player.armor");
+  if (armorAttribute) {
+    return {
+      current: armorAttribute.current,
+      max: Math.max(20, armorAttribute.max, armorAttribute.current)
+    };
+  }
+  return void 0;
+}
+function getAirSupplyInfo(entity) {
+  const breathable = safeGetComponent(entity, "minecraft:breathable");
+  if (!breathable) {
+    return void 0;
+  }
+  const current = asFiniteNumber(
+    breathable.airSupply ?? breathable.currentAirSupply ?? breathable.currentValue
+  );
+  const max = asFiniteNumber(
+    breathable.totalSupply ?? breathable.totalAirSupply ?? breathable.maxAirSupply ?? breathable.maxValue
+  );
+  if (current === void 0 || max === void 0 || max <= 0) {
+    return void 0;
+  }
+  return {
+    current: Math.max(0, current),
+    max: Math.max(1, max)
+  };
+}
+function getEffects(entity) {
+  try {
+    const effects = entity?.getEffects?.();
+    return Array.isArray(effects) ? effects : [];
+  } catch {
+    return [];
+  }
+}
+function normalizeEffectTypeId(effect) {
+  const rawTypeId = effect?.typeId ?? effect?.type?.id ?? effect?.effectType?.id ?? effect?.effectType;
+  if (typeof rawTypeId !== "string") {
+    return "";
+  }
+  const typeId = rawTypeId.trim().toLowerCase();
+  return typeId.includes(":") ? typeId.split(":").pop() : typeId;
+}
+function getEffectFlags(effects) {
+  const ids = new Set(effects.map(normalizeEffectTypeId).filter(Boolean));
+  return {
+    hunger: ids.has("hunger"),
+    poison: ids.has("poison") || ids.has("fatal_poison"),
+    wither: ids.has("wither") || ids.has("decay")
+  };
+}
+function isEntityOnFire(entity) {
+  const onFire = safeGetComponent(entity, "minecraft:onfire") ?? safeGetComponent(entity, "minecraft:on_fire");
+  if (onFire) {
+    const ticks = asFiniteNumber(onFire.onFireTicksRemaining ?? onFire.value);
+    return {
+      active: ticks === void 0 || ticks > 0,
+      ticks: ticks ?? 0
+    };
+  }
+  try {
+    const ticks = asFiniteNumber(entity?.getFireTicks?.());
+    return {
+      active: ticks !== void 0 && ticks > 0,
+      ticks: ticks ?? 0
+    };
+  } catch {
+    return { active: false, ticks: 0 };
+  }
+}
+function isEntityFrozen(entity) {
+  try {
+    if (typeof entity?.isFrozen === "boolean") {
+      return entity.isFrozen;
+    }
+  } catch {
+  }
+  const freezing = safeGetComponent(entity, "minecraft:freezing");
+  if (!freezing) {
+    return false;
+  }
+  const booleanValue = freezing.isFrozen ?? freezing.isFreezing;
+  if (typeof booleanValue === "boolean") {
+    return booleanValue;
+  }
+  const value = asFiniteNumber(
+    freezing.freezeTicks ?? freezing.frozenTicks ?? freezing.ticksFrozen ?? freezing.value
+  );
+  return value !== void 0 && value > 0;
+}
+var TAMED_HEART_MOUNT_EXCEPTIONS = /* @__PURE__ */ new Set([
+  "minecraft:horse",
+  "minecraft:skeleton_horse",
+  "minecraft:zombie_horse",
+  "minecraft:mule",
+  "minecraft:donkey"
+]);
+var MAX_STAT_GLYPHS_PER_LINE = 10;
+function shouldUseTamedHeart(entity) {
+  const typeId = String(entity?.typeId || "");
+  if (typeId === "minecraft:player") {
+    return false;
+  }
+  if (TAMED_HEART_MOUNT_EXCEPTIONS.has(typeId)) {
+    return true;
+  }
+  if (safeGetComponent(entity, "minecraft:is_tamed")) {
+    return true;
+  }
+  const tameable = safeGetComponent(entity, "minecraft:tameable");
+  if (tameable?.isTamed === true || tameable?.tamed === true || Boolean(tameable?.tamedToPlayerId) || Boolean(tameable?.tamedToPlayer)) {
+    return true;
+  }
+  try {
+    return entity?.getProperty?.("minecraft:is_tamed") === true;
+  } catch {
+    return false;
+  }
+}
+function resolveHeartGlyphs(stats, settings) {
+  if (settings.effectHearts !== false) {
+    if (stats.frozen) {
+      return HEART_GLYPH_SETS.frozen;
+    }
+    if (stats.onFire.active) {
+      return HEART_GLYPH_SETS.fire;
+    }
+    if (stats.effectFlags.wither) {
+      return HEART_GLYPH_SETS.wither;
+    }
+    if (stats.effectFlags.poison) {
+      return HEART_GLYPH_SETS.poison;
+    }
+  }
+  if (settings.tamedHearts !== false && stats.tamedHeart) {
+    return HEART_GLYPH_SETS.animal;
+  }
+  return HEART_GLYPH_SETS.normal;
+}
+function roundToHalfUnits(value) {
+  return Math.max(0, Math.ceil(Number(value) || 0));
+}
+function wrapStatGlyphs(glyphBar) {
+  const glyphs = Array.from(String(glyphBar || ""));
+  const lines = [];
+  for (let index = 0; index < glyphs.length; index += MAX_STAT_GLYPHS_PER_LINE) {
+    lines.push(glyphs.slice(index, index + MAX_STAT_GLYPHS_PER_LINE).join(""));
+  }
+  return lines.join("\n");
+}
+function buildHalfStepBar(currentValue, maxValue, glyphs) {
+  const currentHalfUnits = roundToHalfUnits(currentValue);
+  const maxHalfUnits = Math.max(1, roundToHalfUnits(maxValue));
+  const slotCount = Math.max(1, Math.ceil(maxHalfUnits / 2));
+  const clampedCurrent = Math.min(currentHalfUnits, slotCount * 2);
+  const fullCount = Math.floor(clampedCurrent / 2);
+  const halfCount = clampedCurrent % 2;
+  const emptyCount = Math.max(0, slotCount - fullCount - halfCount);
+  return wrapStatGlyphs(
+    `${glyphs.full.repeat(fullCount)}${halfCount ? glyphs.half : ""}${glyphs.empty.repeat(emptyCount)}`
+  );
+}
+function formatNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return "0";
+  }
+  const rounded = Math.round(number * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+}
+function getDisplayStyle(settings, property) {
+  const style = String(settings?.[property] ?? "glyphs").toLowerCase();
+  return style === "text" || style === "both" ? style : "glyphs";
+}
+function formatStyledStat(style, glyphDisplay, textDisplay) {
+  if (style === "text") {
+    return textDisplay;
+  }
+  if (style === "both") {
+    return `${glyphDisplay} \xA77${textDisplay}\xA7r`;
+  }
+  return glyphDisplay;
+}
+function formatValueText(label, value, maxValue) {
+  const amount = maxValue === void 0 ? formatNumber(value) : `${formatNumber(value)}/${formatNumber(maxValue)}`;
+  return `${label}: \xA7f${amount}\xA7r`;
+}
+function formatEffectLabel(effectId) {
+  return String(effectId ?? "").split("_").filter(Boolean).map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`).join(" ");
+}
+function buildHealthDisplay(stats, settings) {
+  const glyphs = resolveHeartGlyphs(stats, settings);
+  const current = stats.health.current;
+  const max = stats.health.max;
+  const threshold = Math.max(1, Number(settings.maxHeartDisplayHealth) || 40);
+  if (current > threshold || max > threshold) {
+    return `${glyphs.full} \xA7c${formatNumber(current)}\xA77/\xA7c${formatNumber(max)}\xA7r`;
+  }
+  return buildHalfStepBar(current, max, glyphs);
+}
+function buildAbsorptionDisplay(value) {
+  const halfUnits = roundToHalfUnits(value);
+  const fullCount = Math.floor(halfUnits / 2);
+  const halfCount = halfUnits % 2;
+  return wrapStatGlyphs(
+    `${GLYPHS.heartAbsorptionFull.repeat(fullCount)}${halfCount ? GLYPHS.heartAbsorptionHalf : ""}`
+  );
+}
+function buildHalfUnitSlotMap(totalHalfUnits, slotCount) {
+  const slots = Array.from({ length: Math.max(0, slotCount) }, () => 0);
+  let remaining = Math.max(
+    0,
+    Math.min(roundToHalfUnits(totalHalfUnits), slots.length * 2)
+  );
+  for (let index = 0; index < slots.length && remaining > 0; index += 1) {
+    slots[index] = Math.min(2, remaining);
+    remaining -= slots[index];
+  }
+  return slots;
+}
+function getBaseHungerGlyph(hungerHalfUnits, glyphs) {
+  if (hungerHalfUnits >= 2) {
+    return glyphs.full;
+  }
+  if (hungerHalfUnits === 1) {
+    return glyphs.half;
+  }
+  return glyphs.empty;
+}
+function getSaturationHungerGlyph(hungerHalfUnits, saturationHalfUnits, hungerGlyphs) {
+  if (saturationHalfUnits <= 0) {
+    return getBaseHungerGlyph(hungerHalfUnits, hungerGlyphs);
+  }
+  if (saturationHalfUnits >= 2) {
+    if (hungerHalfUnits >= 2) {
+      return SATURATION_GLYPHS.fullSaturationFull;
+    }
+    if (hungerHalfUnits === 1) {
+      return SATURATION_GLYPHS.halfSaturationFull;
+    }
+    return SATURATION_GLYPHS.emptySaturationFull;
+  }
+  if (hungerHalfUnits >= 2) {
+    return SATURATION_GLYPHS.fullSaturationHalf;
+  }
+  if (hungerHalfUnits === 1) {
+    return SATURATION_GLYPHS.halfSaturationHalf;
+  }
+  return SATURATION_GLYPHS.emptySaturationHalf;
+}
+function buildHungerDisplay(stats, settings) {
+  const hungerGlyphs = stats.effectFlags.hunger ? HUNGER_GLYPH_SETS.effect : HUNGER_GLYPH_SETS.normal;
+  const maxHalfUnits = Math.max(1, roundToHalfUnits(stats.hunger.max));
+  const slotCount = Math.max(1, Math.ceil(maxHalfUnits / 2));
+  const hungerSlots = buildHalfUnitSlotMap(stats.hunger.current, slotCount);
+  const showSaturation = settings.saturation !== false && Number.isFinite(stats.saturation) && stats.saturation > 0;
+  if (!showSaturation) {
+    return wrapStatGlyphs(
+      hungerSlots.map(
+        (halfUnits) => getBaseHungerGlyph(halfUnits, hungerGlyphs)
+      ).join("")
+    );
+  }
+  const saturationSlots = buildHalfUnitSlotMap(
+    Math.min(stats.saturation, stats.hunger.max),
+    slotCount
+  );
+  return wrapStatGlyphs(
+    hungerSlots.map(
+      (halfUnits, index) => getSaturationHungerGlyph(
+        halfUnits,
+        saturationSlots[index],
+        hungerGlyphs
+      )
+    ).join("")
+  );
+}
+function buildArmorDisplay(armor) {
+  if (armor.current > 20) {
+    return `${GLYPHS.armorFull} \xA7b${formatNumber(armor.current)}\xA7r`;
+  }
+  return buildHalfStepBar(armor.current, 20, ARMOR_GLYPHS);
+}
+function buildAirDisplay(air) {
+  const ratio = air.max > 0 ? air.current / air.max : 0;
+  return buildHalfStepBar(
+    Math.max(0, Math.min(20, ratio * 20)),
+    20,
+    BUBBLE_GLYPHS
+  );
+}
+function formatEffectDuration(ticks) {
+  const duration = Number(ticks);
+  if (!Number.isFinite(duration) || duration < 0) {
+    return "\u221E";
+  }
+  const seconds = Math.max(1, Math.ceil(duration / 20));
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}:${String(remainder).padStart(2, "0")}`;
+}
+function toRomanNumeral(value) {
+  const number = Math.max(1, Math.floor(Number(value) || 1));
+  const numerals = [
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"]
+  ];
+  let remaining = number;
+  let result = "";
+  for (const [amount, glyph] of numerals) {
+    while (remaining >= amount) {
+      result += glyph;
+      remaining -= amount;
+    }
+  }
+  return result;
+}
+function buildEffectsDisplay(stats, settings) {
+  const entries = [];
+  const style = getDisplayStyle(settings, "effectsDisplayStyle");
+  const maxVisible = Math.max(
+    1,
+    Math.floor(Number(settings.maxVisibleEffects) || 4)
+  );
+  if (stats.onFire.active) {
+    const duration = stats.onFire.ticks > 0 ? ` \xA77(${formatEffectDuration(stats.onFire.ticks)})` : "";
+    entries.push(
+      formatStyledStat(
+        style,
+        `${GLYPHS.fire}\xA7r`,
+        `On Fire${duration}`
+      )
+    );
+  }
+  for (const effect of stats.effects) {
+    if (entries.length >= maxVisible) {
+      break;
+    }
+    const typeId = normalizeEffectTypeId(effect);
+    const glyph = EFFECT_GLYPHS[typeId];
+    if (!glyph) {
+      continue;
+    }
+    const level = Math.max(1, Math.floor(Number(effect?.amplifier) || 0) + 1);
+    const levelSuffix = level > 1 ? ` ${toRomanNumeral(level)}` : "";
+    const duration = formatEffectDuration(effect?.duration);
+    entries.push(
+      formatStyledStat(
+        style,
+        `${glyph}\xA7r`,
+        `${formatEffectLabel(typeId)}${levelSuffix} \xA77(${duration})\xA7r`
+      )
+    );
+  }
+  return entries.join("  ");
+}
+function buildAttributeDisplay(attributes, settings) {
+  const parts = [];
+  const style = getDisplayStyle(settings, "attributesDisplayStyle");
+  if (settings.attackDamage !== false && attributes.attack !== void 0) {
+    parts.push(
+      formatStyledStat(
+        style,
+        `${GLYPHS.attackDamage}\xA7r`,
+        formatValueText("Attack Damage", attributes.attack)
+      )
+    );
+  }
+  if (settings.movementSpeed === true && attributes.movement !== void 0) {
+    parts.push(
+      formatStyledStat(
+        style,
+        `${GLYPHS.walkingSpeed}\xA7r`,
+        formatValueText("Movement Speed", attributes.movement)
+      )
+    );
+  }
+  if (settings.movementSpeed === true && attributes.underwaterMovement !== void 0) {
+    parts.push(
+      formatStyledStat(
+        style,
+        `${GLYPHS.swimmingSpeed}\xA7r`,
+        formatValueText("Swimming Speed", attributes.underwaterMovement)
+      )
+    );
+  }
+  return parts.join("  ");
+}
+function collectEntityGlyphStats(entity) {
+  const isPlayer = String(entity?.typeId || "") === "minecraft:player";
+  const effects = getEffects(entity);
+  const onFire = isEntityOnFire(entity);
+  return {
+    health: getAttributeRange(entity, "minecraft:health"),
+    absorption: getAttributeCurrentValue(entity, "minecraft:absorption"),
+    hunger: isPlayer ? getAttributeRange(entity, "minecraft:player.hunger") : void 0,
+    saturation: isPlayer ? getAttributeCurrentValue(entity, "minecraft:player.saturation") : void 0,
+    armor: getArmorInfo(entity),
+    air: getAirSupplyInfo(entity),
+    effects,
+    effectFlags: getEffectFlags(effects),
+    onFire,
+    frozen: isEntityFrozen(entity),
+    tamedHeart: shouldUseTamedHeart(entity),
+    attributes: {
+      attack: getAttributeCurrentValue(entity, "minecraft:attack"),
+      movement: getAttributeCurrentValue(entity, "minecraft:movement"),
+      underwaterMovement: getAttributeCurrentValue(
+        entity,
+        "minecraft:underwater_movement"
+      )
+    }
+  };
+}
+function renderEntityGlyphStats(stats, settings = {}) {
+  if (!stats) {
+    return [];
+  }
+  const lines = [];
+  if (settings.health !== false && stats.health) {
+    lines.push({
+      text: `
+${formatStyledStat(
+        getDisplayStyle(settings, "healthDisplayStyle"),
+        buildHealthDisplay(stats, settings),
+        formatValueText("Health", stats.health.current, stats.health.max)
+      )}`
+    });
+  }
+  if (settings.absorption !== false && stats.absorption > 0) {
+    lines.push({
+      text: `
+${formatStyledStat(
+        getDisplayStyle(settings, "healthDisplayStyle"),
+        buildAbsorptionDisplay(stats.absorption),
+        formatValueText("Absorption", stats.absorption)
+      )}`
+    });
+  }
+  if (settings.hunger !== false && stats.hunger) {
+    const hungerText = [
+      formatValueText("Hunger", stats.hunger.current, stats.hunger.max),
+      settings.saturation !== false && Number.isFinite(stats.saturation) ? formatValueText("Saturation", stats.saturation) : ""
+    ].filter(Boolean).join(" \xA77| ");
+    lines.push({
+      text: `
+${formatStyledStat(
+        getDisplayStyle(settings, "hungerDisplayStyle"),
+        buildHungerDisplay(stats, settings),
+        hungerText
+      )}`
+    });
+  }
+  if (settings.armor !== false && stats.armor) {
+    lines.push({
+      text: `
+${formatStyledStat(
+        getDisplayStyle(settings, "armorAirDisplayStyle"),
+        buildArmorDisplay(stats.armor),
+        formatValueText("Armor", stats.armor.current)
+      )}`
+    });
+  }
+  if (settings.air !== false && stats.air && stats.air.current < stats.air.max) {
+    lines.push({
+      text: `
+${formatStyledStat(
+        getDisplayStyle(settings, "armorAirDisplayStyle"),
+        buildAirDisplay(stats.air),
+        formatValueText("Air", stats.air.current, stats.air.max)
+      )}`
+    });
+  }
+  const attributes = buildAttributeDisplay(stats.attributes, settings);
+  if (attributes) {
+    lines.push({ text: `
+${attributes}` });
+  }
+  if (settings.effects !== false) {
+    const effects = buildEffectsDisplay(stats, settings);
+    if (effects) {
+      lines.push({ text: `
+${effects}` });
+    }
+  }
+  return lines;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\entities\general.js
+var HOSTILE_ENTITY_FAMILIES = [
+  "monster",
+  "hostile",
+  "enemy",
+  "illager",
+  "raider",
+  "undead"
+];
+var HOSTILE_COMPONENT_IDS = [
+  "minecraft:attack",
+  "minecraft:behavior.melee_attack",
+  "minecraft:behavior.ranged_attack",
+  "minecraft:behavior.nearest_attackable_target"
+];
+function getDividerLine2() {
+  return { text: "\n\xA77--------------------\xA7r" };
+}
+function pushSection2(rawtext, lines, showSeparator) {
+  if (lines.length) {
+    if (showSeparator) {
+      rawtext.push(getDividerLine2());
+    }
+    rawtext.push(...lines);
+  }
+}
+function getEntityTypeFamilies(entity) {
+  try {
+    const typeFamily = entity?.getComponent?.("minecraft:type_family");
+    if (!typeFamily) {
+      return [];
+    }
+    if (typeof typeFamily.getTypeFamilies === "function") {
+      return (typeFamily.getTypeFamilies() || []).map((family) => String(family || "").trim()).filter((family) => family.length > 0);
+    }
+    if (Array.isArray(typeFamily.typeFamilies)) {
+      return typeFamily.typeFamilies.map((family) => String(family || "").trim()).filter((family) => family.length > 0);
+    }
+  } catch {
+    return [];
+  }
+  return [];
+}
+function getEntityTags(entity) {
+  try {
+    return (entity?.getTags?.() || []).map((tag) => String(tag || "").trim()).filter((tag) => tag.length > 0);
+  } catch {
+    return [];
+  }
+}
+function getItemStackTags(itemStack) {
+  try {
+    return (itemStack?.getTags?.() || []).map((tag) => String(tag || "").trim()).filter((tag) => tag.length > 0);
+  } catch {
+    return [];
+  }
+}
+function hasEntityComponent(entity, componentId) {
+  try {
+    return Boolean(entity?.getComponent?.(componentId));
+  } catch {
+    return false;
+  }
+}
+function isEntityHostile(entity, families) {
+  const normalizedFamilies = new Set(
+    families.map((family) => family.toLowerCase())
+  );
+  if (HOSTILE_ENTITY_FAMILIES.some((family) => normalizedFamilies.has(family))) {
+    return true;
+  }
+  try {
+    const typeFamily = entity?.getComponent?.("minecraft:type_family");
+    if (typeFamily && typeof typeFamily.hasTypeFamily === "function") {
+      return HOSTILE_ENTITY_FAMILIES.some(
+        (family) => typeFamily.hasTypeFamily(family)
+      );
+    }
+  } catch {
+  }
+  return HOSTILE_COMPONENT_IDS.some(
+    (componentId) => hasEntityComponent(entity, componentId)
+  );
+}
+function formatEntityPropertyValue(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+  return String(value);
+}
+function getEntityProperties(entity) {
+  try {
+    if (typeof entity?.getProperties === "function") {
+      const properties = entity.getProperties();
+      if (properties && typeof properties === "object") {
+        return Object.entries(properties).filter(([name]) => String(name || "").trim().length > 0).map(([name, value]) => [String(name), value]);
+      }
+    }
+  } catch {
+  }
+  try {
+    const ids = typeof entity?.getPropertyIds === "function" ? entity.getPropertyIds() : typeof entity?.getPropertyNames === "function" ? entity.getPropertyNames() : [];
+    return (ids || []).map((id) => String(id || "").trim()).filter((id) => id.length > 0).map((id) => [id, entity.getProperty(id)]);
+  } catch {
+    return [];
+  }
+}
+function collectEntityGeneral(entity) {
+  const entityTypeId = String(entity?.typeId || "").trim();
+  const itemStack = entityTypeId === "minecraft:item" ? getItemStackFromEntity(entity) : void 0;
+  const isDroppedItem = Boolean(itemStack);
+  const typeId = String(itemStack?.typeId || entityTypeId).trim();
+  const fallbackName = formatTypeIdToText(typeId || "minecraft:unknown");
+  const nameTag = normalizeHeaderText(
+    isDroppedItem ? itemStack?.nameTag : entity?.nameTag,
+    ""
+  );
+  const localizationKey = typeof (isDroppedItem ? itemStack?.localizationKey : entity?.localizationKey) === "string" ? (isDroppedItem ? itemStack.localizationKey : entity.localizationKey).trim() : "";
+  const headerText = nameTag || fallbackName;
+  const families = isDroppedItem ? [] : getEntityTypeFamilies(entity);
+  const glyphStats = isDroppedItem ? void 0 : collectEntityGlyphStats(entity);
+  return {
+    typeId,
+    entityTypeId,
+    headerText: normalizeHeaderText(headerText, "Entity"),
+    name: nameTag ? { text: nameTag } : safeTranslateOrText(localizationKey, fallbackName),
+    namespaceLabel: resolveNamespaceLabel(typeId),
+    showNamespaceLine: shouldShowNamespaceLine(typeId),
+    health: glyphStats?.health,
+    glyphStats,
+    families,
+    entity,
+    itemStack,
+    isDroppedItem,
+    isHostile: isDroppedItem ? false : isEntityHostile(entity, families),
+    tags: isDroppedItem ? getItemStackTags(itemStack) : getEntityTags(entity),
+    properties: isDroppedItem ? [] : getEntityProperties(entity)
+  };
+}
+function renderEntityGeneral(data, settings = {}) {
+  if (!data) {
+    return [];
+  }
+  const rawtext = [
+    { text: "\xA7f" },
+    data.name
+  ];
+  if (data.showNamespaceLine) {
+    rawtext.push({ text: `
+\xA7o\xA79@${data.namespaceLabel}\xA7r` });
+  }
+  const details = [];
+  details.push(...renderEntityGlyphStats(data.glyphStats, settings));
+  if (data.isDroppedItem) {
+    details.push(...collectItemStackInfo(data.itemStack));
+  }
+  if (settings.hostile && !data.isDroppedItem) {
+    details.push({ text: `
+\xA7fHostile: ${data.isHostile ? "Yes" : "No"}\xA7r` });
+  }
+  const showSeparators = settings.separators !== false;
+  pushSection2(rawtext, details, showSeparators);
+  if (settings.specialInfo && !data.isDroppedItem) {
+    pushSection2(
+      rawtext,
+      collectEntitySpecialInfo(data.entity, { families: data.families }),
+      showSeparators
+    );
+  }
+  const technical = [];
+  if (settings.identifier && data.typeId) {
+    technical.push({ text: `
+\xA77ID: ${data.typeId}\xA7r` });
+  }
+  if (settings.typeFamilies && data.families.length) {
+    technical.push({ text: `
+\xA77Families: ${data.families.join(", ")}\xA7r` });
+  }
+  if (settings.tags && data.tags.length) {
+    technical.push({ text: `
+\xA77Tags: ${data.tags.join(", ")}\xA7r` });
+  }
+  pushSection2(rawtext, technical, showSeparators);
+  if (settings.properties && data.properties.length) {
+    const propertyLines = data.properties.sort(([left], [right]) => left.localeCompare(right)).map(
+      ([name, value]) => `
+\xA77${name}: ${formatEntityPropertyValue(value)}\xA7r`
+    );
+    pushSection2(rawtext, [{ text: propertyLines.join("") }], showSeparators);
+  }
+  return rawtext;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\entities\index.js
+var HIDDEN_RENDER_ENTITY_TYPE_IDS = /* @__PURE__ */ new Set([
+  "minecraft:item"
+]);
+function shouldRenderEntity(entity) {
+  return !HIDDEN_RENDER_ENTITY_TYPE_IDS.has(
+    String(entity?.typeId || "").trim()
+  );
+}
+function getEntityRenderHeightClass(entity) {
+  if (String(entity?.typeId || "").trim() === "minecraft:player") {
+    return "p2";
+  }
+  try {
+    const aabb = entity?.getAABB?.();
+    const height = Number(aabb?.extent?.y) * 2;
+    if (!Number.isFinite(height) || height <= 0) {
+      return "h2";
+    }
+    return `h${Math.min(5, Math.max(1, Math.ceil(height)))}`;
+  } catch {
+    return "h2";
+  }
+}
+function composeEntityTarget(entity, settings) {
+  const general = collectEntityGeneral(entity);
+  return {
+    typeId: general.typeId,
+    entityId: String(entity?.id || ""),
+    canRender: shouldRenderEntity(entity),
+    renderHeightClass: getEntityRenderHeightClass(entity),
+    headerText: general.headerText,
+    rawtext: renderEntityGeneral(general, settings),
+    currentHealth: general.health?.current ?? 0,
+    maxHealth: general.health?.max ?? 0
+  };
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\render\generated\auxOffset.js
+var auxOffset = 952;
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\render\generated\customBlockAuxValues.js
+var customBlockAuxValues = {
+  "utilitycraft:workbench": -638648320,
+  "utilitycraft:yellow_elevator": -638713856,
+  "utilitycraft:tractor_placer": -638779392,
+  "utilitycraft:sink": -638844928,
+  "utilitycraft:red_elevator": -638910464,
+  "utilitycraft:purple_elevator": -638976e3,
+  "utilitycraft:pink_elevator": -639041536,
+  "utilitycraft:pedestal": -639107072,
+  "utilitycraft:orange_elevator": -639172608,
+  "utilitycraft:magenta_elevator": -639238144,
+  "utilitycraft:lime_elevator": -639303680,
+  "utilitycraft:light_gray_elevator": -639369216,
+  "utilitycraft:light_blue_elevator": -639434752,
+  "utilitycraft:lantern": -639500288,
+  "utilitycraft:green_elevator": -639565824,
+  "utilitycraft:gray_elevator": -639631360,
+  "utilitycraft:flint_block": -639696896,
+  "utilitycraft:elevator": -639762432,
+  "utilitycraft:drill_placer": -639827968,
+  "utilitycraft:cyan_elevator": -639893504,
+  "utilitycraft:crushed_netherrack": -639959040,
+  "utilitycraft:charcoal_block": -640024576,
+  "utilitycraft:brown_elevator": -640090112,
+  "utilitycraft:blue_elevator": -640155648,
+  "utilitycraft:blaze_block": -640221184,
+  "utilitycraft:black_elevator": -640286720,
+  "utilitycraft:big_torch": -640352256,
+  "utilitycraft:asphalt": -640417792,
+  "utilitycraft:utility_table": -640483328,
+  "utilitycraft:fluid_pump": -640548864,
+  "utilitycraft:conveyor_inclined": -640614400,
+  "utilitycraft:conveyor_horizontal": -640679936,
+  "utilitycraft:conveyor_declined": -640745472,
+  "utilitycraft:xp_condenser": -640811008,
+  "utilitycraft:waycenter": -640876544,
+  "utilitycraft:waycarpet": -640942080,
+  "utilitycraft:xp_spout": -641007616,
+  "utilitycraft:xp_drain": -641073152,
+  "utilitycraft:ultimate_fluid_tank": -641138688,
+  "utilitycraft:expert_fluid_tank": -641204224,
+  "utilitycraft:basic_fluid_tank": -641269760,
+  "utilitycraft:advanced_fluid_tank": -641335296,
+  "utilitycraft:item_importer_yellow": -641400832,
+  "utilitycraft:item_importer_red": -641466368,
+  "utilitycraft:item_importer_purple": -641531904,
+  "utilitycraft:item_importer_blue": -641597440,
+  "utilitycraft:item_importer": -641662976,
+  "utilitycraft:item_exporter_yellow": -641728512,
+  "utilitycraft:item_exporter_red": -641794048,
+  "utilitycraft:item_exporter_purple": -641859584,
+  "utilitycraft:item_exporter_blue": -641925120,
+  "utilitycraft:item_exporter": -641990656,
+  "utilitycraft:item_conduit_yellow": -642056192,
+  "utilitycraft:item_conduit_red": -642121728,
+  "utilitycraft:item_conduit_purple": -642187264,
+  "utilitycraft:item_conduit_blue": -642252800,
+  "utilitycraft:item_conduit": -642318336,
+  "utilitycraft:fluid_pipe_red": -642383872,
+  "utilitycraft:fluid_pipe_purple": -642449408,
+  "utilitycraft:fluid_pipe_green": -642514944,
+  "utilitycraft:fluid_pipe_blue": -642580480,
+  "utilitycraft:fluid_pipe": -642646016,
+  "utilitycraft:fluid_extractor_red": -642711552,
+  "utilitycraft:fluid_extractor_purple": -642777088,
+  "utilitycraft:fluid_extractor_green": -642842624,
+  "utilitycraft:fluid_extractor_blue": -642908160,
+  "utilitycraft:fluid_extractor": -642973696,
+  "utilitycraft:energy_cable": -643039232,
+  "utilitycraft:steel_block": -643104768,
+  "utilitycraft:raw_steel_block": -643170304,
+  "utilitycraft:raw_energized_iron_block": -643235840,
+  "utilitycraft:energized_iron_block": -643301376,
+  "utilitycraft:xp_magnet": -643366912,
+  "utilitycraft:mob_grinder": -643432448,
+  "utilitycraft:fan": -643497984,
+  "utilitycraft:spawner_core": -643563520,
+  "utilitycraft:mechanical_spawner": -643629056,
+  "utilitycraft:mechanic_upper": -643694592,
+  "utilitycraft:mechanic_hopper": -643760128,
+  "utilitycraft:mechanic_dropper": -643825664,
+  "utilitycraft:ender_hopper": -643891200,
+  "utilitycraft:machine_case": -643956736,
+  "utilitycraft:seed_synthesizer": -644022272,
+  "utilitycraft:magmatic_chamber": -644087808,
+  "utilitycraft:infuser": -644153344,
+  "utilitycraft:induction_anvil": -644218880,
+  "utilitycraft:incinerator": -644284416,
+  "utilitycraft:harvester": -644349952,
+  "utilitycraft:electro_press": -644415488,
+  "utilitycraft:ehxibitor": -644481024,
+  "utilitycraft:digitizer": -644546560,
+  "utilitycraft:crusher": -644612096,
+  "utilitycraft:block_placer": -644677632,
+  "utilitycraft:block_breaker": -644743168,
+  "utilitycraft:autosieve": -644808704,
+  "utilitycraft:autofisher": -644874240,
+  "utilitycraft:assembler": -644939776,
+  "utilitycraft:ultimate_wind_turbine": -645005312,
+  "utilitycraft:expert_wind_turbine": -645070848,
+  "utilitycraft:basic_wind_turbine": -645136384,
+  "utilitycraft:advanced_wind_turbine": -645201920,
+  "utilitycraft:ultimate_energy_transmitter": -645267456,
+  "utilitycraft:expert_energy_transmitter": -645332992,
+  "utilitycraft:basic_energy_transmitter": -645398528,
+  "utilitycraft:advanced_energy_transmitter": -645464064,
+  "utilitycraft:ultimate_thermo_generator": -645529600,
+  "utilitycraft:expert_thermo_generator": -645595136,
+  "utilitycraft:basic_thermo_generator": -645660672,
+  "utilitycraft:advanced_thermo_generator": -645726208,
+  "utilitycraft:ultimate_solar_panel": -645791744,
+  "utilitycraft:expert_solar_panel": -645857280,
+  "utilitycraft:basic_solar_panel": -645922816,
+  "utilitycraft:advanced_solar_panel": -645988352,
+  "utilitycraft:ultimate_energy_receiver": -646053888,
+  "utilitycraft:expert_energy_receiver": -646119424,
+  "utilitycraft:basic_energy_receiver": -646184960,
+  "utilitycraft:advanced_energy_receiver": -646250496,
+  "utilitycraft:ultimate_magmator": -646316032,
+  "utilitycraft:expert_magmator": -646381568,
+  "utilitycraft:basic_magmator": -646447104,
+  "utilitycraft:advanced_magmator": -646512640,
+  "utilitycraft:ultimate_furnator": -646578176,
+  "utilitycraft:expert_furnator": -646643712,
+  "utilitycraft:basic_furnator": -646709248,
+  "utilitycraft:advanced_furnator": -646774784,
+  "utilitycraft:ultimate_battery": -646840320,
+  "utilitycraft:expert_battery": -646905856,
+  "utilitycraft:basic_battery": -646971392,
+  "utilitycraft:advanced_battery": -647036928,
+  "utilitycraft:crushed_endstone": -647102464,
+  "utilitycraft:crushed_cobbled_deepslate": -647168e3,
+  "utilitycraft:compressed_weathered_copper_block_4": -647233536,
+  "utilitycraft:compressed_weathered_copper_block_3": -647299072,
+  "utilitycraft:compressed_weathered_copper_block_2": -647364608,
+  "utilitycraft:compressed_weathered_copper_block": -647430144,
+  "utilitycraft:compressed_warped_wood_4": -647495680,
+  "utilitycraft:compressed_warped_wood_3": -647561216,
+  "utilitycraft:compressed_warped_wood_2": -647626752,
+  "utilitycraft:compressed_warped_wood": -647692288,
+  "utilitycraft:compressed_stone_4": -647757824,
+  "utilitycraft:compressed_stone_3": -647823360,
+  "utilitycraft:compressed_stone_2": -647888896,
+  "utilitycraft:compressed_stone": -647954432,
+  "utilitycraft:compressed_steel_block_4": -648019968,
+  "utilitycraft:compressed_steel_block_3": -648085504,
+  "utilitycraft:compressed_steel_block_2": -648151040,
+  "utilitycraft:compressed_steel_block": -648216576,
+  "utilitycraft:compressed_spruce_wood_4": -648282112,
+  "utilitycraft:compressed_spruce_wood_3": -648347648,
+  "utilitycraft:compressed_spruce_wood_2": -648413184,
+  "utilitycraft:compressed_spruce_wood": -648478720,
+  "utilitycraft:compressed_sand_4": -648544256,
+  "utilitycraft:compressed_sand_3": -648609792,
+  "utilitycraft:compressed_sand_2": -648675328,
+  "utilitycraft:compressed_sand": -648740864,
+  "utilitycraft:compressed_redstone_block_4": -648806400,
+  "utilitycraft:compressed_redstone_block_3": -648871936,
+  "utilitycraft:compressed_redstone_block_2": -648937472,
+  "utilitycraft:compressed_redstone_block": -649003008,
+  "utilitycraft:compressed_raw_iron_block_4": -649068544,
+  "utilitycraft:compressed_raw_iron_block_3": -649134080,
+  "utilitycraft:compressed_raw_iron_block_2": -649199616,
+  "utilitycraft:compressed_raw_iron_block": -649265152,
+  "utilitycraft:compressed_raw_gold_block_4": -649330688,
+  "utilitycraft:compressed_raw_gold_block_3": -649396224,
+  "utilitycraft:compressed_raw_gold_block_2": -649461760,
+  "utilitycraft:compressed_raw_gold_block": -649527296,
+  "utilitycraft:compressed_raw_copper_block_4": -649592832,
+  "utilitycraft:compressed_raw_copper_block_3": -649658368,
+  "utilitycraft:compressed_raw_copper_block_2": -649723904,
+  "utilitycraft:compressed_raw_copper_block": -649789440,
+  "utilitycraft:compressed_quartz_block_4": -649854976,
+  "utilitycraft:compressed_quartz_block_3": -649920512,
+  "utilitycraft:compressed_quartz_block_2": -649986048,
+  "utilitycraft:compressed_quartz_block": -650051584,
+  "utilitycraft:compressed_pale_oak_wood_4": -650117120,
+  "utilitycraft:compressed_pale_oak_wood_3": -650182656,
+  "utilitycraft:compressed_pale_oak_wood_2": -650248192,
+  "utilitycraft:compressed_pale_oak_wood": -650313728,
+  "utilitycraft:compressed_oxidized_copper_block_4": -650379264,
+  "utilitycraft:compressed_oxidized_copper_block_3": -650444800,
+  "utilitycraft:compressed_oxidized_copper_block_2": -650510336,
+  "utilitycraft:compressed_oxidized_copper_block": -650575872,
+  "utilitycraft:compressed_obsidian_4": -650641408,
+  "utilitycraft:compressed_obsidian_3": -650706944,
+  "utilitycraft:compressed_obsidian_2": -650772480,
+  "utilitycraft:compressed_obsidian": -650838016,
+  "utilitycraft:compressed_oak_wood_4": -650903552,
+  "utilitycraft:compressed_oak_wood_3": -650969088,
+  "utilitycraft:compressed_oak_wood_2": -651034624,
+  "utilitycraft:compressed_oak_wood": -651100160,
+  "utilitycraft:compressed_netherrack_4": -651165696,
+  "utilitycraft:compressed_netherrack_3": -651231232,
+  "utilitycraft:compressed_netherrack_2": -651296768,
+  "utilitycraft:compressed_netherrack": -651362304,
+  "utilitycraft:compressed_netherite_block_4": -651427840,
+  "utilitycraft:compressed_netherite_block_3": -651493376,
+  "utilitycraft:compressed_netherite_block_2": -651558912,
+  "utilitycraft:compressed_netherite_block": -651624448,
+  "utilitycraft:compressed_mangrove_wood_4": -651689984,
+  "utilitycraft:compressed_mangrove_wood_3": -651755520,
+  "utilitycraft:compressed_mangrove_wood_2": -651821056,
+  "utilitycraft:compressed_mangrove_wood": -651886592,
+  "utilitycraft:compressed_lapislazuli_block_4": -651952128,
+  "utilitycraft:compressed_lapislazuli_block_3": -652017664,
+  "utilitycraft:compressed_lapislazuli_block_2": -652083200,
+  "utilitycraft:compressed_lapislazuli_block": -652148736,
+  "utilitycraft:compressed_jungle_wood_4": -652214272,
+  "utilitycraft:compressed_jungle_wood_3": -652279808,
+  "utilitycraft:compressed_jungle_wood_2": -652345344,
+  "utilitycraft:compressed_jungle_wood": -652410880,
+  "utilitycraft:compressed_iron_block_4": -652476416,
+  "utilitycraft:compressed_iron_block_3": -652541952,
+  "utilitycraft:compressed_iron_block_2": -652607488,
+  "utilitycraft:compressed_iron_block": -652673024,
+  "utilitycraft:compressed_gravel_4": -652738560,
+  "utilitycraft:compressed_gravel_3": -652804096,
+  "utilitycraft:compressed_gravel_2": -652869632,
+  "utilitycraft:compressed_gravel": -652935168,
+  "utilitycraft:compressed_gold_block_4": -653000704,
+  "utilitycraft:compressed_gold_block_3": -653066240,
+  "utilitycraft:compressed_gold_block_2": -653131776,
+  "utilitycraft:compressed_gold_block": -653197312,
+  "utilitycraft:compressed_glass_4": -653262848,
+  "utilitycraft:compressed_glass_3": -653328384,
+  "utilitycraft:compressed_glass_2": -653393920,
+  "utilitycraft:compressed_glass": -653459456,
+  "utilitycraft:compressed_flint_block_4": -653524992,
+  "utilitycraft:compressed_flint_block_3": -653590528,
+  "utilitycraft:compressed_flint_block_2": -653656064,
+  "utilitycraft:compressed_flint_block": -653721600,
+  "utilitycraft:compressed_energized_iron_block": -653787136,
+  "utilitycraft:compressed_exposed_copper_block_4": -653852672,
+  "utilitycraft:compressed_exposed_copper_block_3": -653918208,
+  "utilitycraft:compressed_exposed_copper_block_2": -653983744,
+  "utilitycraft:compressed_exposed_copper_block": -654049280,
+  "utilitycraft:compressed_energized_iron_block_4": -654114816,
+  "utilitycraft:compressed_energized_iron_block_3": -654180352,
+  "utilitycraft:compressed_energized_iron_block_2": -654245888,
+  "utilitycraft:compressed_endstone_4": -654311424,
+  "utilitycraft:compressed_endstone_3": -654376960,
+  "utilitycraft:compressed_endstone_2": -654442496,
+  "utilitycraft:compressed_endstone": -654508032,
+  "utilitycraft:compressed_emerald_block_4": -654573568,
+  "utilitycraft:compressed_emerald_block_3": -654639104,
+  "utilitycraft:compressed_emerald_block_2": -654704640,
+  "utilitycraft:compressed_emerald_block": -654770176,
+  "utilitycraft:compressed_dirt_4": -654835712,
+  "utilitycraft:compressed_dirt_3": -654901248,
+  "utilitycraft:compressed_dirt_2": -654966784,
+  "utilitycraft:compressed_dirt": -655032320,
+  "utilitycraft:compressed_diamond_block_4": -655097856,
+  "utilitycraft:compressed_diamond_block_3": -655163392,
+  "utilitycraft:compressed_diamond_block_2": -655228928,
+  "utilitycraft:compressed_diamond_block": -655294464,
+  "utilitycraft:compressed_deepslate_4": -65536e4,
+  "utilitycraft:compressed_deepslate_3": -655425536,
+  "utilitycraft:compressed_deepslate_2": -655491072,
+  "utilitycraft:compressed_deepslate": -655556608,
+  "utilitycraft:compressed_dark_oak_wood_4": -655622144,
+  "utilitycraft:compressed_dark_oak_wood_3": -655687680,
+  "utilitycraft:compressed_dark_oak_wood_2": -655753216,
+  "utilitycraft:compressed_dark_oak_wood": -655818752,
+  "utilitycraft:compressed_cry_obsidian_4": -655884288,
+  "utilitycraft:compressed_cry_obsidian_3": -655949824,
+  "utilitycraft:compressed_cry_obsidian_2": -656015360,
+  "utilitycraft:compressed_cry_obsidian": -656080896,
+  "utilitycraft:compressed_crushed_netherrack_4": -656146432,
+  "utilitycraft:compressed_crushed_netherrack_3": -656211968,
+  "utilitycraft:compressed_crushed_netherrack_2": -656277504,
+  "utilitycraft:compressed_crushed_netherrack": -656343040,
+  "utilitycraft:compressed_crushed_endstone_4": -656408576,
+  "utilitycraft:compressed_crushed_endstone_3": -656474112,
+  "utilitycraft:compressed_crushed_endstone_2": -656539648,
+  "utilitycraft:compressed_crushed_endstone": -656605184,
+  "utilitycraft:compressed_crushed_cobbled_deepslate_4": -656670720,
+  "utilitycraft:compressed_crushed_cobbled_deepslate_3": -656736256,
+  "utilitycraft:compressed_crushed_cobbled_deepslate_2": -656801792,
+  "utilitycraft:compressed_crushed_cobbled_deepslate": -656867328,
+  "utilitycraft:compressed_crimson_wood_4": -656932864,
+  "utilitycraft:compressed_crimson_wood_3": -656998400,
+  "utilitycraft:compressed_crimson_wood_2": -657063936,
+  "utilitycraft:compressed_crimson_wood": -657129472,
+  "utilitycraft:compressed_copper_block_4": -657195008,
+  "utilitycraft:compressed_copper_block_3": -657260544,
+  "utilitycraft:compressed_copper_block_2": -657326080,
+  "utilitycraft:compressed_copper_block": -657391616,
+  "utilitycraft:compressed_cobblestone": -657457152,
+  "utilitycraft:compressed_cobbled_deepslate_4": -657522688,
+  "utilitycraft:compressed_cobbled_deepslate_3": -657588224,
+  "utilitycraft:compressed_cobbled_deepslate_2": -657653760,
+  "utilitycraft:compressed_cobbled_deepslate": -657719296,
+  "utilitycraft:compressed_coal_block_4": -657784832,
+  "utilitycraft:compressed_coal_block_3": -657850368,
+  "utilitycraft:compressed_coal_block_2": -657915904,
+  "utilitycraft:compressed_coal_block": -657981440,
+  "utilitycraft:compressed_cherry_wood_4": -658046976,
+  "utilitycraft:compressed_cherry_wood_3": -658112512,
+  "utilitycraft:compressed_cherry_wood_2": -658178048,
+  "utilitycraft:compressed_cherry_wood": -658243584,
+  "utilitycraft:compressed_charcoal_block_4": -658309120,
+  "utilitycraft:compressed_charcoal_block_3": -658374656,
+  "utilitycraft:compressed_charcoal_block_2": -658440192,
+  "utilitycraft:compressed_charcoal_block": -658505728,
+  "utilitycraft:compressed_brute_steel_block_4": -658571264,
+  "utilitycraft:compressed_brute_steel_block_3": -658636800,
+  "utilitycraft:compressed_brute_steel_block_2": -658702336,
+  "utilitycraft:compressed_brute_steel_block": -658767872,
+  "utilitycraft:compressed_block": -658833408,
+  "utilitycraft:compressed_blackstone_4": -658898944,
+  "utilitycraft:compressed_blackstone_3": -658964480,
+  "utilitycraft:compressed_blackstone_2": -659030016,
+  "utilitycraft:compressed_blackstone": -659095552,
+  "utilitycraft:compressed_birch_wood_4": -659161088,
+  "utilitycraft:compressed_birch_wood_3": -659226624,
+  "utilitycraft:compressed_birch_wood_2": -659292160,
+  "utilitycraft:compressed_birch_wood": -659357696,
+  "utilitycraft:compressed_amethyst_block_4": -659423232,
+  "utilitycraft:compressed_amethyst_block_3": -659488768,
+  "utilitycraft:compressed_amethyst_block_2": -659554304,
+  "utilitycraft:compressed_amethyst_block": -659619840,
+  "utilitycraft:compressed_acacia_wood_4": -659685376,
+  "utilitycraft:compressed_acacia_wood_3": -659750912,
+  "utilitycraft:compressed_acacia_wood_2": -659816448,
+  "utilitycraft:compressed_acacia_wood": -659881984,
+  "utilitycraft:nonuple_compressed_cobblestone": -659947520,
+  "utilitycraft:octuple_compressed_cobblestone": -660013056,
+  "utilitycraft:septuple_compressed_cobblestone": -660078592,
+  "utilitycraft:sextuple_compressed_cobblestone": -660144128,
+  "utilitycraft:quintuple_compressed_cobblestone": -660209664,
+  "utilitycraft:quadruple_compressed_cobblestone": -660275200,
+  "utilitycraft:triple_compressed_cobblestone": -660340736,
+  "utilitycraft:double_compressed_cobblestone": -660406272,
+  "utilitycraft:basic_trash_can": -660471808,
+  "utilitycraft:cobble_gen_5": -660537344,
+  "utilitycraft:cobble_gen_1": -660602880,
+  "utilitycraft:cobble_gen_2": -660668416,
+  "utilitycraft:cobble_gen_3": -660733952,
+  "utilitycraft:cobble_gen_4": -660799488,
+  "utilitycraft:cobble_gen_0": -660865024,
+  "utilitycraft:yellow_soil": -660930560,
+  "utilitycraft:red_soil": -660996096,
+  "utilitycraft:blue_soil": -661061632,
+  "utilitycraft:black_soil": -661127168,
+  "utilitycraft:wither_crop": -661192704,
+  "utilitycraft:totem_crop": -661258240,
+  "utilitycraft:shulker_crop": -661323776,
+  "utilitycraft:netherstar_crop": -661389312,
+  "utilitycraft:netherite_crop": -661454848,
+  "utilitycraft:obsidian_crop": -661520384,
+  "utilitycraft:enderpearl_crop": -661585920,
+  "utilitycraft:emerald_crop": -661651456,
+  "utilitycraft:diamond_crop": -661716992,
+  "utilitycraft:blaze_crop": -661782528,
+  "utilitycraft:amethyst_crop": -661848064,
+  "utilitycraft:slime_crop": -661913600,
+  "utilitycraft:resin_crop": -661979136,
+  "utilitycraft:redstone_crop": -662044672,
+  "utilitycraft:quartz_crop": -662110208,
+  "utilitycraft:lava_crop": -662175744,
+  "utilitycraft:lapis_crop": -662241280,
+  "utilitycraft:honey_crop": -662306816,
+  "utilitycraft:gold_crop": -662372352,
+  "utilitycraft:glowstone_crop": -662437888,
+  "utilitycraft:ghast_crop": -662503424,
+  "utilitycraft:wool_crop": -662568960,
+  "utilitycraft:water_crop": -662634496,
+  "utilitycraft:prismarine_shards_crop": -662700032,
+  "utilitycraft:prismarine_crystal_crop": -662765568,
+  "utilitycraft:leather_crop": -662831104,
+  "utilitycraft:iron_crop": -662896640,
+  "utilitycraft:gunpowder_crop": -662962176,
+  "utilitycraft:glass_crop": -663027712,
+  "utilitycraft:dyes_crop": -663093248,
+  "utilitycraft:copper_crop": -663158784,
+  "utilitycraft:coal_crop": -663224320,
+  "utilitycraft:bonsai": -663289856,
+  "utilitycraft:sieve": -663355392,
+  "utilitycraft:crucible": -663420928,
+  "utilitycraft:ultimate_incinerator": -663486464,
+  "utilitycraft:expert_incinerator": -663552e3,
+  "utilitycraft:basic_incinerator": -663617536,
+  "utilitycraft:advanced_incinerator": -663683072,
+  "utilitycraft:ultimate_electro_press": -663748608,
+  "utilitycraft:expert_electro_press": -663814144,
+  "utilitycraft:basic_electro_press": -663879680,
+  "utilitycraft:advanced_electro_press": -663945216,
+  "utilitycraft:ultimate_crusher": -664010752,
+  "utilitycraft:expert_crusher": -664076288,
+  "utilitycraft:basic_crusher": -664141824,
+  "utilitycraft:advanced_crusher": -664207360,
+  "utilitycraft:uranium_block": -664272896,
+  "utilitycraft:tin_plated_block": -664338432,
+  "utilitycraft:tin_block": -664403968,
+  "utilitycraft:raw_uranium_block": -664469504,
+  "utilitycraft:raw_tin_block": -664535040,
+  "utilitycraft:thermo_reactor_controller": -664600576,
+  "utilitycraft:thermo_core": -664666112,
+  "utilitycraft:heat_conductor": -664731648,
+  "utilitycraft:ultimate_power_condenser_unit": -664797184,
+  "utilitycraft:power_condenser_controller": -664862720,
+  "utilitycraft:expert_power_condenser_unit": -664928256,
+  "utilitycraft:basic_power_condenser_unit": -664993792,
+  "utilitycraft:advanced_power_condenser_unit": -665059328,
+  "utilitycraft:reaction_chamber_controller": -665124864,
+  "utilitycraft:nuclear_reactor_controller": -665190400,
+  "utilitycraft:magmatic_chamber_controller": -665255936,
+  "utilitycraft:infuser_controller": -665321472,
+  "utilitycraft:incinerator_controller": -665387008,
+  "utilitycraft:electro_press_controller": -665452544,
+  "utilitycraft:crusher_controller": -665518080,
+  "utilitycraft:autosieve_controller": -665583616,
+  "utilitycraft:speed_module": -665649152,
+  "utilitycraft:rod_control": -665714688,
+  "utilitycraft:processing_module": -665780224,
+  "utilitycraft:fuel_assemblies": -665845760,
+  "utilitycraft:fluid_controller": -665911296,
+  "utilitycraft:fluid_cell": -665976832,
+  "utilitycraft:energy_cell": -666042368,
+  "utilitycraft:efficiency_module": -666107904,
+  "utilitycraft:tempered_steel_glass": -666173440,
+  "utilitycraft:steel_vent_panel": -666238976,
+  "utilitycraft:steel_plated_block": -666304512,
+  "utilitycraft:steel_item_port": -666370048,
+  "utilitycraft:steel_hazard_block": -666435584,
+  "utilitycraft:steel_fluid_port": -666501120,
+  "utilitycraft:steel_energy_port": -666566656,
+  "utilitycraft:steel_case": -666632192,
+  "utilitycraft:steel_bricks": -666697728,
+  "utilitycraft:reinforced_steel_glass": -666763264,
+  "utilitycraft:tempered_netherite_glass": -666828800,
+  "utilitycraft:stamped_netherite_plate": -666894336,
+  "utilitycraft:reinforced_netherite_glass": -666959872,
+  "utilitycraft:netherite_vent_panel": -667025408,
+  "utilitycraft:netherite_plated_block": -667090944,
+  "utilitycraft:netherite_item_port": -667156480,
+  "utilitycraft:netherite_hazard_block": -667222016,
+  "utilitycraft:netherite_fluid_port": -667287552,
+  "utilitycraft:netherite_energy_port": -667353088,
+  "utilitycraft:netherite_case": -667418624,
+  "utilitycraft:netherite_bricks": -667484160,
+  "utilitycraft:tempered_bronze_glass": -667549696,
+  "utilitycraft:reinforced_bronze_glass": -667615232,
+  "utilitycraft:bronze_vent_panel": -667680768,
+  "utilitycraft:bronze_controller_case": -667746304,
+  "utilitycraft:bronze_plated_block": -667811840,
+  "utilitycraft:bronze_item_port": -667877376,
+  "utilitycraft:bronze_hazard_block": -667942912,
+  "utilitycraft:bronze_fluid_port": -668008448,
+  "utilitycraft:bronze_energy_port": -668073984,
+  "utilitycraft:bronze_case": -668139520,
+  "utilitycraft:bronze_bricks": -668205056,
+  "utilitycraft:bronze_block": -668270592,
+  "utilitycraft:controller_case": -668336128,
+  "utilitycraft:brute_bronze_block": -668401664,
+  "utilitycraft:storage_terminal": -668467200,
+  "utilitycraft:storage_center": -668532736,
+  "utilitycraft:storage_cell_drive": -668598272,
+  "utilitycraft:import_buffer": -668663808,
+  "utilitycraft:export_buffer": -668729344,
+  "utilitycraft:crafting_terminal": -668794880,
+  "utilitycraft:network_cable": -668860416,
+  "utilitycraft:blueprint_terminal": -668925952,
+  "dorios:lava_solid_2": -668991488,
+  "dorios:lava_solid_1": -669057024,
+  "dorios:lava_solid_0": -669122560,
+  "dorios:lava_flow_2": -669188096,
+  "dorios:lava_flow_1": -669253632,
+  "dorios:lava_flow_0": -669319168,
+  "bountiful_trees:steel_sapling": -669384704,
+  "bountiful_trees:steel_log": -669450240,
+  "bountiful_trees:steel_leaves": -669515776,
+  "bountiful_trees:redstone_sapling": -669581312,
+  "bountiful_trees:redstone_log": -669646848,
+  "bountiful_trees:redstone_leaves": -669712384,
+  "bountiful_trees:quartz_sapling": -669777920,
+  "bountiful_trees:quartz_log": -669843456,
+  "bountiful_trees:quartz_leaves": -669908992,
+  "bountiful_trees:netherite_sapling": -669974528,
+  "bountiful_trees:netherite_log": -670040064,
+  "bountiful_trees:netherite_leaves": -670105600,
+  "bountiful_trees:lapis_sapling": -670171136,
+  "bountiful_trees:lapis_log": -670236672,
+  "bountiful_trees:lapis_leaves": -670302208,
+  "bountiful_trees:iron_sapling": -670367744,
+  "bountiful_trees:iron_log": -670433280,
+  "bountiful_trees:iron_leaves": -670498816,
+  "bountiful_trees:gold_sapling": -670564352,
+  "bountiful_trees:gold_log": -670629888,
+  "bountiful_trees:gold_leaves": -670695424,
+  "bountiful_trees:energized_iron_sapling": -670760960,
+  "bountiful_trees:energized_iron_log": -670826496,
+  "bountiful_trees:energized_iron_leaves": -670892032,
+  "bountiful_trees:emerald_sapling": -670957568,
+  "bountiful_trees:emerald_log": -671023104,
+  "bountiful_trees:emerald_leaves": -671088640,
+  "bountiful_trees:diamond_sapling": -671154176,
+  "bountiful_trees:diamond_log": -671219712,
+  "bountiful_trees:diamond_leaves": -671285248,
+  "bountiful_trees:copper_sapling": -671350784,
+  "bountiful_trees:copper_log": -671416320,
+  "bountiful_trees:copper_leaves": -671481856,
+  "bountiful_trees:coal_sapling": -671547392,
+  "bountiful_trees:coal_log": -671612928,
+  "bountiful_trees:coal_leaves": -671678464,
+  "better_smelters:oak_wood_furnace": -671744e3,
+  "better_smelters:nether_star_furnace": -671809536,
+  "better_smelters:netherrack_furnace": -671875072,
+  "better_smelters:netherite_furnace": -671940608,
+  "better_smelters:iron_furnace": -672006144,
+  "better_smelters:gold_furnace": -672071680,
+  "better_smelters:emerald_furnace": -672137216,
+  "better_smelters:diamond_furnace": -672202752,
+  "better_smelters:copper_furnace": -672268288,
+  "better_smelters:blazing_furnace": -672333824,
+  "better_smelters:amethyst_furnace": -672399360
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\render\generated\vanillaAuxValues.js
+var vanillaAuxValues = {
+  "minecraft:acacia_boat": 26935296,
+  "minecraft:acacia_button": -9175040,
+  "minecraft:acacia_chest_boat": 44826624,
+  "minecraft:acacia_door": 38993920,
+  "minecraft:acacia_fence": -37683200,
+  "minecraft:acacia_fence_gate": 12255232,
+  "minecraft:acacia_hanging_sign": -33030144,
+  "minecraft:acacia_leaves": 10551296,
+  "minecraft:acacia_log": 10616832,
+  "minecraft:acacia_planks": -48627712,
+  "minecraft:acacia_pressure_plate": -9830400,
+  "minecraft:acacia_sapling": -54263808,
+  "minecraft:acacia_shelf": -68878336,
+  "minecraft:acacia_sign": 40501248,
+  "minecraft:acacia_slab": -52887552,
+  "minecraft:acacia_stairs": 10682368,
+  "minecraft:acacia_trapdoor": -9502720,
+  "minecraft:acacia_wood": -53542912,
+  "minecraft:activator_rail": 8257536,
+  "minecraft:allay_spawn_egg": 44105728,
+  "minecraft:allium": -54460416,
+  "minecraft:allow": 13762560,
+  "minecraft:amethyst_block": -21430272,
+  "minecraft:amethyst_cluster": -21561344,
+  "minecraft:amethyst_shard": 43646976,
+  "minecraft:ancient_debris": -17760256,
+  "minecraft:andesite": -38928384,
+  "minecraft:andesite_slab": -58523648,
+  "minecraft:andesite_stairs": -11206656,
+  "minecraft:andesite_wall": -63832064,
+  "minecraft:angler_pottery_sherd": 45809664,
+  "minecraft:anvil": 9502720,
+  "minecraft:apple": 18677760,
+  "minecraft:archer_pottery_sherd": 45875200,
+  "minecraft:armadillo_scute": 48889856,
+  "minecraft:armadillo_spawn_egg": 48824320,
+  "minecraft:armor_stand": 38731776,
+  "minecraft:arms_up_pottery_sherd": 45940736,
+  "minecraft:arrow": 21757952,
+  "minecraft:axolotl_bucket": 26279936,
+  "minecraft:axolotl_spawn_egg": 35127296,
+  "minecraft:azalea": -22085632,
+  "minecraft:azalea_leaves": -21233664,
+  "minecraft:azalea_leaves_flowered": -21299200,
+  "minecraft:azure_bluet": -54525952,
+  "minecraft:baked_potato": 20316160,
+  "minecraft:bamboo": -10682368,
+  "minecraft:bamboo_block": -34537472,
+  "minecraft:bamboo_button": -33488896,
+  "minecraft:bamboo_chest_raft": 45613056,
+  "minecraft:bamboo_door": -33882112,
+  "minecraft:bamboo_fence": -33751040,
+  "minecraft:bamboo_fence_gate": -33816576,
+  "minecraft:bamboo_hanging_sign": -34209792,
+  "minecraft:bamboo_mosaic": -33357824,
+  "minecraft:bamboo_mosaic_slab": -34340864,
+  "minecraft:bamboo_mosaic_stairs": -34275328,
+  "minecraft:bamboo_planks": -33423360,
+  "minecraft:bamboo_pressure_plate": -33685504,
+  "minecraft:bamboo_raft": 45547520,
+  "minecraft:bamboo_shelf": -69206016,
+  "minecraft:bamboo_sign": 45481984,
+  "minecraft:bamboo_slab": -33619968,
+  "minecraft:bamboo_stairs": -33554432,
+  "minecraft:bamboo_trapdoor": -34078720,
+  "minecraft:banner": 39714816,
+  "minecraft:barrel": -13303808,
+  "minecraft:barrier": -10551296,
+  "minecraft:basalt": -15335424,
+  "minecraft:bat_spawn_egg": 31850496,
+  "minecraft:beacon": 9043968,
+  "minecraft:bed": 29491200,
+  "minecraft:bedrock": 458752,
+  "minecraft:bee_nest": -14286848,
+  "minecraft:bee_spawn_egg": 34603008,
+  "minecraft:beef": 19791872,
+  "minecraft:beehive": -14352384,
+  "minecraft:beetroot": 20578304,
+  "minecraft:beetroot_seeds": 21233664,
+  "minecraft:beetroot_soup": 20643840,
+  "minecraft:bell": -13500416,
+  "minecraft:big_dripleaf": -21168128,
+  "minecraft:birch_boat": 26738688,
+  "minecraft:birch_button": -9240576,
+  "minecraft:birch_chest_boat": 44630016,
+  "minecraft:birch_door": 38862848,
+  "minecraft:birch_fence": -37748736,
+  "minecraft:birch_fence_gate": 12058624,
+  "minecraft:birch_hanging_sign": -32899072,
+  "minecraft:birch_leaves": -52494336,
+  "minecraft:birch_log": -37355520,
+  "minecraft:birch_planks": -48496640,
+  "minecraft:birch_pressure_plate": -9895936,
+  "minecraft:birch_sapling": -54132736,
+  "minecraft:birch_shelf": -68747264,
+  "minecraft:birch_sign": 40370176,
+  "minecraft:birch_slab": -52756480,
+  "minecraft:birch_stairs": 8847360,
+  "minecraft:birch_trapdoor": -9568256,
+  "minecraft:birch_wood": -53411840,
+  "minecraft:black_bundle": 17301504,
+  "minecraft:black_candle": -28049408,
+  "minecraft:black_carpet": -40042496,
+  "minecraft:black_concrete": -42074112,
+  "minecraft:black_concrete_powder": -47382528,
+  "minecraft:black_dye": 27983872,
+  "minecraft:black_glazed_terracotta": 15400960,
+  "minecraft:black_harness": 49545216,
+  "minecraft:black_shulker_box": -41091072,
+  "minecraft:black_stained_glass": -45023232,
+  "minecraft:black_stained_glass_pane": -43057152,
+  "minecraft:black_terracotta": -48365568,
+  "minecraft:black_wool": -36306944,
+  "minecraft:blackstone": -17891328,
+  "minecraft:blackstone_slab": -18481152,
+  "minecraft:blackstone_stairs": -18087936,
+  "minecraft:blackstone_wall": -18153472,
+  "minecraft:blade_pottery_sherd": 46006272,
+  "minecraft:blast_furnace": -12845056,
+  "minecraft:blaze_powder": 30277632,
+  "minecraft:blaze_rod": 29818880,
+  "minecraft:blaze_spawn_egg": 32047104,
+  "minecraft:blue_bundle": 17367040,
+  "minecraft:blue_candle": -27787264,
+  "minecraft:blue_carpet": -39780352,
+  "minecraft:blue_concrete": -41811968,
+  "minecraft:blue_concrete_powder": -47120384,
+  "minecraft:blue_dye": 28246016,
+  "minecraft:blue_egg": 49348608,
+  "minecraft:blue_glazed_terracotta": 15138816,
+  "minecraft:blue_harness": 49610752,
+  "minecraft:blue_ice": -720896,
+  "minecraft:blue_orchid": -54394880,
+  "minecraft:blue_shulker_box": -40828928,
+  "minecraft:blue_stained_glass": -44761088,
+  "minecraft:blue_stained_glass_pane": -42795008,
+  "minecraft:blue_terracotta": -48103424,
+  "minecraft:blue_wool": -36896768,
+  "minecraft:bogged_spawn_egg": 32505856,
+  "minecraft:bolt_armor_trim_smithing_template": 48562176,
+  "minecraft:bone": 29294592,
+  "minecraft:bone_block": 14155776,
+  "minecraft:bone_meal": 29032448,
+  "minecraft:book": 27459584,
+  "minecraft:bookshelf": 3080192,
+  "minecraft:border_block": 13893632,
+  "minecraft:bordure_indented_banner_pattern": 4096e4,
+  "minecraft:bow": 21692416,
+  "minecraft:bowl": 23134208,
+  "minecraft:brain_coral": -38076416,
+  "minecraft:brain_coral_block": -55640064,
+  "minecraft:brain_coral_fan": -55050240,
+  "minecraft:bread": 19005440,
+  "minecraft:breeze_rod": 18415616,
+  "minecraft:breeze_spawn_egg": 35061760,
+  "minecraft:brewer_pottery_sherd": 46071808,
+  "minecraft:brewing_stand": 30408704,
+  "minecraft:brick": 27197440,
+  "minecraft:brick_block": 2949120,
+  "minecraft:brick_slab": -57278464,
+  "minecraft:brick_stairs": 7077888,
+  "minecraft:brick_wall": -63963136,
+  "minecraft:brown_bundle": 17432576,
+  "minecraft:brown_candle": -27852800,
+  "minecraft:brown_carpet": -39845888,
+  "minecraft:brown_concrete": -41877504,
+  "minecraft:brown_concrete_powder": -47185920,
+  "minecraft:brown_dye": 28180480,
+  "minecraft:brown_egg": 49414144,
+  "minecraft:brown_glazed_terracotta": 15204352,
+  "minecraft:brown_harness": 49676288,
+  "minecraft:brown_mushroom": 2555904,
+  "minecraft:brown_mushroom_block": 6488064,
+  "minecraft:brown_shulker_box": -40894464,
+  "minecraft:brown_stained_glass": -44826624,
+  "minecraft:brown_stained_glass_pane": -42860544,
+  "minecraft:brown_terracotta": -48168960,
+  "minecraft:brown_wool": -36372480,
+  "minecraft:brush": 47316992,
+  "minecraft:bubble_coral": -38141952,
+  "minecraft:bubble_coral_block": -55705600,
+  "minecraft:bubble_coral_fan": -55115776,
+  "minecraft:bucket": 25690112,
+  "minecraft:budding_amethyst": -21495808,
+  "minecraft:bundle": 17498112,
+  "minecraft:burn_pottery_sherd": 46137344,
+  "minecraft:bush": -67043328,
+  "minecraft:cactus": 5308416,
+  "minecraft:cactus_flower": -67502080,
+  "minecraft:cake": 29425664,
+  "minecraft:calcite": -21364736,
+  "minecraft:calibrated_sculk_sensor": -38010880,
+  "minecraft:camel_husk_spawn_egg": 45744128,
+  "minecraft:camel_spawn_egg": 45678592,
+  "minecraft:campfire": 41287680,
+  "minecraft:candle": -27000832,
+  "minecraft:carrot": 20185088,
+  "minecraft:carrot_on_a_stick": 36438016,
+  "minecraft:cartography_table": -13107200,
+  "minecraft:carved_pumpkin": -10158080,
+  "minecraft:cat_spawn_egg": 34209792,
+  "minecraft:cauldron": 30474240,
+  "minecraft:cave_spider_spawn_egg": 32112640,
+  "minecraft:chain_command_block": 12386304,
+  "minecraft:chainmail_boots": 24510464,
+  "minecraft:chainmail_chestplate": 24379392,
+  "minecraft:chainmail_helmet": 24313856,
+  "minecraft:chainmail_leggings": 24444928,
+  "minecraft:charcoal": 21889024,
+  "minecraft:cherry_boat": 45285376,
+  "minecraft:cherry_button": -34734080,
+  "minecraft:cherry_chest_boat": 45350912,
+  "minecraft:cherry_door": -34799616,
+  "minecraft:cherry_fence": -34865152,
+  "minecraft:cherry_fence_gate": -34930688,
+  "minecraft:cherry_hanging_sign": -34996224,
+  "minecraft:cherry_leaves": -35913728,
+  "minecraft:cherry_log": -35127296,
+  "minecraft:cherry_planks": -35192832,
+  "minecraft:cherry_pressure_plate": -35258368,
+  "minecraft:cherry_sapling": -35848192,
+  "minecraft:cherry_shelf": -69074944,
+  "minecraft:cherry_sign": 45416448,
+  "minecraft:cherry_slab": -35323904,
+  "minecraft:cherry_stairs": -35454976,
+  "minecraft:cherry_trapdoor": -35586048,
+  "minecraft:cherry_wood": -35782656,
+  "minecraft:chest": 3538944,
+  "minecraft:chest_minecart": 27590656,
+  "minecraft:chicken": 19922944,
+  "minecraft:chicken_spawn_egg": 30670848,
+  "minecraft:chipped_anvil": -62849024,
+  "minecraft:chiseled_bookshelf": -34471936,
+  "minecraft:chiseled_copper": -49807360,
+  "minecraft:chiseled_deepslate": -25886720,
+  "minecraft:chiseled_nether_bricks": -19791872,
+  "minecraft:chiseled_polished_blackstone": -18284544,
+  "minecraft:chiseled_quartz_block": -62455808,
+  "minecraft:chiseled_red_sandstone": -62652416,
+  "minecraft:chiseled_resin_bricks": -66846720,
+  "minecraft:chiseled_sandstone": -61865984,
+  "minecraft:chiseled_stone_bricks": -57016320,
+  "minecraft:chiseled_tuff": -49348608,
+  "minecraft:chiseled_tuff_bricks": -49741824,
+  "minecraft:chorus_flower": 13107200,
+  "minecraft:chorus_fruit": 39124992,
+  "minecraft:chorus_plant": 15728640,
+  "minecraft:clay": 5373952,
+  "minecraft:clay_ball": 27262976,
+  "minecraft:clock": 27852800,
+  "minecraft:closed_eyeblossom": -66781184,
+  "minecraft:coal": 21823488,
+  "minecraft:coal_block": 11337728,
+  "minecraft:coal_ore": 1048576,
+  "minecraft:coarse_dirt": -63045632,
+  "minecraft:coast_armor_trim_smithing_template": 47579136,
+  "minecraft:cobbled_deepslate": -24838144,
+  "minecraft:cobbled_deepslate_slab": -24903680,
+  "minecraft:cobbled_deepslate_stairs": -24969216,
+  "minecraft:cobbled_deepslate_wall": -25034752,
+  "minecraft:cobblestone": 262144,
+  "minecraft:cobblestone_slab": -57212928,
+  "minecraft:cobblestone_wall": 9109504,
+  "minecraft:cocoa_beans": 29097984,
+  "minecraft:cod": 19202048,
+  "minecraft:cod_bucket": 25952256,
+  "minecraft:cod_spawn_egg": 33685504,
+  "minecraft:command_block": 8978432,
+  "minecraft:command_block_minecart": 39452672,
+  "minecraft:comparator": 36765696,
+  "minecraft:compass": 27721728,
+  "minecraft:composter": -13959168,
+  "minecraft:conduit": -10289152,
+  "minecraft:cooked_beef": 19857408,
+  "minecraft:cooked_chicken": 19988480,
+  "minecraft:cooked_cod": 19464192,
+  "minecraft:cooked_mutton": 38666240,
+  "minecraft:cooked_porkchop": 19136512,
+  "minecraft:cooked_rabbit": 20840448,
+  "minecraft:cooked_salmon": 19529728,
+  "minecraft:cookie": 19660800,
+  "minecraft:copper_axe": 50855936,
+  "minecraft:copper_bars": -69861376,
+  "minecraft:copper_block": -22282240,
+  "minecraft:copper_boots": 51183616,
+  "minecraft:copper_bulb": -50855936,
+  "minecraft:copper_chain": -70385664,
+  "minecraft:copper_chest": -67567616,
+  "minecraft:copper_chestplate": 51052544,
+  "minecraft:copper_door": -51380224,
+  "minecraft:copper_golem_spawn_egg": 50593792,
+  "minecraft:copper_golem_statue": -68091904,
+  "minecraft:copper_grate": -50331648,
+  "minecraft:copper_helmet": 50987008,
+  "minecraft:copper_hoe": 50921472,
+  "minecraft:copper_horse_armor": 51314688,
+  "minecraft:copper_ingot": 35651584,
+  "minecraft:copper_lantern": -70975488,
+  "minecraft:copper_leggings": 51118080,
+  "minecraft:copper_nautilus_armor": 51576832,
+  "minecraft:copper_nugget": 51249152,
+  "minecraft:copper_ore": -20381696,
+  "minecraft:copper_pickaxe": 50790400,
+  "minecraft:copper_shovel": 50724864,
+  "minecraft:copper_spear": 16842752,
+  "minecraft:copper_sword": 50659328,
+  "minecraft:copper_torch": -70909952,
+  "minecraft:copper_trapdoor": -51904512,
+  "minecraft:cornflower": -54919168,
+  "minecraft:cow_spawn_egg": 30736384,
+  "minecraft:cracked_deepslate_bricks": -26869760,
+  "minecraft:cracked_deepslate_tiles": -26804224,
+  "minecraft:cracked_nether_bricks": -19857408,
+  "minecraft:cracked_polished_blackstone_bricks": -18350080,
+  "minecraft:cracked_stone_bricks": -56950784,
+  "minecraft:crafter": -20512768,
+  "minecraft:crafting_table": 3801088,
+  "minecraft:creaking_heart": -66322432,
+  "minecraft:creaking_spawn_egg": 49217536,
+  "minecraft:creeper_banner_pattern": 40697856,
+  "minecraft:creeper_head": -63438848,
+  "minecraft:creeper_spawn_egg": 31064064,
+  "minecraft:crimson_button": -17039360,
+  "minecraft:crimson_door": 43188224,
+  "minecraft:crimson_fence": -16777216,
+  "minecraft:crimson_fence_gate": -16908288,
+  "minecraft:crimson_fungus": -14942208,
+  "minecraft:crimson_hanging_sign": -33161216,
+  "minecraft:crimson_hyphae": -19595264,
+  "minecraft:crimson_nylium": -15204352,
+  "minecraft:crimson_planks": -15859712,
+  "minecraft:crimson_pressure_plate": -17170432,
+  "minecraft:crimson_roots": -14614528,
+  "minecraft:crimson_shelf": -69271552,
+  "minecraft:crimson_sign": 43057152,
+  "minecraft:crimson_slab": -17301504,
+  "minecraft:crimson_stairs": -16646144,
+  "minecraft:crimson_stem": -14745600,
+  "minecraft:crimson_trapdoor": -16121856,
+  "minecraft:crossbow": 40239104,
+  "minecraft:crying_obsidian": -18939904,
+  "minecraft:cut_copper": -22740992,
+  "minecraft:cut_copper_slab": -23658496,
+  "minecraft:cut_copper_stairs": -23199744,
+  "minecraft:cut_red_sandstone": -62717952,
+  "minecraft:cut_red_sandstone_slab": -59047936,
+  "minecraft:cut_sandstone": -61931520,
+  "minecraft:cut_sandstone_slab": -58982400,
+  "minecraft:cyan_bundle": 17563648,
+  "minecraft:cyan_candle": -27656192,
+  "minecraft:cyan_carpet": -39649280,
+  "minecraft:cyan_concrete": -41680896,
+  "minecraft:cyan_concrete_powder": -46989312,
+  "minecraft:cyan_dye": 28377088,
+  "minecraft:cyan_glazed_terracotta": 15007744,
+  "minecraft:cyan_harness": 49741824,
+  "minecraft:cyan_shulker_box": -40697856,
+  "minecraft:cyan_stained_glass": -44630016,
+  "minecraft:cyan_stained_glass_pane": -42663936,
+  "minecraft:cyan_terracotta": -47972352,
+  "minecraft:cyan_wool": -36765696,
+  "minecraft:damaged_anvil": -62914560,
+  "minecraft:dandelion": 2424832,
+  "minecraft:danger_pottery_sherd": 46202880,
+  "minecraft:dark_oak_boat": 27000832,
+  "minecraft:dark_oak_button": -9306112,
+  "minecraft:dark_oak_chest_boat": 44892160,
+  "minecraft:dark_oak_door": 39059456,
+  "minecraft:dark_oak_fence": -37814272,
+  "minecraft:dark_oak_fence_gate": 12189696,
+  "minecraft:dark_oak_hanging_sign": -33095680,
+  "minecraft:dark_oak_leaves": -52625408,
+  "minecraft:dark_oak_log": -37486592,
+  "minecraft:dark_oak_planks": -48693248,
+  "minecraft:dark_oak_pressure_plate": -9961472,
+  "minecraft:dark_oak_sapling": -54329344,
+  "minecraft:dark_oak_shelf": -68943872,
+  "minecraft:dark_oak_sign": 40566784,
+  "minecraft:dark_oak_slab": -52953088,
+  "minecraft:dark_oak_stairs": 10747904,
+  "minecraft:dark_oak_trapdoor": -9633792,
+  "minecraft:dark_oak_wood": -53608448,
+  "minecraft:dark_prismarine": -62062592,
+  "minecraft:dark_prismarine_slab": -58064896,
+  "minecraft:dark_prismarine_stairs": -196608,
+  "minecraft:daylight_detector": 9895936,
+  "minecraft:dead_brain_coral": -38404096,
+  "minecraft:dead_brain_coral_block": -55967744,
+  "minecraft:dead_brain_coral_fan": -55312384,
+  "minecraft:dead_bubble_coral": -38469632,
+  "minecraft:dead_bubble_coral_block": -56033280,
+  "minecraft:dead_bubble_coral_fan": -55377920,
+  "minecraft:dead_fire_coral": -38535168,
+  "minecraft:dead_fire_coral_block": -56098816,
+  "minecraft:dead_fire_coral_fan": -55443456,
+  "minecraft:dead_horn_coral": -38600704,
+  "minecraft:dead_horn_coral_block": -56164352,
+  "minecraft:dead_horn_coral_fan": -55508992,
+  "minecraft:dead_tube_coral": -38338560,
+  "minecraft:dead_tube_coral_block": -55902208,
+  "minecraft:dead_tube_coral_fan": -8781824,
+  "minecraft:deadbush": 2097152,
+  "minecraft:decorated_pot": -36110336,
+  "minecraft:deepslate": -24772608,
+  "minecraft:deepslate_brick_slab": -25690112,
+  "minecraft:deepslate_brick_stairs": -25755648,
+  "minecraft:deepslate_brick_wall": -25821184,
+  "minecraft:deepslate_bricks": -25624576,
+  "minecraft:deepslate_coal_ore": -26607616,
+  "minecraft:deepslate_copper_ore": -26738688,
+  "minecraft:deepslate_diamond_ore": -26542080,
+  "minecraft:deepslate_emerald_ore": -26673152,
+  "minecraft:deepslate_gold_ore": -26345472,
+  "minecraft:deepslate_iron_ore": -26279936,
+  "minecraft:deepslate_lapis_ore": -26214400,
+  "minecraft:deepslate_redstone_ore": -26411008,
+  "minecraft:deepslate_tile_slab": -25427968,
+  "minecraft:deepslate_tile_stairs": -25493504,
+  "minecraft:deepslate_tile_wall": -25559040,
+  "minecraft:deepslate_tiles": -25362432,
+  "minecraft:deny": 13828096,
+  "minecraft:detector_rail": 1835008,
+  "minecraft:diamond": 21954560,
+  "minecraft:diamond_axe": 22937600,
+  "minecraft:diamond_block": 3735552,
+  "minecraft:diamond_boots": 25034752,
+  "minecraft:diamond_chestplate": 24903680,
+  "minecraft:diamond_helmet": 24838144,
+  "minecraft:diamond_hoe": 23855104,
+  "minecraft:diamond_horse_armor": 37486592,
+  "minecraft:diamond_leggings": 24969216,
+  "minecraft:diamond_nautilus_armor": 51773440,
+  "minecraft:diamond_ore": 3670016,
+  "minecraft:diamond_pickaxe": 22872064,
+  "minecraft:diamond_shovel": 22806528,
+  "minecraft:diamond_spear": 16908288,
+  "minecraft:diamond_sword": 22740992,
+  "minecraft:diorite": -38797312,
+  "minecraft:diorite_slab": -58589184,
+  "minecraft:diorite_stairs": -11141120,
+  "minecraft:diorite_wall": -63766528,
+  "minecraft:dirt": 196608,
+  "minecraft:dirt_with_roots": -20840448,
+  "minecraft:disc_fragment_5": 44498944,
+  "minecraft:dispenser": 1507328,
+  "minecraft:dolphin_spawn_egg": 33947648,
+  "minecraft:donkey_spawn_egg": 32702464,
+  "minecraft:dragon_breath": 39256064,
+  "minecraft:dragon_egg": 7995392,
+  "minecraft:dragon_head": -63504384,
+  "minecraft:dried_ghast": -67305472,
+  "minecraft:dried_kelp": 19595264,
+  "minecraft:dried_kelp_block": -9109504,
+  "minecraft:dripstone_block": -20774912,
+  "minecraft:dropper": 8192e3,
+  "minecraft:drowned_spawn_egg": 33882112,
+  "minecraft:dune_armor_trim_smithing_template": 47513600,
+  "minecraft:echo_shard": 45154304,
+  "minecraft:egg": 27656192,
+  "minecraft:elder_guardian_spawn_egg": 33095680,
+  "minecraft:elytra": 39518208,
+  "minecraft:emerald": 36175872,
+  "minecraft:emerald_block": 8716288,
+  "minecraft:emerald_ore": 8454144,
+  "minecraft:empty_map": 36372480,
+  "minecraft:enchanted_book": 36700160,
+  "minecraft:enchanted_golden_apple": 18874368,
+  "minecraft:enchanting_table": 7602176,
+  "minecraft:end_brick_stairs": -11665408,
+  "minecraft:end_bricks": 13500416,
+  "minecraft:end_crystal": 55115776,
+  "minecraft:end_portal_frame": 7864320,
+  "minecraft:end_rod": 13631488,
+  "minecraft:end_stone": 7929856,
+  "minecraft:end_stone_brick_slab": -10616832,
+  "minecraft:end_stone_brick_wall": -64225280,
+  "minecraft:ender_chest": 8519680,
+  "minecraft:ender_dragon_spawn_egg": 35454976,
+  "minecraft:ender_eye": 30539776,
+  "minecraft:ender_pearl": 29753344,
+  "minecraft:enderman_spawn_egg": 31129600,
+  "minecraft:endermite_spawn_egg": 32309248,
+  "minecraft:evoker_spawn_egg": 33357824,
+  "minecraft:experience_bottle": 35913728,
+  "minecraft:explorer_pottery_sherd": 46268416,
+  "minecraft:exposed_chiseled_copper": -49872896,
+  "minecraft:exposed_copper": -22347776,
+  "minecraft:exposed_copper_bars": -69926912,
+  "minecraft:exposed_copper_bulb": -50921472,
+  "minecraft:exposed_copper_chain": -70451200,
+  "minecraft:exposed_copper_chest": -67633152,
+  "minecraft:exposed_copper_door": -51445760,
+  "minecraft:exposed_copper_golem_statue": -68157440,
+  "minecraft:exposed_copper_grate": -50397184,
+  "minecraft:exposed_copper_lantern": -71041024,
+  "minecraft:exposed_copper_trapdoor": -51970048,
+  "minecraft:exposed_cut_copper": -22806528,
+  "minecraft:exposed_cut_copper_slab": -23724032,
+  "minecraft:exposed_cut_copper_stairs": -23265280,
+  "minecraft:exposed_lightning_rod": -69402624,
+  "minecraft:eye_armor_trim_smithing_template": 47775744,
+  "minecraft:farmland": 3932160,
+  "minecraft:feather": 23527424,
+  "minecraft:fence_gate": 7012352,
+  "minecraft:fermented_spider_eye": 30212096,
+  "minecraft:fern": -55574528,
+  "minecraft:field_masoned_banner_pattern": 40894464,
+  "minecraft:filled_map": 29622272,
+  "minecraft:fire_charge": 35979264,
+  "minecraft:fire_coral": -38207488,
+  "minecraft:fire_coral_block": -55771136,
+  "minecraft:fire_coral_fan": -55181312,
+  "minecraft:firefly_bush": -67174400,
+  "minecraft:firework_rocket": 36569088,
+  "minecraft:firework_star": 36634624,
+  "minecraft:fishing_rod": 27787264,
+  "minecraft:fletching_table": -13172736,
+  "minecraft:flint": 25427968,
+  "minecraft:flint_and_steel": 21626880,
+  "minecraft:flow_armor_trim_smithing_template": 48496640,
+  "minecraft:flow_banner_pattern": 41156608,
+  "minecraft:flow_pottery_sherd": 46333952,
+  "minecraft:flower_banner_pattern": 40632320,
+  "minecraft:flower_pot": 36306944,
+  "minecraft:flowering_azalea": -22151168,
+  "minecraft:fox_spawn_egg": 34340864,
+  "minecraft:frame": 36241408,
+  "minecraft:friend_pottery_sherd": 46399488,
+  "minecraft:frog_spawn": -30670848,
+  "minecraft:frog_spawn_egg": 43909120,
+  "minecraft:frosted_ice": 13565952,
+  "minecraft:furnace": 3997696,
+  "minecraft:ghast_spawn_egg": 31916032,
+  "minecraft:ghast_tear": 29949952,
+  "minecraft:gilded_blackstone": -18415616,
+  "minecraft:glass": 1310720,
+  "minecraft:glass_bottle": 30146560,
+  "minecraft:glass_pane": 6684672,
+  "minecraft:glistering_melon_slice": 30605312,
+  "minecraft:globe_banner_pattern": 41091072,
+  "minecraft:glow_berries": 55181312,
+  "minecraft:glow_frame": 43581440,
+  "minecraft:glow_ink_sac": 35586048,
+  "minecraft:glow_lichen": -26935296,
+  "minecraft:glow_squid_spawn_egg": 35258368,
+  "minecraft:glowstone": 5832704,
+  "minecraft:glowstone_dust": 27918336,
+  "minecraft:goat_horn": 43843584,
+  "minecraft:goat_spawn_egg": 35192832,
+  "minecraft:gold_block": 2686976,
+  "minecraft:gold_ingot": 22085632,
+  "minecraft:gold_nugget": 30015488,
+  "minecraft:gold_ore": 917504,
+  "minecraft:golden_apple": 18808832,
+  "minecraft:golden_axe": 23396352,
+  "minecraft:golden_boots": 25296896,
+  "minecraft:golden_carrot": 20447232,
+  "minecraft:golden_chestplate": 25165824,
+  "minecraft:golden_dandelion": -71499776,
+  "minecraft:golden_helmet": 25100288,
+  "minecraft:golden_hoe": 23920640,
+  "minecraft:golden_horse_armor": 37421056,
+  "minecraft:golden_leggings": 25231360,
+  "minecraft:golden_nautilus_armor": 51707904,
+  "minecraft:golden_pickaxe": 23330816,
+  "minecraft:golden_rail": 1769472,
+  "minecraft:golden_shovel": 23265280,
+  "minecraft:golden_spear": 16973824,
+  "minecraft:golden_sword": 23199744,
+  "minecraft:granite": -38666240,
+  "minecraft:granite_slab": -58720256,
+  "minecraft:granite_stairs": -11075584,
+  "minecraft:granite_wall": -63700992,
+  "minecraft:grass_block": 131072,
+  "minecraft:grass_path": 12976128,
+  "minecraft:gravel": 851968,
+  "minecraft:gray_bundle": 17629184,
+  "minecraft:gray_candle": -27525120,
+  "minecraft:gray_carpet": -39518208,
+  "minecraft:gray_concrete": -41549824,
+  "minecraft:gray_concrete_powder": -46858240,
+  "minecraft:gray_dye": 28508160,
+  "minecraft:gray_glazed_terracotta": 14876672,
+  "minecraft:gray_harness": 49807360,
+  "minecraft:gray_shulker_box": -40566784,
+  "minecraft:gray_stained_glass": -44498944,
+  "minecraft:gray_stained_glass_pane": -42532864,
+  "minecraft:gray_terracotta": -47841280,
+  "minecraft:gray_wool": -36241408,
+  "minecraft:green_bundle": 17694720,
+  "minecraft:green_candle": -27918336,
+  "minecraft:green_carpet": -39911424,
+  "minecraft:green_concrete": -41943040,
+  "minecraft:green_concrete_powder": -47251456,
+  "minecraft:green_dye": 28114944,
+  "minecraft:green_glazed_terracotta": 15269888,
+  "minecraft:green_harness": 49872896,
+  "minecraft:green_shulker_box": -4096e4,
+  "minecraft:green_stained_glass": -44892160,
+  "minecraft:green_stained_glass_pane": -42926080,
+  "minecraft:green_terracotta": -48234496,
+  "minecraft:green_wool": -36700160,
+  "minecraft:grindstone": -12779520,
+  "minecraft:guardian_spawn_egg": 32374784,
+  "minecraft:gunpowder": 23592960,
+  "minecraft:guster_banner_pattern": 41222144,
+  "minecraft:guster_pottery_sherd": 46465024,
+  "minecraft:hanging_roots": -20905984,
+  "minecraft:happy_ghast_spawn_egg": 49479680,
+  "minecraft:hardened_clay": 11272192,
+  "minecraft:hay_block": 11141120,
+  "minecraft:heart_of_the_sea": 39976960,
+  "minecraft:heart_pottery_sherd": 46530560,
+  "minecraft:heartbreak_pottery_sherd": 46596096,
+  "minecraft:heavy_core": -20709376,
+  "minecraft:heavy_weighted_pressure_plate": 9699328,
+  "minecraft:hoglin_spawn_egg": 34734080,
+  "minecraft:honey_block": -14417920,
+  "minecraft:honey_bottle": 41484288,
+  "minecraft:honeycomb": 41418752,
+  "minecraft:honeycomb_block": -14483456,
+  "minecraft:hopper": 37093376,
+  "minecraft:hopper_minecart": 37027840,
+  "minecraft:horn_coral": -38273024,
+  "minecraft:horn_coral_block": -55836672,
+  "minecraft:horn_coral_fan": -55246848,
+  "minecraft:horse_spawn_egg": 32178176,
+  "minecraft:host_armor_trim_smithing_template": 48431104,
+  "minecraft:howl_pottery_sherd": 46661632,
+  "minecraft:husk_spawn_egg": 32571392,
+  "minecraft:ice": 5177344,
+  "minecraft:infested_chiseled_stone_bricks": -56492032,
+  "minecraft:infested_cobblestone": -56229888,
+  "minecraft:infested_cracked_stone_bricks": -56426496,
+  "minecraft:infested_deepslate": -29753344,
+  "minecraft:infested_mossy_stone_bricks": -56360960,
+  "minecraft:infested_stone": 6356992,
+  "minecraft:infested_stone_bricks": -56295424,
+  "minecraft:ink_sac": 29163520,
+  "minecraft:iron_axe": 21561344,
+  "minecraft:iron_bars": 6619136,
+  "minecraft:iron_block": 2752512,
+  "minecraft:iron_boots": 24772608,
+  "minecraft:iron_chain": -18743296,
+  "minecraft:iron_chestplate": 24641536,
+  "minecraft:iron_door": 26476544,
+  "minecraft:iron_golem_spawn_egg": 35323904,
+  "minecraft:iron_helmet": 24576e3,
+  "minecraft:iron_hoe": 23789568,
+  "minecraft:iron_horse_armor": 37355520,
+  "minecraft:iron_ingot": 22020096,
+  "minecraft:iron_leggings": 24707072,
+  "minecraft:iron_nautilus_armor": 51642368,
+  "minecraft:iron_nugget": 39845888,
+  "minecraft:iron_ore": 983040,
+  "minecraft:iron_pickaxe": 21495808,
+  "minecraft:iron_shovel": 21430272,
+  "minecraft:iron_spear": 17039360,
+  "minecraft:iron_sword": 22151168,
+  "minecraft:iron_trapdoor": 10944512,
+  "minecraft:jigsaw": -13828096,
+  "minecraft:jukebox": 5505024,
+  "minecraft:jungle_boat": 26804224,
+  "minecraft:jungle_button": -9371648,
+  "minecraft:jungle_chest_boat": 44695552,
+  "minecraft:jungle_door": 38928384,
+  "minecraft:jungle_fence": -37879808,
+  "minecraft:jungle_fence_gate": 12124160,
+  "minecraft:jungle_hanging_sign": -32964608,
+  "minecraft:jungle_leaves": -52559872,
+  "minecraft:jungle_log": -37421056,
+  "minecraft:jungle_planks": -48562176,
+  "minecraft:jungle_pressure_plate": -10027008,
+  "minecraft:jungle_sapling": -54198272,
+  "minecraft:jungle_shelf": -68812800,
+  "minecraft:jungle_sign": 40435712,
+  "minecraft:jungle_slab": -52822016,
+  "minecraft:jungle_stairs": 8912896,
+  "minecraft:jungle_trapdoor": -9699328,
+  "minecraft:jungle_wood": -53477376,
+  "minecraft:kelp": 27131904,
+  "minecraft:ladder": 4259840,
+  "minecraft:lantern": -13631488,
+  "minecraft:lapis_block": 1441792,
+  "minecraft:lapis_lazuli": 29229056,
+  "minecraft:lapis_ore": 1376256,
+  "minecraft:large_amethyst_bud": -21626880,
+  "minecraft:large_fern": -56688640,
+  "minecraft:lava_bucket": 25886720,
+  "minecraft:lead": 38404096,
+  "minecraft:leaf_litter": -67239936,
+  "minecraft:leather": 27066368,
+  "minecraft:leather_boots": 24248320,
+  "minecraft:leather_chestplate": 24117248,
+  "minecraft:leather_helmet": 24051712,
+  "minecraft:leather_horse_armor": 37289984,
+  "minecraft:leather_leggings": 24182784,
+  "minecraft:lectern": -12713984,
+  "minecraft:lever": 4521984,
+  "minecraft:light_block_0": -14090240,
+  "minecraft:light_block_1": -60882944,
+  "minecraft:light_block_10": -61472768,
+  "minecraft:light_block_11": -61538304,
+  "minecraft:light_block_12": -61603840,
+  "minecraft:light_block_13": -61669376,
+  "minecraft:light_block_14": -61734912,
+  "minecraft:light_block_15": -61800448,
+  "minecraft:light_block_2": -60948480,
+  "minecraft:light_block_3": -61014016,
+  "minecraft:light_block_4": -61079552,
+  "minecraft:light_block_5": -61145088,
+  "minecraft:light_block_6": -61210624,
+  "minecraft:light_block_7": -61276160,
+  "minecraft:light_block_8": -61341696,
+  "minecraft:light_block_9": -61407232,
+  "minecraft:light_blue_bundle": 17760256,
+  "minecraft:light_blue_candle": -27262976,
+  "minecraft:light_blue_carpet": -39256064,
+  "minecraft:light_blue_concrete": -41287680,
+  "minecraft:light_blue_concrete_powder": -46596096,
+  "minecraft:light_blue_dye": 28770304,
+  "minecraft:light_blue_glazed_terracotta": 14614528,
+  "minecraft:light_blue_harness": 49938432,
+  "minecraft:light_blue_shulker_box": -40304640,
+  "minecraft:light_blue_stained_glass": -44236800,
+  "minecraft:light_blue_stained_glass_pane": -42270720,
+  "minecraft:light_blue_terracotta": -47579136,
+  "minecraft:light_blue_wool": -36831232,
+  "minecraft:light_gray_bundle": 17825792,
+  "minecraft:light_gray_candle": -27590656,
+  "minecraft:light_gray_carpet": -39583744,
+  "minecraft:light_gray_concrete": -41615360,
+  "minecraft:light_gray_concrete_powder": -46923776,
+  "minecraft:light_gray_dye": 28442624,
+  "minecraft:light_gray_harness": 50003968,
+  "minecraft:light_gray_shulker_box": -40632320,
+  "minecraft:light_gray_stained_glass": -44564480,
+  "minecraft:light_gray_stained_glass_pane": -42598400,
+  "minecraft:light_gray_terracotta": -47906816,
+  "minecraft:light_gray_wool": -36175872,
+  "minecraft:light_weighted_pressure_plate": 9633792,
+  "minecraft:lightning_rod": -20447232,
+  "minecraft:lilac": -56557568,
+  "minecraft:lily_of_the_valley": -54984704,
+  "minecraft:lime_bundle": 17891328,
+  "minecraft:lime_candle": -27394048,
+  "minecraft:lime_carpet": -39387136,
+  "minecraft:lime_concrete": -41418752,
+  "minecraft:lime_concrete_powder": -46727168,
+  "minecraft:lime_dye": 28639232,
+  "minecraft:lime_glazed_terracotta": 14745600,
+  "minecraft:lime_harness": 50069504,
+  "minecraft:lime_shulker_box": -40435712,
+  "minecraft:lime_stained_glass": -44367872,
+  "minecraft:lime_stained_glass_pane": -42401792,
+  "minecraft:lime_terracotta": -47710208,
+  "minecraft:lime_wool": -36634624,
+  "minecraft:lingering_potion": 39387136,
+  "minecraft:lit_pumpkin": 5963776,
+  "minecraft:llama_spawn_egg": 33226752,
+  "minecraft:lodestone": -14548992,
+  "minecraft:lodestone_compass": 42270720,
+  "minecraft:loom": -13369344,
+  "minecraft:mace": 23003136,
+  "minecraft:magenta_bundle": 17956864,
+  "minecraft:magenta_candle": -27197440,
+  "minecraft:magenta_carpet": -39190528,
+  "minecraft:magenta_concrete": -41222144,
+  "minecraft:magenta_concrete_powder": -46530560,
+  "minecraft:magenta_dye": 28835840,
+  "minecraft:magenta_glazed_terracotta": 14548992,
+  "minecraft:magenta_harness": 50135040,
+  "minecraft:magenta_shulker_box": -40239104,
+  "minecraft:magenta_stained_glass": -44171264,
+  "minecraft:magenta_stained_glass_pane": -42205184,
+  "minecraft:magenta_terracotta": -47513600,
+  "minecraft:magenta_wool": -37027840,
+  "minecraft:magma": 13959168,
+  "minecraft:magma_cream": 30343168,
+  "minecraft:magma_cube_spawn_egg": 31981568,
+  "minecraft:mangrove_boat": 44367872,
+  "minecraft:mangrove_button": -31916032,
+  "minecraft:mangrove_chest_boat": 44957696,
+  "minecraft:mangrove_door": 44236800,
+  "minecraft:mangrove_fence": -32178176,
+  "minecraft:mangrove_fence_gate": -32243712,
+  "minecraft:mangrove_hanging_sign": -33292288,
+  "minecraft:mangrove_leaves": -30932992,
+  "minecraft:mangrove_log": -31719424,
+  "minecraft:mangrove_planks": -31850496,
+  "minecraft:mangrove_pressure_plate": -32112640,
+  "minecraft:mangrove_propagule": -31064064,
+  "minecraft:mangrove_roots": -31588352,
+  "minecraft:mangrove_shelf": -69009408,
+  "minecraft:mangrove_sign": 44302336,
+  "minecraft:mangrove_slab": -32047104,
+  "minecraft:mangrove_stairs": -31981568,
+  "minecraft:mangrove_trapdoor": -32505856,
+  "minecraft:mangrove_wood": -32571392,
+  "minecraft:medium_amethyst_bud": -21692416,
+  "minecraft:melon_block": 6750208,
+  "minecraft:melon_seeds": 21102592,
+  "minecraft:melon_slice": 19726336,
+  "minecraft:milk_bucket": 25755648,
+  "minecraft:minecart": 26345472,
+  "minecraft:miner_pottery_sherd": 46727168,
+  "minecraft:mob_spawner": 3407872,
+  "minecraft:mojang_banner_pattern": 40828928,
+  "minecraft:mooshroom_spawn_egg": 30998528,
+  "minecraft:moss_block": -20971520,
+  "minecraft:moss_carpet": -21954560,
+  "minecraft:mossy_cobblestone": 3145728,
+  "minecraft:mossy_cobblestone_slab": -58195968,
+  "minecraft:mossy_cobblestone_stairs": -11730944,
+  "minecraft:mossy_cobblestone_wall": -63635456,
+  "minecraft:mossy_stone_brick_slab": -10878976,
+  "minecraft:mossy_stone_brick_stairs": -11468800,
+  "minecraft:mossy_stone_brick_wall": -64094208,
+  "minecraft:mossy_stone_bricks": -56885248,
+  "minecraft:mourner_pottery_sherd": 46792704,
+  "minecraft:mud": -30998528,
+  "minecraft:mud_brick_slab": -31326208,
+  "minecraft:mud_brick_stairs": -31457280,
+  "minecraft:mud_brick_wall": -31522816,
+  "minecraft:mud_bricks": -31129600,
+  "minecraft:muddy_mangrove_roots": -31653888,
+  "minecraft:mule_spawn_egg": 32768e3,
+  "minecraft:mushroom_stem": -66060288,
+  "minecraft:mushroom_stew": 18939904,
+  "minecraft:music_disc_11": 38207488,
+  "minecraft:music_disc_13": 37552128,
+  "minecraft:music_disc_5": 44433408,
+  "minecraft:music_disc_blocks": 37683200,
+  "minecraft:music_disc_cat": 37617664,
+  "minecraft:music_disc_chirp": 37748736,
+  "minecraft:music_disc_creator": 54132736,
+  "minecraft:music_disc_creator_music_box": 54198272,
+  "minecraft:music_disc_far": 37814272,
+  "minecraft:music_disc_lava_chicken": 54394880,
+  "minecraft:music_disc_mall": 37879808,
+  "minecraft:music_disc_mellohi": 37945344,
+  "minecraft:music_disc_otherside": 43778048,
+  "minecraft:music_disc_pigstep": 43384832,
+  "minecraft:music_disc_precipice": 54263808,
+  "minecraft:music_disc_relic": 48627712,
+  "minecraft:music_disc_stal": 38010880,
+  "minecraft:music_disc_strad": 38076416,
+  "minecraft:music_disc_tears": 54329344,
+  "minecraft:music_disc_wait": 38273024,
+  "minecraft:music_disc_ward": 38141952,
+  "minecraft:mutton": 38600704,
+  "minecraft:mycelium": 7208960,
+  "minecraft:name_tag": 38469632,
+  "minecraft:nautilus_shell": 39911424,
+  "minecraft:nautilus_spawn_egg": 51380224,
+  "minecraft:nether_brick": 7340032,
+  "minecraft:nether_brick_fence": 7405568,
+  "minecraft:nether_brick_slab": -57475072,
+  "minecraft:nether_brick_stairs": 7471104,
+  "minecraft:nether_brick_wall": -64159744,
+  "minecraft:nether_gold_ore": -18874368,
+  "minecraft:nether_sprouts": 43450368,
+  "minecraft:nether_star": 36503552,
+  "minecraft:nether_wart": 21168128,
+  "minecraft:nether_wart_block": 14024704,
+  "minecraft:netherbrick": 36831232,
+  "minecraft:netherite_axe": 42532864,
+  "minecraft:netherite_block": -17694720,
+  "minecraft:netherite_boots": 42926080,
+  "minecraft:netherite_chestplate": 42795008,
+  "minecraft:netherite_helmet": 42729472,
+  "minecraft:netherite_hoe": 42598400,
+  "minecraft:netherite_horse_armor": 51904512,
+  "minecraft:netherite_ingot": 42663936,
+  "minecraft:netherite_leggings": 42860544,
+  "minecraft:netherite_nautilus_armor": 51838976,
+  "minecraft:netherite_pickaxe": 42467328,
+  "minecraft:netherite_scrap": 42991616,
+  "minecraft:netherite_shovel": 42401792,
+  "minecraft:netherite_spear": 17104896,
+  "minecraft:netherite_sword": 42336256,
+  "minecraft:netherite_upgrade_smithing_template": 47382528,
+  "minecraft:netherrack": 5701632,
+  "minecraft:normal_stone_slab": -58916864,
+  "minecraft:normal_stone_stairs": -11796480,
+  "minecraft:noteblock": 1638400,
+  "minecraft:oak_boat": 26673152,
+  "minecraft:oak_chest_boat": 44564480,
+  "minecraft:oak_fence": 5570560,
+  "minecraft:oak_hanging_sign": -32768e3,
+  "minecraft:oak_leaves": 1179648,
+  "minecraft:oak_log": 1114112,
+  "minecraft:oak_planks": 327680,
+  "minecraft:oak_sapling": 393216,
+  "minecraft:oak_shelf": -68616192,
+  "minecraft:oak_sign": 25559040,
+  "minecraft:oak_slab": 10354688,
+  "minecraft:oak_stairs": 3473408,
+  "minecraft:oak_wood": -13893632,
+  "minecraft:observer": 16449536,
+  "minecraft:obsidian": 3211264,
+  "minecraft:ocelot_spawn_egg": 31719424,
+  "minecraft:ochre_froglight": -30867456,
+  "minecraft:ominous_bottle": 41549824,
+  "minecraft:ominous_trial_key": 18481152,
+  "minecraft:open_eyeblossom": -66715648,
+  "minecraft:orange_bundle": 18022400,
+  "minecraft:orange_candle": -27131904,
+  "minecraft:orange_carpet": -39124992,
+  "minecraft:orange_concrete": -41156608,
+  "minecraft:orange_concrete_powder": -46465024,
+  "minecraft:orange_dye": 28901376,
+  "minecraft:orange_glazed_terracotta": 14483456,
+  "minecraft:orange_harness": 50200576,
+  "minecraft:orange_shulker_box": -40173568,
+  "minecraft:orange_stained_glass": -44105728,
+  "minecraft:orange_stained_glass_pane": -42139648,
+  "minecraft:orange_terracotta": -47448064,
+  "minecraft:orange_tulip": -54657024,
+  "minecraft:orange_wool": -36503552,
+  "minecraft:oxeye_daisy": -54853632,
+  "minecraft:oxidized_chiseled_copper": -50003968,
+  "minecraft:oxidized_copper": -22478848,
+  "minecraft:oxidized_copper_bars": -70057984,
+  "minecraft:oxidized_copper_bulb": -51052544,
+  "minecraft:oxidized_copper_chain": -70582272,
+  "minecraft:oxidized_copper_chest": -67764224,
+  "minecraft:oxidized_copper_door": -51576832,
+  "minecraft:oxidized_copper_golem_statue": -68288512,
+  "minecraft:oxidized_copper_grate": -50528256,
+  "minecraft:oxidized_copper_lantern": -71172096,
+  "minecraft:oxidized_copper_trapdoor": -52101120,
+  "minecraft:oxidized_cut_copper": -22937600,
+  "minecraft:oxidized_cut_copper_slab": -23855104,
+  "minecraft:oxidized_cut_copper_stairs": -23396352,
+  "minecraft:oxidized_lightning_rod": -69533696,
+  "minecraft:packed_ice": 11403264,
+  "minecraft:packed_mud": -31260672,
+  "minecraft:painting": 25493504,
+  "minecraft:pale_hanging_moss": -66256896,
+  "minecraft:pale_moss_block": -66125824,
+  "minecraft:pale_moss_carpet": -66191360,
+  "minecraft:pale_oak_boat": 49020928,
+  "minecraft:pale_oak_button": -64815104,
+  "minecraft:pale_oak_chest_boat": 49086464,
+  "minecraft:pale_oak_door": -64880640,
+  "minecraft:pale_oak_fence": -64946176,
+  "minecraft:pale_oak_fence_gate": -65011712,
+  "minecraft:pale_oak_hanging_sign": -65077248,
+  "minecraft:pale_oak_leaves": -65994752,
+  "minecraft:pale_oak_log": -65208320,
+  "minecraft:pale_oak_planks": -65273856,
+  "minecraft:pale_oak_pressure_plate": -65339392,
+  "minecraft:pale_oak_sapling": -65929216,
+  "minecraft:pale_oak_shelf": -69140480,
+  "minecraft:pale_oak_sign": 49152e3,
+  "minecraft:pale_oak_slab": -65404928,
+  "minecraft:pale_oak_stairs": -65536e3,
+  "minecraft:pale_oak_trapdoor": -65667072,
+  "minecraft:pale_oak_wood": -65863680,
+  "minecraft:panda_spawn_egg": 34275328,
+  "minecraft:paper": 27394048,
+  "minecraft:parched_spawn_egg": 51511296,
+  "minecraft:parrot_spawn_egg": 33554432,
+  "minecraft:pearlescent_froglight": -30736384,
+  "minecraft:peony": -56819712,
+  "minecraft:petrified_oak_slab": -59113472,
+  "minecraft:phantom_membrane": 40173568,
+  "minecraft:phantom_spawn_egg": 34078720,
+  "minecraft:pig_spawn_egg": 30801920,
+  "minecraft:piglin_banner_pattern": 41025536,
+  "minecraft:piglin_brute_spawn_egg": 34930688,
+  "minecraft:piglin_head": -63569920,
+  "minecraft:piglin_spawn_egg": 34799616,
+  "minecraft:pillager_spawn_egg": 34406400,
+  "minecraft:pink_bundle": 18087936,
+  "minecraft:pink_candle": -27459584,
+  "minecraft:pink_carpet": -39452672,
+  "minecraft:pink_concrete": -41484288,
+  "minecraft:pink_concrete_powder": -46792704,
+  "minecraft:pink_dye": 28573696,
+  "minecraft:pink_glazed_terracotta": 14811136,
+  "minecraft:pink_harness": 50266112,
+  "minecraft:pink_petals": -35979264,
+  "minecraft:pink_shulker_box": -40501248,
+  "minecraft:pink_stained_glass": -44433408,
+  "minecraft:pink_stained_glass_pane": -42467328,
+  "minecraft:pink_terracotta": -47775744,
+  "minecraft:pink_tulip": -54788096,
+  "minecraft:pink_wool": -37093376,
+  "minecraft:piston": 2162688,
+  "minecraft:pitcher_plant": -40108032,
+  "minecraft:pitcher_pod": 21364736,
+  "minecraft:player_head": -63373312,
+  "minecraft:plenty_pottery_sherd": 46858240,
+  "minecraft:podzol": 15925248,
+  "minecraft:pointed_dripstone": -20185088,
+  "minecraft:poisonous_potato": 20381696,
+  "minecraft:polar_bear_spawn_egg": 33161216,
+  "minecraft:polished_andesite": -38993920,
+  "minecraft:polished_andesite_slab": -58458112,
+  "minecraft:polished_andesite_stairs": -11403264,
+  "minecraft:polished_basalt": -15400960,
+  "minecraft:polished_blackstone": -19070976,
+  "minecraft:polished_blackstone_brick_slab": -18612224,
+  "minecraft:polished_blackstone_brick_stairs": -18022400,
+  "minecraft:polished_blackstone_brick_wall": -18219008,
+  "minecraft:polished_blackstone_bricks": -17956864,
+  "minecraft:polished_blackstone_button": -19398656,
+  "minecraft:polished_blackstone_pressure_plate": -19333120,
+  "minecraft:polished_blackstone_slab": -19202048,
+  "minecraft:polished_blackstone_stairs": -19136512,
+  "minecraft:polished_blackstone_wall": -19464192,
+  "minecraft:polished_deepslate": -25100288,
+  "minecraft:polished_deepslate_slab": -25165824,
+  "minecraft:polished_deepslate_stairs": -25231360,
+  "minecraft:polished_deepslate_wall": -25296896,
+  "minecraft:polished_diorite": -38862848,
+  "minecraft:polished_diorite_slab": -58654720,
+  "minecraft:polished_diorite_stairs": -11337728,
+  "minecraft:polished_granite": -38731776,
+  "minecraft:polished_granite_slab": -58785792,
+  "minecraft:polished_granite_stairs": -11272192,
+  "minecraft:polished_tuff": -49020928,
+  "minecraft:polished_tuff_slab": -49086464,
+  "minecraft:polished_tuff_stairs": -49217536,
+  "minecraft:polished_tuff_wall": -49283072,
+  "minecraft:popped_chorus_fruit": 39190528,
+  "minecraft:poppy": 2490368,
+  "minecraft:porkchop": 19070976,
+  "minecraft:potato": 20250624,
+  "minecraft:potion": 30081024,
+  "minecraft:powder_snow_bucket": 26214400,
+  "minecraft:prismarine": 11010048,
+  "minecraft:prismarine_brick_slab": -58130432,
+  "minecraft:prismarine_bricks": -62128128,
+  "minecraft:prismarine_bricks_stairs": -262144,
+  "minecraft:prismarine_crystals": 38535168,
+  "minecraft:prismarine_shard": 39583744,
+  "minecraft:prismarine_slab": -57999360,
+  "minecraft:prismarine_stairs": -131072,
+  "minecraft:prismarine_wall": -64290816,
+  "minecraft:prize_pottery_sherd": 46923776,
+  "minecraft:pufferfish": 19398656,
+  "minecraft:pufferfish_bucket": 26148864,
+  "minecraft:pufferfish_spawn_egg": 33751040,
+  "minecraft:pumpkin": 5636096,
+  "minecraft:pumpkin_pie": 20512768,
+  "minecraft:pumpkin_seeds": 21037056,
+  "minecraft:purple_bundle": 18153472,
+  "minecraft:purple_candle": -27721728,
+  "minecraft:purple_carpet": -39714816,
+  "minecraft:purple_concrete": -41746432,
+  "minecraft:purple_concrete_powder": -47054848,
+  "minecraft:purple_dye": 28311552,
+  "minecraft:purple_glazed_terracotta": 14352384,
+  "minecraft:purple_harness": 50331648,
+  "minecraft:purple_shulker_box": -40763392,
+  "minecraft:purple_stained_glass": -44695552,
+  "minecraft:purple_stained_glass_pane": -42729472,
+  "minecraft:purple_terracotta": -48037888,
+  "minecraft:purple_wool": -36962304,
+  "minecraft:purpur_block": 13172736,
+  "minecraft:purpur_pillar": -62324736,
+  "minecraft:purpur_slab": -57933824,
+  "minecraft:purpur_stairs": 13303808,
+  "minecraft:quartz": 36896768,
+  "minecraft:quartz_block": 10158080,
+  "minecraft:quartz_bricks": -19922944,
+  "minecraft:quartz_ore": 10027008,
+  "minecraft:quartz_pillar": -62521344,
+  "minecraft:quartz_slab": -57409536,
+  "minecraft:quartz_stairs": 10223616,
+  "minecraft:rabbit": 20774912,
+  "minecraft:rabbit_foot": 37158912,
+  "minecraft:rabbit_hide": 37224448,
+  "minecraft:rabbit_spawn_egg": 32243712,
+  "minecraft:rabbit_stew": 20905984,
+  "minecraft:rail": 4325376,
+  "minecraft:raiser_armor_trim_smithing_template": 48300032,
+  "minecraft:ravager_spawn_egg": 34537472,
+  "minecraft:raw_copper": 35848192,
+  "minecraft:raw_copper_block": -29622272,
+  "minecraft:raw_gold": 35782656,
+  "minecraft:raw_gold_block": -29687808,
+  "minecraft:raw_iron": 35717120,
+  "minecraft:raw_iron_block": -29556736,
+  "minecraft:recovery_compass": 45088768,
+  "minecraft:red_bundle": 18219008,
+  "minecraft:red_candle": -27983872,
+  "minecraft:red_carpet": -39976960,
+  "minecraft:red_concrete": -42008576,
+  "minecraft:red_concrete_powder": -47316992,
+  "minecraft:red_dye": 28049408,
+  "minecraft:red_glazed_terracotta": 15335424,
+  "minecraft:red_harness": 50397184,
+  "minecraft:red_mushroom": 2621440,
+  "minecraft:red_mushroom_block": 6553600,
+  "minecraft:red_nether_brick": 14090240,
+  "minecraft:red_nether_brick_slab": -58327040,
+  "minecraft:red_nether_brick_stairs": -12058624,
+  "minecraft:red_nether_brick_wall": -64421888,
+  "minecraft:red_sand": -62193664,
+  "minecraft:red_sandstone": 11730944,
+  "minecraft:red_sandstone_slab": 11927552,
+  "minecraft:red_sandstone_stairs": 11796480,
+  "minecraft:red_sandstone_wall": -64356352,
+  "minecraft:red_shulker_box": -41025536,
+  "minecraft:red_stained_glass": -44957696,
+  "minecraft:red_stained_glass_pane": -42991616,
+  "minecraft:red_terracotta": -48300032,
+  "minecraft:red_tulip": -54591488,
+  "minecraft:red_wool": -36438016,
+  "minecraft:redstone": 26542080,
+  "minecraft:redstone_block": 9961472,
+  "minecraft:redstone_lamp": 8060928,
+  "minecraft:redstone_ore": 4784128,
+  "minecraft:redstone_torch": 4980736,
+  "minecraft:reinforced_deepslate": -30539776,
+  "minecraft:repeater": 29556736,
+  "minecraft:repeating_command_block": 12320768,
+  "minecraft:resin_block": -66912256,
+  "minecraft:resin_brick": 49283072,
+  "minecraft:resin_brick_slab": -66453504,
+  "minecraft:resin_brick_stairs": -66584576,
+  "minecraft:resin_brick_wall": -66650112,
+  "minecraft:resin_bricks": -66387968,
+  "minecraft:resin_clump": -66977792,
+  "minecraft:respawn_anchor": -17825792,
+  "minecraft:rib_armor_trim_smithing_template": 48037888,
+  "minecraft:rose_bush": -56754176,
+  "minecraft:rotten_flesh": 20054016,
+  "minecraft:saddle": 26411008,
+  "minecraft:salmon": 19267584,
+  "minecraft:salmon_bucket": 26017792,
+  "minecraft:salmon_spawn_egg": 33816576,
+  "minecraft:sand": 786432,
+  "minecraft:sandstone": 1572864,
+  "minecraft:sandstone_slab": -57147392,
+  "minecraft:sandstone_stairs": 8388608,
+  "minecraft:sandstone_wall": -63897600,
+  "minecraft:scaffolding": -10813440,
+  "minecraft:scrape_pottery_sherd": 46989312,
+  "minecraft:sculk": -30015488,
+  "minecraft:sculk_catalyst": -30146560,
+  "minecraft:sculk_sensor": -20119552,
+  "minecraft:sculk_shrieker": -30212096,
+  "minecraft:sculk_vein": -30081024,
+  "minecraft:sea_lantern": 11075584,
+  "minecraft:sea_pickle": -10223616,
+  "minecraft:seagrass": -8519680,
+  "minecraft:sentry_armor_trim_smithing_template": 47448064,
+  "minecraft:shaper_armor_trim_smithing_template": 48365568,
+  "minecraft:sheaf_pottery_sherd": 47054848,
+  "minecraft:shears": 29687808,
+  "minecraft:sheep_spawn_egg": 30867456,
+  "minecraft:shelter_pottery_sherd": 47120384,
+  "minecraft:shield": 25362432,
+  "minecraft:short_dry_grass": -67371008,
+  "minecraft:short_grass": 2031616,
+  "minecraft:shroomlight": -15073280,
+  "minecraft:shulker_shell": 39649280,
+  "minecraft:shulker_spawn_egg": 32964608,
+  "minecraft:silence_armor_trim_smithing_template": 48168960,
+  "minecraft:silver_glazed_terracotta": 14942208,
+  "minecraft:silverfish_spawn_egg": 31195136,
+  "minecraft:skeleton_horse_spawn_egg": 32833536,
+  "minecraft:skeleton_skull": 9437184,
+  "minecraft:skeleton_spawn_egg": 31260672,
+  "minecraft:skull_banner_pattern": 40763392,
+  "minecraft:skull_pottery_sherd": 47185920,
+  "minecraft:slime": 10813440,
+  "minecraft:slime_ball": 27525120,
+  "minecraft:slime_spawn_egg": 31326208,
+  "minecraft:small_amethyst_bud": -21757952,
+  "minecraft:small_dripleaf_block": -22020096,
+  "minecraft:smithing_table": -13238272,
+  "minecraft:smoker": -12976128,
+  "minecraft:smooth_basalt": -24707072,
+  "minecraft:smooth_quartz": -62586880,
+  "minecraft:smooth_quartz_slab": -58851328,
+  "minecraft:smooth_quartz_stairs": -12124160,
+  "minecraft:smooth_red_sandstone": -62783488,
+  "minecraft:smooth_red_sandstone_slab": -58392576,
+  "minecraft:smooth_red_sandstone_stairs": -11534336,
+  "minecraft:smooth_sandstone": -61997056,
+  "minecraft:smooth_sandstone_slab": -58261504,
+  "minecraft:smooth_sandstone_stairs": -11599872,
+  "minecraft:smooth_stone": -11993088,
+  "minecraft:smooth_stone_slab": 2883584,
+  "minecraft:sniffer_egg": -39059456,
+  "minecraft:sniffer_spawn_egg": 34996224,
+  "minecraft:snort_pottery_sherd": 47251456,
+  "minecraft:snout_armor_trim_smithing_template": 47972352,
+  "minecraft:snow": 5242880,
+  "minecraft:snow_golem_spawn_egg": 35389440,
+  "minecraft:snow_layer": 5111808,
+  "minecraft:snowball": 26607616,
+  "minecraft:soul_campfire": 43515904,
+  "minecraft:soul_lantern": -17629184,
+  "minecraft:soul_sand": 5767168,
+  "minecraft:soul_soil": -15466496,
+  "minecraft:soul_torch": -17563648,
+  "minecraft:spider_eye": 20119552,
+  "minecraft:spider_spawn_egg": 31391744,
+  "minecraft:spire_armor_trim_smithing_template": 48103424,
+  "minecraft:splash_potion": 39321600,
+  "minecraft:sponge": 1245184,
+  "minecraft:spore_blossom": -21037056,
+  "minecraft:spruce_boat": 26869760,
+  "minecraft:spruce_button": -9437184,
+  "minecraft:spruce_chest_boat": 44761088,
+  "minecraft:spruce_door": 38797312,
+  "minecraft:spruce_fence": -37945344,
+  "minecraft:spruce_fence_gate": 11993088,
+  "minecraft:spruce_hanging_sign": -32833536,
+  "minecraft:spruce_leaves": -52428800,
+  "minecraft:spruce_log": -37289984,
+  "minecraft:spruce_planks": -48431104,
+  "minecraft:spruce_pressure_plate": -10092544,
+  "minecraft:spruce_sapling": -54067200,
+  "minecraft:spruce_shelf": -68681728,
+  "minecraft:spruce_sign": 40304640,
+  "minecraft:spruce_slab": -52690944,
+  "minecraft:spruce_stairs": 8781824,
+  "minecraft:spruce_trapdoor": -9764864,
+  "minecraft:spruce_wood": -53346304,
+  "minecraft:spyglass": 43712512,
+  "minecraft:squid_spawn_egg": 31653888,
+  "minecraft:stick": 23068672,
+  "minecraft:sticky_piston": 1900544,
+  "minecraft:stone": 65536,
+  "minecraft:stone_axe": 22675456,
+  "minecraft:stone_brick_slab": -57344e3,
+  "minecraft:stone_brick_stairs": 7143424,
+  "minecraft:stone_brick_wall": -64028672,
+  "minecraft:stone_bricks": 6422528,
+  "minecraft:stone_button": 5046272,
+  "minecraft:stone_hoe": 23724032,
+  "minecraft:stone_pickaxe": 22609920,
+  "minecraft:stone_pressure_plate": 4587520,
+  "minecraft:stone_shovel": 22544384,
+  "minecraft:stone_spear": 17170432,
+  "minecraft:stone_stairs": 4390912,
+  "minecraft:stone_sword": 22478848,
+  "minecraft:stonecutter_block": -12910592,
+  "minecraft:stray_spawn_egg": 32440320,
+  "minecraft:strider_spawn_egg": 34668544,
+  "minecraft:string": 23461888,
+  "minecraft:stripped_acacia_log": -524288,
+  "minecraft:stripped_acacia_wood": -53936128,
+  "minecraft:stripped_bamboo_block": -34603008,
+  "minecraft:stripped_birch_log": -393216,
+  "minecraft:stripped_birch_wood": -53805056,
+  "minecraft:stripped_cherry_log": -35061760,
+  "minecraft:stripped_cherry_wood": -35717120,
+  "minecraft:stripped_crimson_hyphae": -19660800,
+  "minecraft:stripped_crimson_stem": -15728640,
+  "minecraft:stripped_dark_oak_log": -589824,
+  "minecraft:stripped_dark_oak_wood": -54001664,
+  "minecraft:stripped_jungle_log": -458752,
+  "minecraft:stripped_jungle_wood": -53870592,
+  "minecraft:stripped_mangrove_log": -31784960,
+  "minecraft:stripped_mangrove_wood": -32636928,
+  "minecraft:stripped_oak_log": -655360,
+  "minecraft:stripped_oak_wood": -53673984,
+  "minecraft:stripped_pale_oak_log": -65142784,
+  "minecraft:stripped_pale_oak_wood": -65798144,
+  "minecraft:stripped_spruce_log": -327680,
+  "minecraft:stripped_spruce_wood": -53739520,
+  "minecraft:stripped_warped_hyphae": -19726336,
+  "minecraft:stripped_warped_stem": -15794176,
+  "minecraft:structure_block": 16515072,
+  "minecraft:structure_void": 14221312,
+  "minecraft:sugar": 29360128,
+  "minecraft:sugar_cane": 27328512,
+  "minecraft:sunflower": 11468800,
+  "minecraft:suspicious_gravel": -37552128,
+  "minecraft:suspicious_sand": -34668544,
+  "minecraft:suspicious_stew": 41353216,
+  "minecraft:sweet_berries": 20709376,
+  "minecraft:tadpole_bucket": 44040192,
+  "minecraft:tadpole_spawn_egg": 43974656,
+  "minecraft:tall_dry_grass": -67436544,
+  "minecraft:tall_grass": -56623104,
+  "minecraft:target": -15663104,
+  "minecraft:tide_armor_trim_smithing_template": 47906816,
+  "minecraft:tinted_glass": -21889024,
+  "minecraft:tnt": 3014656,
+  "minecraft:tnt_minecart": 36962304,
+  "minecraft:torch": 3276800,
+  "minecraft:torchflower": -37224448,
+  "minecraft:torchflower_seeds": 21299200,
+  "minecraft:totem_of_undying": 39780352,
+  "minecraft:trader_llama_spawn_egg": 45219840,
+  "minecraft:trapdoor": 6291456,
+  "minecraft:trapped_chest": 9568256,
+  "minecraft:trial_key": 18546688,
+  "minecraft:trial_spawner": -20643840,
+  "minecraft:trident": 38338560,
+  "minecraft:tripwire_hook": 8585216,
+  "minecraft:tropical_fish": 19333120,
+  "minecraft:tropical_fish_bucket": 26083328,
+  "minecraft:tropical_fish_spawn_egg": 33619968,
+  "minecraft:tube_coral": -8585216,
+  "minecraft:tube_coral_block": -8650752,
+  "minecraft:tube_coral_fan": -8716288,
+  "minecraft:tuff": -21823488,
+  "minecraft:tuff_brick_slab": -49479680,
+  "minecraft:tuff_brick_stairs": -49610752,
+  "minecraft:tuff_brick_wall": -49676288,
+  "minecraft:tuff_bricks": -49414144,
+  "minecraft:tuff_slab": -48758784,
+  "minecraft:tuff_stairs": -48889856,
+  "minecraft:tuff_wall": -48955392,
+  "minecraft:turtle_egg": -10420224,
+  "minecraft:turtle_helmet": 40108032,
+  "minecraft:turtle_scute": 40042496,
+  "minecraft:turtle_spawn_egg": 34013184,
+  "minecraft:twisting_vines": -18808832,
+  "minecraft:undyed_shulker_box": 13434880,
+  "minecraft:vault": -20578304,
+  "minecraft:verdant_froglight": -30801920,
+  "minecraft:vex_armor_trim_smithing_template": 47841280,
+  "minecraft:vex_spawn_egg": 33423360,
+  "minecraft:villager_spawn_egg": 31588352,
+  "minecraft:vindicator_spawn_egg": 33292288,
+  "minecraft:vine": 6946816,
+  "minecraft:wandering_trader_spawn_egg": 34471936,
+  "minecraft:ward_armor_trim_smithing_template": 47710208,
+  "minecraft:warden_spawn_egg": 44171264,
+  "minecraft:warped_button": -17104896,
+  "minecraft:warped_door": 43253760,
+  "minecraft:warped_fence": -16842752,
+  "minecraft:warped_fence_gate": -16973824,
+  "minecraft:warped_fungus": -15007744,
+  "minecraft:warped_fungus_on_a_stick": 43319296,
+  "minecraft:warped_hanging_sign": -33226752,
+  "minecraft:warped_hyphae": -19529728,
+  "minecraft:warped_nylium": -15269888,
+  "minecraft:warped_planks": -15925248,
+  "minecraft:warped_pressure_plate": -17235968,
+  "minecraft:warped_roots": -14680064,
+  "minecraft:warped_shelf": -69337088,
+  "minecraft:warped_sign": 43122688,
+  "minecraft:warped_slab": -17367040,
+  "minecraft:warped_stairs": -16711680,
+  "minecraft:warped_stem": -14811136,
+  "minecraft:warped_trapdoor": -16187392,
+  "minecraft:warped_wart_block": -14876672,
+  "minecraft:water_bucket": 25821184,
+  "minecraft:waterlily": 7274496,
+  "minecraft:waxed_chiseled_copper": -50069504,
+  "minecraft:waxed_copper": -22544384,
+  "minecraft:waxed_copper_bars": -70123520,
+  "minecraft:waxed_copper_bulb": -51118080,
+  "minecraft:waxed_copper_chain": -70647808,
+  "minecraft:waxed_copper_chest": -67829760,
+  "minecraft:waxed_copper_door": -51642368,
+  "minecraft:waxed_copper_golem_statue": -68354048,
+  "minecraft:waxed_copper_grate": -50593792,
+  "minecraft:waxed_copper_lantern": -71237632,
+  "minecraft:waxed_copper_trapdoor": -52166656,
+  "minecraft:waxed_cut_copper": -23003136,
+  "minecraft:waxed_cut_copper_slab": -23920640,
+  "minecraft:waxed_cut_copper_stairs": -23461888,
+  "minecraft:waxed_exposed_chiseled_copper": -50135040,
+  "minecraft:waxed_exposed_copper": -22609920,
+  "minecraft:waxed_exposed_copper_bars": -70189056,
+  "minecraft:waxed_exposed_copper_bulb": -51183616,
+  "minecraft:waxed_exposed_copper_chain": -70713344,
+  "minecraft:waxed_exposed_copper_chest": -67895296,
+  "minecraft:waxed_exposed_copper_door": -51707904,
+  "minecraft:waxed_exposed_copper_golem_statue": -68419584,
+  "minecraft:waxed_exposed_copper_grate": -50659328,
+  "minecraft:waxed_exposed_copper_lantern": -71303168,
+  "minecraft:waxed_exposed_copper_trapdoor": -52232192,
+  "minecraft:waxed_exposed_cut_copper": -23068672,
+  "minecraft:waxed_exposed_cut_copper_slab": -23986176,
+  "minecraft:waxed_exposed_cut_copper_stairs": -23527424,
+  "minecraft:waxed_exposed_lightning_rod": -69664768,
+  "minecraft:waxed_lightning_rod": -69599232,
+  "minecraft:waxed_oxidized_chiseled_copper": -50200576,
+  "minecraft:waxed_oxidized_copper": -29229056,
+  "minecraft:waxed_oxidized_copper_bars": -70320128,
+  "minecraft:waxed_oxidized_copper_bulb": -51314688,
+  "minecraft:waxed_oxidized_copper_chain": -70844416,
+  "minecraft:waxed_oxidized_copper_chest": -68026368,
+  "minecraft:waxed_oxidized_copper_door": -51838976,
+  "minecraft:waxed_oxidized_copper_golem_statue": -68550656,
+  "minecraft:waxed_oxidized_copper_grate": -50790400,
+  "minecraft:waxed_oxidized_copper_lantern": -71434240,
+  "minecraft:waxed_oxidized_copper_trapdoor": -52363264,
+  "minecraft:waxed_oxidized_cut_copper": -29294592,
+  "minecraft:waxed_oxidized_cut_copper_slab": -29425664,
+  "minecraft:waxed_oxidized_cut_copper_stairs": -29360128,
+  "minecraft:waxed_oxidized_lightning_rod": -69795840,
+  "minecraft:waxed_weathered_chiseled_copper": -50266112,
+  "minecraft:waxed_weathered_copper": -22675456,
+  "minecraft:waxed_weathered_copper_bars": -70254592,
+  "minecraft:waxed_weathered_copper_bulb": -51249152,
+  "minecraft:waxed_weathered_copper_chain": -70778880,
+  "minecraft:waxed_weathered_copper_chest": -67960832,
+  "minecraft:waxed_weathered_copper_door": -51773440,
+  "minecraft:waxed_weathered_copper_golem_statue": -68485120,
+  "minecraft:waxed_weathered_copper_grate": -50724864,
+  "minecraft:waxed_weathered_copper_lantern": -71368704,
+  "minecraft:waxed_weathered_copper_trapdoor": -52297728,
+  "minecraft:waxed_weathered_cut_copper": -23134208,
+  "minecraft:waxed_weathered_cut_copper_slab": -24051712,
+  "minecraft:waxed_weathered_cut_copper_stairs": -23592960,
+  "minecraft:waxed_weathered_lightning_rod": -69730304,
+  "minecraft:wayfinder_armor_trim_smithing_template": 48234496,
+  "minecraft:weathered_chiseled_copper": -49938432,
+  "minecraft:weathered_copper": -22413312,
+  "minecraft:weathered_copper_bars": -69992448,
+  "minecraft:weathered_copper_bulb": -50987008,
+  "minecraft:weathered_copper_chain": -70516736,
+  "minecraft:weathered_copper_chest": -67698688,
+  "minecraft:weathered_copper_door": -51511296,
+  "minecraft:weathered_copper_golem_statue": -68222976,
+  "minecraft:weathered_copper_grate": -50462720,
+  "minecraft:weathered_copper_lantern": -71106560,
+  "minecraft:weathered_copper_trapdoor": -52035584,
+  "minecraft:weathered_cut_copper": -22872064,
+  "minecraft:weathered_cut_copper_slab": -23789568,
+  "minecraft:weathered_cut_copper_stairs": -23330816,
+  "minecraft:weathered_lightning_rod": -69468160,
+  "minecraft:web": 1966080,
+  "minecraft:weeping_vines": -15138816,
+  "minecraft:wet_sponge": -64487424,
+  "minecraft:wheat": 23986176,
+  "minecraft:wheat_seeds": 20971520,
+  "minecraft:white_bundle": 18284544,
+  "minecraft:white_candle": -27066368,
+  "minecraft:white_carpet": 11206656,
+  "minecraft:white_concrete": 15466496,
+  "minecraft:white_concrete_powder": 15532032,
+  "minecraft:white_dye": 28966912,
+  "minecraft:white_glazed_terracotta": 14417920,
+  "minecraft:white_harness": 50462720,
+  "minecraft:white_shulker_box": 14286848,
+  "minecraft:white_stained_glass": 15794176,
+  "minecraft:white_stained_glass_pane": 10485760,
+  "minecraft:white_terracotta": 10420224,
+  "minecraft:white_tulip": -54722560,
+  "minecraft:white_wool": 2293760,
+  "minecraft:wild_armor_trim_smithing_template": 47644672,
+  "minecraft:wildflowers": -67108864,
+  "minecraft:wind_charge": 18612224,
+  "minecraft:witch_spawn_egg": 31784960,
+  "minecraft:wither_rose": -14155776,
+  "minecraft:wither_skeleton_skull": -63242240,
+  "minecraft:wither_skeleton_spawn_egg": 32636928,
+  "minecraft:wither_spawn_egg": 35520512,
+  "minecraft:wolf_armor": 48955392,
+  "minecraft:wolf_spawn_egg": 30932992,
+  "minecraft:wooden_axe": 22413312,
+  "minecraft:wooden_button": 9371648,
+  "minecraft:wooden_door": 25624576,
+  "minecraft:wooden_hoe": 23658496,
+  "minecraft:wooden_pickaxe": 22347776,
+  "minecraft:wooden_pressure_plate": 4718592,
+  "minecraft:wooden_shovel": 22282240,
+  "minecraft:wooden_spear": 17235968,
+  "minecraft:wooden_sword": 22216704,
+  "minecraft:writable_book": 36044800,
+  "minecraft:yellow_bundle": 18350080,
+  "minecraft:yellow_candle": -27328512,
+  "minecraft:yellow_carpet": -39321600,
+  "minecraft:yellow_concrete": -41353216,
+  "minecraft:yellow_concrete_powder": -46661632,
+  "minecraft:yellow_dye": 28704768,
+  "minecraft:yellow_glazed_terracotta": 14680064,
+  "minecraft:yellow_harness": 50528256,
+  "minecraft:yellow_shulker_box": -40370176,
+  "minecraft:yellow_stained_glass": -44302336,
+  "minecraft:yellow_stained_glass_pane": -42336256,
+  "minecraft:yellow_terracotta": -47644672,
+  "minecraft:yellow_wool": -36569088,
+  "minecraft:zoglin_spawn_egg": 34865152,
+  "minecraft:zombie_head": -63307776,
+  "minecraft:zombie_horse_spawn_egg": 32899072,
+  "minecraft:zombie_nautilus_spawn_egg": 51445760,
+  "minecraft:zombie_pigman_spawn_egg": 31522816,
+  "minecraft:zombie_spawn_egg": 31457280,
+  "minecraft:zombie_villager_spawn_egg": 33488896
+};
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\render\blockRender.js
+var VANILLA_NAMESPACE = "minecraft:";
+var MAX_SHIFTED_VANILLA_RAW_ID = 256;
+function normalizeVanillaBlockTypeId(typeId) {
+  const exceptions = {
+    "minecraft:reeds": "minecraft:sugar_cane"
+  };
+  if (exceptions[typeId]) {
+    return exceptions[typeId];
+  }
+  if (!typeId.startsWith(VANILLA_NAMESPACE) || !typeId.includes("slab") || !typeId.includes("double")) {
+    return typeId;
+  }
+  const base = typeId.slice(VANILLA_NAMESPACE.length).replace(/^double_/, "").replace(/_double$/, "").replace(/_double_/, "_").replace(/^slab_/, "").replace(/_slab$/, "");
+  const candidates = [
+    base,
+    `${base}s`,
+    base.replace(/brick$/, "bricks"),
+    base.replace(/bricks$/, "brick"),
+    base.replace(/stone$/, "stones"),
+    base.replace(/stones$/, "stone")
+  ];
+  for (const candidate of candidates) {
+    const candidateTypeId = `${VANILLA_NAMESPACE}${candidate}`;
+    if (vanillaAuxValues[candidateTypeId] !== void 0) {
+      return candidateTypeId;
+    }
+  }
+  return `${VANILLA_NAMESPACE}${base}`;
+}
+function resolveVanillaAux(typeId) {
+  const normalizedTypeId = normalizeVanillaBlockTypeId(typeId);
+  const value = vanillaAuxValues[normalizedTypeId];
+  if (typeof value !== "number") {
+    return 0;
+  }
+  const rawId = value / 65536;
+  if (rawId > MAX_SHIFTED_VANILLA_RAW_ID) {
+    return (rawId + auxOffset) * 65536;
+  }
+  return value;
+}
+function getBlockRenderAux(block) {
+  const typeId = String(block?.typeId || "").trim();
+  if (!typeId || typeId === "minecraft:air") {
+    return 0;
+  }
+  if (typeId.startsWith(VANILLA_NAMESPACE)) {
+    return resolveVanillaAux(typeId);
+  }
+  return customBlockAuxValues[typeId] ?? 0;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\uiDataEncoder.js
+function defineSchema(delimiter, fields) {
+  let totalDigits = 0;
+  const normalizedFields = [];
+  for (const field of fields) {
+    const digits = Math.max(1, Math.min(8, Number(field.digits) || 2));
+    normalizedFields.push({
+      name: field.name,
+      digits,
+      defaultValue: Number(field.defaultValue) || 0,
+      maxValue: Math.pow(10, digits) - 1
+    });
+    totalDigits += digits;
+  }
+  return {
+    delimiter: String(delimiter).charAt(0),
+    fields: normalizedFields,
+    totalDigits
+  };
+}
+function encodeSection(schema, data) {
+  let result = schema.delimiter;
+  for (const field of schema.fields) {
+    const rawValue = data?.[field.name];
+    const value = Number.isFinite(rawValue) ? rawValue : field.defaultValue;
+    const clamped = Math.max(0, Math.min(field.maxValue, Math.round(value)));
+    result += String(clamped).padStart(field.digits, "0");
+  }
+  return result;
+}
+function encodePayload(schemas, data, channelSuffix) {
+  let result = "";
+  for (const schema of schemas) {
+    result += encodeSection(schema, data);
+  }
+  result += channelSuffix;
+  return result;
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\titleBus.js
+import { system as system7, world as world9 } from "@minecraft/server";
+var TITLE_OPTIONS = {
+  fadeInDuration: 0,
+  stayDuration: 100,
+  fadeOutDuration: 0
+};
+var KEEPALIVE_TICKS = 40;
+var pendingByPlayer = /* @__PURE__ */ new Map();
+var lastByPlayer = /* @__PURE__ */ new Map();
+var initialized = false;
+function ensurePlayer(playerId) {
+  if (!pendingByPlayer.has(playerId)) {
+    pendingByPlayer.set(playerId, []);
+  }
+  if (!lastByPlayer.has(playerId)) {
+    lastByPlayer.set(playerId, /* @__PURE__ */ new Map());
+  }
+}
+function normalizeTitle(namespace, payload) {
+  if (payload && typeof payload === "object") {
+    return payload;
+  }
+  const text = String(payload ?? "");
+  return text.startsWith(namespace) ? text : `${namespace}${text}`;
+}
+function titleKey(title) {
+  return typeof title === "string" ? title : JSON.stringify(title);
+}
+function subtitleKey(subtitle) {
+  if (subtitle === void 0) {
+    return "";
+  }
+  return typeof subtitle === "string" ? subtitle : JSON.stringify(subtitle);
+}
+function enqueue(player, namespace, title, subtitle) {
+  const playerId = player.id;
+  ensurePlayer(playerId);
+  const queue = pendingByPlayer.get(playerId);
+  const existingIndex = queue.findIndex((entry2) => entry2.namespace === namespace);
+  const entry = { player, namespace, title, subtitle };
+  if (existingIndex >= 0) {
+    queue[existingIndex] = entry;
+    return;
+  }
+  queue.push(entry);
+}
+function sendLatchedTitle(player, namespace, payload, options = {}) {
+  sendLatchedPair(player, namespace, normalizeTitle(namespace, payload), void 0, options);
+}
+function sendLatchedPair(player, namespace, title, subtitle, options = {}) {
+  if (!player?.id || !namespace) {
+    return;
+  }
+  ensurePlayer(player.id);
+  const now = system7.currentTick;
+  const lastForPlayer = lastByPlayer.get(player.id);
+  const nextTitleKey = titleKey(title);
+  const nextSubtitleKey = subtitleKey(subtitle);
+  const last = lastForPlayer.get(namespace);
+  const keepaliveTicks = Number(options.keepaliveTicks ?? KEEPALIVE_TICKS);
+  if (last && last.titleKey === nextTitleKey && last.subtitleKey === nextSubtitleKey && now - last.tick < keepaliveTicks) {
+    return;
+  }
+  lastForPlayer.set(namespace, {
+    titleKey: nextTitleKey,
+    subtitleKey: nextSubtitleKey,
+    tick: now
+  });
+  enqueue(player, namespace, title, subtitle);
+}
+function clearLatched(player, namespace) {
+  sendLatchedPair(player, namespace, namespace, "");
+}
+function clearTitleBusPlayer(playerId) {
+  pendingByPlayer.delete(playerId);
+  lastByPlayer.delete(playerId);
+}
+function initializeTitleBus() {
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+  system7.runInterval(() => {
+    for (const player of world9.getAllPlayers()) {
+      const queue = pendingByPlayer.get(player.id);
+      if (!queue?.length) {
+        continue;
+      }
+      const entry = queue.shift();
+      const options = { ...TITLE_OPTIONS };
+      if (entry.subtitle !== void 0) {
+        options.subtitle = entry.subtitle ?? "";
+      }
+      try {
+        entry.player.onScreenDisplay.setTitle(entry.title, options);
+      } catch {
+      }
+    }
+  }, 1);
+  world9.afterEvents.playerLeave.subscribe((event) => {
+    clearTitleBusPlayer(event.playerId);
+  });
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\hud\durabilityIndicator.js
+var EMPTY_DURABILITY_DATA = {
+  durPercent: 0,
+  durVisible: 0,
+  durCurHi: 0,
+  durCurLo: 0,
+  durMaxHi: 0,
+  durMaxLo: 0,
+  durDisplayMode: 3,
+  durPosition: 0,
+  durIconVisible: 0,
+  durReserved: 0
+};
+var EQUIPMENT_SLOT_CONFIGS = [
+  {
+    key: "head",
+    delimiter: "j",
+    slotNames: ["Head", "head", "slot.armor.head"]
+  },
+  {
+    key: "chest",
+    delimiter: "k",
+    slotNames: ["Chest", "chest", "slot.armor.chest"]
+  },
+  {
+    key: "legs",
+    delimiter: "l",
+    slotNames: ["Legs", "legs", "slot.armor.legs"]
+  },
+  {
+    key: "feet",
+    delimiter: "m",
+    slotNames: ["Feet", "feet", "slot.armor.feet"]
+  },
+  {
+    key: "offhand",
+    delimiter: "n",
+    slotNames: ["Offhand", "offhand", "slot.weapon.offhand"]
+  }
+];
+var HIDDEN_EQUIPMENT_SLOT_DATA = {
+  current: 0,
+  max: 0,
+  icon: 99
+};
+var HUD_SCHEMAS = [
+  defineSchema("a", [
+    { name: "health", digits: 3 },
+    { name: "maxHealth", digits: 3 },
+    { name: "absorption", digits: 2 },
+    { name: "healthGap", digits: 2 }
+  ]),
+  defineSchema("b", [
+    { name: "air", digits: 2 },
+    { name: "airMax", digits: 2 },
+    { name: "hunger", digits: 2 },
+    { name: "saturation", digits: 2 }
+  ]),
+  defineSchema("c", [
+    { name: "armor", digits: 2 },
+    { name: "toughness", digits: 2 },
+    { name: "xpLevel", digits: 2 },
+    { name: "xpProgress", digits: 2 }
+  ]),
+  defineSchema("d", [
+    { name: "activeEffects", digits: 2 },
+    { name: "effectTimer", digits: 2 },
+    { name: "biomeTemperature", digits: 2 },
+    { name: "biomeHumidity", digits: 2 }
+  ]),
+  defineSchema("e", [
+    { name: "hudHealthIndicator", digits: 2 },
+    { name: "hudHungerIndicator", digits: 2 },
+    { name: "durPercent", digits: 3 },
+    { name: "durVisible", digits: 1 }
+  ]),
+  defineSchema("f", [
+    { name: "durCurHi", digits: 2 },
+    { name: "durCurLo", digits: 2 },
+    { name: "durMaxHi", digits: 2 },
+    { name: "durMaxLo", digits: 2 }
+  ]),
+  defineSchema("g", [
+    { name: "hudInventory", digits: 2 },
+    { name: "hudInventoryPosition", digits: 2 },
+    { name: "hudInventoryDisplayMode", digits: 2 },
+    { name: "hudInventoryOrientation", digits: 2 }
+  ]),
+  defineSchema("h", [
+    { name: "reservedH0", digits: 2 },
+    { name: "reservedH1", digits: 2 },
+    { name: "reservedH2", digits: 2 },
+    { name: "reservedH3", digits: 2 }
+  ]),
+  defineSchema("i", [
+    { name: "durDisplayMode", digits: 2 },
+    { name: "durPosition", digits: 2 },
+    { name: "durIconVisible", digits: 2 },
+    { name: "durReserved", digits: 2 }
+  ])
+];
+function splitTwoDigitPairs(value) {
+  const safeValue = Math.max(0, Math.min(9999, Math.round(Number(value) || 0)));
+  return {
+    hi: Math.floor(safeValue / 100),
+    lo: safeValue % 100
+  };
+}
+function getMainhandItem(player) {
+  try {
+    const equippable = player.getComponent?.("minecraft:equippable");
+    if (equippable && typeof equippable.getEquipment === "function") {
+      return equippable.getEquipment("Mainhand") ?? equippable.getEquipment("mainhand") ?? equippable.getEquipment("slot.weapon.mainhand");
+    }
+  } catch {
+  }
+  try {
+    const inventory = player.getComponent?.("minecraft:inventory")?.container;
+    const selectedSlot = Number(player.selectedSlotIndex ?? player.selectedSlot ?? 0);
+    if (inventory && Number.isFinite(selectedSlot)) {
+      return inventory.getItem(Math.max(0, Math.min(8, Math.floor(selectedSlot))));
+    }
+  } catch {
+  }
+  return void 0;
+}
+function getDurabilityComponent(itemStack) {
+  if (!itemStack || typeof itemStack.getComponent !== "function") {
+    return void 0;
+  }
+  try {
+    return itemStack.getComponent("minecraft:durability") ?? itemStack.getComponent("durability");
+  } catch {
+    return void 0;
+  }
+}
+function getEquipmentSlotItem(equippable, slotNames) {
+  if (!equippable || typeof equippable.getEquipment !== "function") {
+    return void 0;
+  }
+  for (const slotName of slotNames) {
+    try {
+      const item = equippable.getEquipment(slotName);
+      if (item) {
+        return item;
+      }
+    } catch {
+    }
+  }
+  return void 0;
+}
+function collectDurabilityData(player) {
+  const item = getMainhandItem(player);
+  const durability = getDurabilityComponent(item);
+  if (!durability) {
+    return EMPTY_DURABILITY_DATA;
+  }
+  const max = Math.max(0, Math.round(Number(durability.maxDurability) || 0));
+  const damage = Math.max(0, Math.round(Number(durability.damage) || 0));
+  if (max <= 0) {
+    return EMPTY_DURABILITY_DATA;
+  }
+  const current = Math.max(0, Math.min(max, max - damage));
+  const percent = Math.max(0, Math.min(100, Math.round(current / max * 100)));
+  const currentParts = splitTwoDigitPairs(current);
+  const maxParts = splitTwoDigitPairs(max);
+  return {
+    durPercent: percent,
+    durVisible: 1,
+    durCurHi: currentParts.hi,
+    durCurLo: currentParts.lo,
+    durMaxHi: maxParts.hi,
+    durMaxLo: maxParts.lo,
+    durDisplayMode: 3,
+    durPosition: 0,
+    durIconVisible: 1,
+    durReserved: 0
+  };
+}
+function collectEquipmentSlotData(equippable, config) {
+  const item = getEquipmentSlotItem(equippable, config.slotNames);
+  const durability = getDurabilityComponent(item);
+  if (!durability) {
+    return {
+      current: 0,
+      max: 0,
+      icon: 0
+    };
+  }
+  const max = Math.max(0, Math.round(Number(durability.maxDurability) || 0));
+  const damage = Math.max(0, Math.round(Number(durability.damage) || 0));
+  if (max <= 0) {
+    return {
+      current: 0,
+      max: 0,
+      icon: 0
+    };
+  }
+  return {
+    current: Math.max(0, Math.min(max, max - damage)),
+    max,
+    icon: getEquipmentIconCode(item)
+  };
+}
+function getEquipmentIconCode(itemStack) {
+  const typeId = String(itemStack?.typeId || "");
+  if (typeId.includes("leather_")) return 1;
+  if (typeId.includes("chainmail_")) return 2;
+  if (typeId.includes("iron_")) return 3;
+  if (typeId.includes("golden_") || typeId.includes("gold_")) return 4;
+  if (typeId.includes("diamond_")) return 5;
+  if (typeId.includes("netherite_")) return 6;
+  if (typeId === "minecraft:turtle_helmet") return 7;
+  if (typeId === "minecraft:elytra") return 8;
+  if (typeId === "minecraft:shield") return 9;
+  if (typeId.includes("copper_")) return 10;
+  return 0;
+}
+function encodeFixedNumber(value, digits) {
+  const maxValue = Math.pow(10, digits) - 1;
+  const safeValue = Math.max(0, Math.min(maxValue, Math.round(Number(value) || 0)));
+  return String(safeValue).padStart(digits, "0");
+}
+function shouldShowEquipmentSlot(config, settings = {}) {
+  if (config.key === "offhand") {
+    return settings.offhandDurability !== false;
+  }
+  return settings.armorDurability !== false;
+}
+function encodeEquipmentData(player, settings = {}) {
+  let equippable;
+  try {
+    equippable = player.getComponent?.("minecraft:equippable");
+  } catch {
+    equippable = void 0;
+  }
+  return EQUIPMENT_SLOT_CONFIGS.map((config) => {
+    const slot = shouldShowEquipmentSlot(config, settings) ? collectEquipmentSlotData(equippable, config) : HIDDEN_EQUIPMENT_SLOT_DATA;
+    return [
+      config.delimiter,
+      encodeFixedNumber(slot.icon, 2),
+      encodeFixedNumber(slot.current, 3),
+      encodeFixedNumber(slot.max, 3)
+    ].join("");
+  }).join("");
+}
+function encodeDurabilityData(data) {
+  const fullPayload = encodePayload(HUD_SCHEMAS, data, CHANNEL_HUD);
+  return fullPayload.slice(0, -CHANNEL_HUD.length);
+}
+function updateDurabilityIndicator(player, settings = {}) {
+  const mainhandData = {
+    ...settings.mainhandDurability === false ? EMPTY_DURABILITY_DATA : collectDurabilityData(player),
+    durReserved: settings.durabilityMobileLayout ? 1 : 0
+  };
+  sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(mainhandData)}${encodeEquipmentData(player, settings)}`);
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\hud\statsCoreActivity.js
+import { system as system8, world as world10 } from "@minecraft/server";
+var STATSCORE_ACTIVITY_EVENT = "insight:statscore_activity_v1";
+var STATSCORE_INSIGHT_BRIDGE_PROPERTY = "utilitycraft:statscore_insight_bridge";
+var PRIMARY_FIELD_LENGTH = 128;
+var ATTRIBUTES_FIELD_LENGTH = 256;
+var DEFAULT_DURATION_TICKS = 32;
+var activeByPlayer = /* @__PURE__ */ new Map();
+var revisionsByPlayer = /* @__PURE__ */ new Map();
+var initialized2 = false;
+function sanitizeText(value, maxLength) {
+  return String(value ?? "").replace(/[~\r\n]/g, " ").trim().slice(0, maxLength);
+}
+function encodeActivity(primary, attributes, levelUps) {
+  return `${sanitizeText(primary, PRIMARY_FIELD_LENGTH).padEnd(
+    PRIMARY_FIELD_LENGTH,
+    "~"
+  )}${sanitizeText(attributes, ATTRIBUTES_FIELD_LENGTH).padEnd(
+    ATTRIBUTES_FIELD_LENGTH,
+    "~"
+  )}${sanitizeText(levelUps, 256)}`;
+}
+function getPlayerById(playerId) {
+  return world10.getAllPlayers().find((player) => player.id === playerId);
+}
+function isStatsCoreInsightBridgeEnabled(player) {
+  try {
+    return player?.getDynamicProperty?.(STATSCORE_INSIGHT_BRIDGE_PROPERTY) === true;
+  } catch {
+    return false;
+  }
+}
+function clearActivity(player) {
+  activeByPlayer.delete(player.id);
+  sendLatchedTitle(player, CHANNEL_STATSCORE_ACTIVITY, encodeActivity("", "", ""), {
+    keepaliveTicks: 0
+  });
+}
+function getStatsCoreInsightBridgeEnabled(player) {
+  return isStatsCoreInsightBridgeEnabled(player);
+}
+function setStatsCoreInsightBridgeEnabled(player, enabled) {
+  if (!player) return false;
+  try {
+    player.setDynamicProperty?.(STATSCORE_INSIGHT_BRIDGE_PROPERTY, enabled === true);
+    if (enabled !== true) clearActivity(player);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function publishActivity(player, state) {
+  const primary = [...state.primary].join(" \xA78| ");
+  const attributes = [...state.attributes].join(" \xA78| ");
+  const levelUps = [...state.levelUps].join(" \xA78| ");
+  const payload = encodeActivity(primary, attributes, levelUps);
+  const nextRevision = (revisionsByPlayer.get(player.id) ?? 0) + 1;
+  revisionsByPlayer.set(player.id, nextRevision);
+  sendLatchedTitle(player, CHANNEL_STATSCORE_ACTIVITY, payload, {
+    keepaliveTicks: 0
+  });
+  const duration = Math.max(8, Number(state.durationTicks) || DEFAULT_DURATION_TICKS);
+  system8.runTimeout(() => {
+    if (revisionsByPlayer.get(player.id) !== nextRevision) return;
+    clearActivity(player);
+  }, duration);
+}
+function addIcons(target, values, maxLength = 96) {
+  const entries = Array.isArray(values) ? values : [values];
+  for (const entry of entries) {
+    const text = sanitizeText(entry, maxLength);
+    if (text) target.add(text);
+  }
+}
+function queueActivity(player, activity) {
+  const pending = activeByPlayer.get(player.id) ?? {
+    player,
+    primary: /* @__PURE__ */ new Set(),
+    attributes: /* @__PURE__ */ new Set(),
+    levelUps: /* @__PURE__ */ new Set(),
+    durationTicks: DEFAULT_DURATION_TICKS,
+    scheduled: false
+  };
+  pending.player = player;
+  addIcons(pending.primary, activity?.primary, PRIMARY_FIELD_LENGTH);
+  addIcons(pending.attributes, activity?.attributes);
+  addIcons(pending.levelUps, activity?.levelUps);
+  pending.durationTicks = Math.max(
+    pending.durationTicks,
+    Number(activity?.durationTicks) || DEFAULT_DURATION_TICKS
+  );
+  activeByPlayer.set(player.id, pending);
+  if (pending.scheduled) return;
+  pending.scheduled = true;
+  system8.run(() => {
+    const queued = activeByPlayer.get(player.id);
+    if (!queued) return;
+    queued.scheduled = false;
+    publishActivity(player, queued);
+  });
+}
+function initializeStatsCoreActivityHud() {
+  if (initialized2) return;
+  initialized2 = true;
+  system8.afterEvents.scriptEventReceive.subscribe((event) => {
+    if (event.id !== STATSCORE_ACTIVITY_EVENT) return;
+    try {
+      const activity = JSON.parse(String(event.message ?? ""));
+      const player = getPlayerById(String(activity?.playerId ?? ""));
+      if (player && isStatsCoreInsightBridgeEnabled(player)) {
+        queueActivity(player, activity);
+      }
+    } catch {
+    }
+  });
+  world10.afterEvents.playerLeave.subscribe((event) => {
+    activeByPlayer.delete(event.playerId);
+    revisionsByPlayer.delete(event.playerId);
+  });
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\globalPlayerInterval.js
+var initialized3 = false;
+var systemTick = 0;
+var playerSettingsCache = /* @__PURE__ */ new Map();
+function clampNumber(value, min, max, fallback) {
+  const number = Math.floor(Number(value));
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, number));
+}
+function clampFloat(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.round(Math.min(max, Math.max(min, number)) * 100) / 100;
+}
+function getNearestFontScale(value) {
+  const scale = clampFloat(
+    value,
+    CORE_LIMITS.minFontScale,
+    CORE_LIMITS.maxFontScale,
+    DEFAULT_CORE_SETTINGS.main.fontScale
+  );
+  let nearest = WAILA_FONT_SCALE_OPTIONS[0].scale;
+  let nearestDistance = Infinity;
+  for (const option of WAILA_FONT_SCALE_OPTIONS) {
+    const distance = Math.abs(option.scale - scale);
+    if (distance < nearestDistance) {
+      nearest = option.scale;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
+}
+function isMobilePlatform(player) {
+  try {
+    return player?.clientSystemInfo?.platformType === "Mobile";
+  } catch {
+    return false;
+  }
+}
+function getSettingsSection(settings, key) {
+  const section = settings?.[key];
+  return section && typeof section === "object" ? section : settings;
+}
+function normalizeMainSettings(settings = {}, player) {
+  const main = getSettingsSection(settings, "main");
+  const mobilePlatform = isMobilePlatform(player);
+  const legacyMobileLayout = typeof main.mobileLayout === "boolean" ? main.mobileLayout : void 0;
+  return {
+    enabled: main.enabled !== false,
+    updateIntervalTicks: clampNumber(
+      main.updateIntervalTicks,
+      CORE_LIMITS.minUpdateIntervalTicks,
+      CORE_LIMITS.maxUpdateIntervalTicks,
+      DEFAULT_CORE_SETTINGS.main.updateIntervalTicks
+    ),
+    maxDistance: clampNumber(
+      main.maxDistance,
+      CORE_LIMITS.minMaxDistance,
+      CORE_LIMITS.maxMaxDistance,
+      DEFAULT_CORE_SETTINGS.main.maxDistance
+    ),
+    panelStyleId: clampNumber(
+      main.panelStyleId,
+      CORE_LIMITS.minPanelStyleId,
+      CORE_LIMITS.maxPanelStyleId,
+      DEFAULT_CORE_SETTINGS.main.panelStyleId
+    ),
+    fontScale: getNearestFontScale(main.fontScale),
+    mainhandDurability: main.mainhandDurability !== false,
+    offhandDurability: main.offhandDurability !== false,
+    armorDurability: main.armorDurability !== false,
+    wailaMobileLayout: typeof main.wailaMobileLayout === "boolean" ? main.wailaMobileLayout : legacyMobileLayout ?? mobilePlatform,
+    durabilityMobileLayout: typeof main.durabilityMobileLayout === "boolean" ? main.durabilityMobileLayout : legacyMobileLayout ?? mobilePlatform
+  };
+}
+function normalizeBlockSettings(settings = {}) {
+  const block = getSettingsSection(settings, "block");
+  return {
+    energyContainers: block.energyContainers === true,
+    fluidContainers: block.fluidContainers === true,
+    gasContainers: block.gasContainers === true,
+    overclockLevel: block.overclockLevel === true,
+    blockRender: block.blockRender !== false,
+    preferredTool: block.preferredTool === true,
+    toolTier: block.toolTier === true,
+    location: block.location === true,
+    identifier: block.identifier === true,
+    blockTags: block.blockTags === true,
+    states: block.states === true,
+    separators: block.separators !== false
+  };
+}
+function normalizeEntitySettings(settings = {}) {
+  const entity = getSettingsSection(settings, "entity");
+  const displayStyleIds = new Set(STAT_DISPLAY_STYLES.map((style) => style.id));
+  const normalizeDisplayStyle = (value, fallback) => displayStyleIds.has(value) ? value : fallback;
+  return {
+    entityRender: entity?.entityRender !== false,
+    health: entity?.health !== false,
+    maxHeartDisplayHealth: clampNumber(
+      entity?.maxHeartDisplayHealth,
+      CORE_LIMITS.minHeartDisplayHealth,
+      CORE_LIMITS.maxHeartDisplayHealth,
+      DEFAULT_CORE_SETTINGS.entity.maxHeartDisplayHealth
+    ),
+    effectHearts: entity?.effectHearts !== false,
+    tamedHearts: typeof entity?.tamedHearts === "boolean" ? entity.tamedHearts : entity?.animalHearts !== false,
+    absorption: entity?.absorption !== false,
+    hunger: entity?.hunger !== false,
+    saturation: entity?.saturation !== false,
+    armor: entity?.armor !== false,
+    air: entity?.air !== false,
+    attackDamage: typeof entity?.attackDamage === "boolean" ? entity.attackDamage : entity?.attributes !== false,
+    movementSpeed: entity?.movementSpeed === true,
+    effects: entity?.effects !== false,
+    maxVisibleEffects: clampNumber(
+      entity?.maxVisibleEffects,
+      CORE_LIMITS.minVisibleEffects,
+      CORE_LIMITS.maxVisibleEffects,
+      DEFAULT_CORE_SETTINGS.entity.maxVisibleEffects
+    ),
+    hostile: entity?.hostile === true,
+    specialInfo: entity?.specialInfo === true,
+    identifier: entity?.identifier === true,
+    typeFamilies: entity?.typeFamilies === true,
+    tags: entity?.tags === true,
+    properties: entity?.properties === true,
+    separators: entity?.separators !== false,
+    healthDisplayStyle: normalizeDisplayStyle(
+      entity?.healthDisplayStyle,
+      DEFAULT_CORE_SETTINGS.entity.healthDisplayStyle
+    ),
+    hungerDisplayStyle: normalizeDisplayStyle(
+      entity?.hungerDisplayStyle,
+      DEFAULT_CORE_SETTINGS.entity.hungerDisplayStyle
+    ),
+    armorAirDisplayStyle: normalizeDisplayStyle(
+      entity?.armorAirDisplayStyle,
+      DEFAULT_CORE_SETTINGS.entity.armorAirDisplayStyle
+    ),
+    effectsDisplayStyle: normalizeDisplayStyle(
+      entity?.effectsDisplayStyle,
+      DEFAULT_CORE_SETTINGS.entity.effectsDisplayStyle
+    ),
+    attributesDisplayStyle: normalizeDisplayStyle(
+      entity?.attributesDisplayStyle,
+      DEFAULT_CORE_SETTINGS.entity.attributesDisplayStyle
+    )
+  };
+}
+function normalizeSettings(settings = {}, player) {
+  return {
+    main: normalizeMainSettings(settings, player),
+    block: normalizeBlockSettings(settings),
+    entity: normalizeEntitySettings(settings)
+  };
+}
+function getPlayerSettingsCacheKey(player) {
+  if (!player) {
+    return void 0;
+  }
+  return String(player.id || player.name || "");
+}
+function readStoredSettings(source, player) {
+  try {
+    const raw = source?.getDynamicProperty?.(CORE_SETTINGS_DYNAMIC_PROPERTY);
+    if (typeof raw === "string" && raw.length) {
+      return normalizeSettings(JSON.parse(raw), player);
+    }
+  } catch {
+  }
+  return void 0;
+}
+function loadSettings(player) {
+  return readStoredSettings(player, player) ?? readStoredSettings(world11, player) ?? normalizeSettings({}, player);
+}
+function saveSettings(player, settings) {
+  const normalized = normalizeSettings(settings, player);
+  try {
+    const target = player ?? world11;
+    target.setDynamicProperty(
+      CORE_SETTINGS_DYNAMIC_PROPERTY,
+      JSON.stringify(normalized)
+    );
+  } catch {
+  }
+  const cacheKey = getPlayerSettingsCacheKey(player);
+  if (cacheKey) {
+    playerSettingsCache.set(cacheKey, normalized);
+  }
+  return normalized;
+}
+function getCoreSettings(player) {
+  const cacheKey = getPlayerSettingsCacheKey(player);
+  if (!cacheKey) {
+    return loadSettings(player);
+  }
+  if (!playerSettingsCache.has(cacheKey)) {
+    playerSettingsCache.set(cacheKey, loadSettings(player));
+  }
+  return playerSettingsCache.get(cacheKey);
+}
+function setCoreSettings(player, settings) {
+  if (!settings) {
+    settings = player;
+    player = void 0;
+  }
+  const current = getCoreSettings(player);
+  const hasSections = Boolean(
+    settings?.main || settings?.block || settings?.entity
+  );
+  if (!hasSections) {
+    return saveSettings(player, {
+      main: {
+        ...current.main,
+        ...settings
+      },
+      block: {
+        ...current.block,
+        ...settings
+      },
+      entity: current.entity
+    });
+  }
+  return saveSettings(player, {
+    main: {
+      ...current.main,
+      ...settings?.main
+    },
+    block: {
+      ...current.block,
+      ...settings?.block
+    },
+    entity: {
+      ...current.entity,
+      ...settings?.entity
+    }
+  });
+}
+function buildStyleTextureField(mainSettings) {
+  const style = PANEL_STYLES[mainSettings.panelStyleId] ?? PANEL_STYLES[0];
+  return style.texture.slice(0, WAILA_STYLE_TEXTURE_FIELD_LENGTH).padEnd(WAILA_STYLE_TEXTURE_FIELD_LENGTH, "~");
+}
+function buildFontScaleField(mainSettings) {
+  const scale = getNearestFontScale(mainSettings.fontScale);
+  const encodedScale = Math.round(scale * 100);
+  return String(encodedScale).slice(0, WAILA_FONT_SCALE_FIELD_LENGTH).padEnd(WAILA_FONT_SCALE_FIELD_LENGTH, "~");
+}
+function buildLayoutField(mainSettings) {
+  return (mainSettings.wailaMobileLayout ? "m" : "d").slice(0, WAILA_LAYOUT_FIELD_LENGTH).padEnd(WAILA_LAYOUT_FIELD_LENGTH, "d");
+}
+function normalizeRawtextParts(parts) {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+  return parts.filter((part) => {
+    if (!part || typeof part !== "object") {
+      return false;
+    }
+    return typeof part.text === "string" || typeof part.translate === "string";
+  });
+}
+function buildWailaRawMessage(parts, mainSettings, meta = "default:") {
+  const rawtext = normalizeRawtextParts(parts);
+  if (!rawtext.length) {
+    return {
+      rawtext: [{ text: CHANNEL_WAILA }]
+    };
+  }
+  const metaField = String(meta || "default:").slice(0, WAILA_META_FIELD_LENGTH).padEnd(WAILA_META_FIELD_LENGTH, "~");
+  return {
+    rawtext: [
+      {
+        text: `${CHANNEL_WAILA}${buildStyleTextureField(mainSettings)}${buildFontScaleField(mainSettings)}${buildLayoutField(mainSettings)}${metaField}`
+      },
+      ...rawtext
+    ]
+  };
+}
+function buildWailaPayload(title, subtitleText = "") {
+  return {
+    title,
+    subtitleText: String(subtitleText || "")
+  };
+}
+function getSafeBlockRenderAux(block, blockSettings) {
+  if (!blockSettings.blockRender) {
+    return 0;
+  }
+  try {
+    return getBlockRenderAux(block) || 0;
+  } catch {
+    return 0;
+  }
+}
+function composeTargetMessage(player, settings) {
+  const target = resolvePlayerTarget(player, settings.main);
+  if (target.kind === TargetKinds.Entity) {
+    const entityTarget = composeEntityTarget(target.entity, settings.entity);
+    const shouldRenderEntity2 = settings.entity.entityRender && entityTarget.canRender;
+    const renderMeta = shouldRenderEntity2 ? `entity:${entityTarget.renderHeightClass}:${entityTarget.entityId}` : "default:";
+    return buildWailaPayload(
+      buildWailaRawMessage(
+        entityTarget.rawtext,
+        settings.main,
+        renderMeta
+      ),
+      shouldRenderEntity2 ? entityTarget.entityId : ""
+    );
+  }
+  if (target.kind === TargetKinds.Block) {
+    const renderAux = getSafeBlockRenderAux(target.block, settings.block);
+    return buildWailaPayload(
+      buildWailaRawMessage(
+        buildBlockLabel(target.block, settings.block),
+        settings.main,
+        renderAux ? `block:${renderAux}` : "default:"
+      )
+    );
+  }
+  return buildWailaPayload({ rawtext: [{ text: EMPTY_WAILA_TEXT }] });
+}
+function sendWailaMessage(player, payload) {
+  const title = payload?.title ?? payload;
+  const subtitleText = payload?.subtitleText ?? "";
+  try {
+    const rawtext = normalizeRawtextParts(title?.rawtext);
+    if (rawtext.length === 1 && rawtext[0]?.text === EMPTY_WAILA_TEXT) {
+      clearLatched(player, CHANNEL_WAILA);
+      return;
+    }
+    sendLatchedPair(player, CHANNEL_WAILA, title, subtitleText);
+  } catch {
+  }
+}
+function tickPlayers() {
+  systemTick += 1;
+  for (const player of world11.getAllPlayers()) {
+    try {
+      const settings = getCoreSettings(player);
+      if (!settings.main.enabled || systemTick % settings.main.updateIntervalTicks !== 0) {
+        continue;
+      }
+      const targetPayload = composeTargetMessage(player, settings);
+      sendWailaMessage(player, targetPayload);
+      updateDurabilityIndicator(player, settings.main);
+    } catch {
+      sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
+    }
+  }
+}
+function initializeGlobalPlayerInterval() {
+  if (initialized3) {
+    return;
+  }
+  initialized3 = true;
+  initializeTitleBus();
+  initializeStatsCoreActivityHud();
+  world11.afterEvents.playerSpawn.subscribe((event) => {
+    if (!event.initialSpawn) {
+      return;
+    }
+    system9.runTimeout(() => {
+      try {
+        updateDurabilityIndicator(
+          event.player,
+          getCoreSettings(event.player).main
+        );
+      } catch {
+      }
+    }, 20);
+  });
+  system9.runInterval(tickPlayers, 1);
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\menu.js
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
+import { ItemStack as ItemStack4, system as system10, world as world12 } from "@minecraft/server";
+var initialized4 = false;
+var INSIGHT_SETTINGS_ITEM = "dorios:insight_settings";
+var INSIGHT_SETTINGS_COMPONENT = "dorios:insight_settings";
+var INSIGHT_SETTINGS_GRANTED_TAG = "dorios:insight_settings_granted";
+var UI = {
+  info: "\xA78",
+  warn: "\xA7e",
+  muted: "\xA77",
+  reset: "\xA7r"
+};
+function infoLabel(text) {
+  return `${UI.info}${text}${UI.reset}`;
+}
+function mutedText(text) {
+  return `${UI.muted}${text}${UI.reset}`;
+}
+function sendMessage(player, message) {
+  try {
+    player.sendMessage(message);
+  } catch {
+  }
+}
+function getPlayerFromOrigin(origin) {
+  const player = origin?.sourceEntity;
+  return player?.typeId === "minecraft:player" ? player : void 0;
+}
+function getPanelStyleIndex(styleId) {
+  const index = PANEL_STYLES.findIndex((style) => style.id === Number(styleId));
+  return index >= 0 ? index : 0;
+}
+function getFontScaleIndex(fontScale) {
+  const scale = Number(fontScale);
+  if (!Number.isFinite(scale)) {
+    return WAILA_FONT_SCALE_OPTIONS.findIndex((option) => option.scale === 1);
+  }
+  let nearestIndex = 0;
+  let nearestDistance = Infinity;
+  for (let i = 0; i < WAILA_FONT_SCALE_OPTIONS.length; i += 1) {
+    const distance = Math.abs(WAILA_FONT_SCALE_OPTIONS[i].scale - scale);
+    if (distance < nearestDistance) {
+      nearestIndex = i;
+      nearestDistance = distance;
+    }
+  }
+  return nearestIndex;
+}
+function getDisplayStyleIndex(styleId) {
+  const index = STAT_DISPLAY_STYLES.findIndex(
+    (style) => style.id === styleId
+  );
+  return index >= 0 ? index : 0;
+}
+function getPanelStyleLabel(styleId) {
+  return PANEL_STYLES[getPanelStyleIndex(styleId)]?.label ?? PANEL_STYLES[0].label;
+}
+async function openMainSettingsMenu(player) {
+  const settings = getCoreSettings(player);
+  const mainSettings = settings.main;
+  const form = new ModalFormData().title(`${UI.info}Main Settings${UI.reset}`).toggle(mutedText("Enabled"), {
+    defaultValue: mainSettings.enabled,
+    tooltip: "Turns Dorios Insight target labels on or off for you."
+  }).slider(mutedText("Update Interval"), 1, 40, {
+    defaultValue: mainSettings.updateIntervalTicks,
+    tooltip: "How often Insight refreshes labels, measured in ticks."
+  }).slider(mutedText("Max Distance"), 1, 32, {
+    defaultValue: mainSettings.maxDistance,
+    tooltip: "Maximum block distance used to find what the player is looking at."
+  }).toggle(mutedText("Mainhand Durability"), {
+    defaultValue: mainSettings.mainhandDurability,
+    tooltip: "Shows the selected main hand item durability HUD."
+  }).toggle(mutedText("Offhand Durability"), {
+    defaultValue: mainSettings.offhandDurability,
+    tooltip: "Shows the offhand item durability HUD."
+  }).toggle(mutedText("Armor Durability"), {
+    defaultValue: mainSettings.armorDurability,
+    tooltip: "Shows helmet, chestplate, leggings, and boots durability HUD."
+  }).toggle(mutedText("WAILA Mobile Layout"), {
+    defaultValue: mainSettings.wailaMobileLayout,
+    tooltip: "Uses the phone layout for the WAILA panel. New players default to this automatically on Mobile platform."
+  }).toggle(mutedText("Durability Mobile Layout"), {
+    defaultValue: mainSettings.durabilityMobileLayout,
+    tooltip: "Uses the phone layout for the durability HUD. New players default to this automatically on Mobile platform."
+  });
+  const result = await form.show(player);
+  if (result.canceled) {
+    return;
+  }
+  const [
+    enabled,
+    updateIntervalTicks,
+    maxDistance,
+    mainhandDurability,
+    offhandDurability,
+    armorDurability,
+    wailaMobileLayout,
+    durabilityMobileLayout
+  ] = result.formValues;
+  const next = setCoreSettings(player, {
+    main: {
+      enabled: Boolean(enabled),
+      updateIntervalTicks: Number(updateIntervalTicks),
+      maxDistance: Number(maxDistance),
+      mainhandDurability: Boolean(mainhandDurability),
+      offhandDurability: Boolean(offhandDurability),
+      armorDurability: Boolean(armorDurability),
+      wailaMobileLayout: Boolean(wailaMobileLayout),
+      durabilityMobileLayout: Boolean(durabilityMobileLayout)
+    }
+  });
+  sendMessage(
+    player,
+    `\xA7aMain settings updated: ${next.main.enabled ? "enabled" : "disabled"}, ${next.main.updateIntervalTicks} ticks, ${next.main.maxDistance} blocks.`
+  );
+}
+async function openStyleSettingsMenu(player) {
+  const settings = getCoreSettings(player);
+  const form = new ModalFormData().title(`${UI.info}Style Settings${UI.reset}`).dropdown(
+    mutedText("Panel Style"),
+    PANEL_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getPanelStyleIndex(settings.main.panelStyleId),
+      tooltip: "Visual style used by the WAILA panel."
+    }
+  ).dropdown(
+    mutedText("Font Size"),
+    WAILA_FONT_SCALE_OPTIONS.map((option) => option.label),
+    {
+      defaultValueIndex: getFontScaleIndex(settings.main.fontScale),
+      tooltip: "Text scale used by block and entity WAILA labels."
+    }
+  ).dropdown(
+    mutedText("Health and Absorption"),
+    STAT_DISPLAY_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getDisplayStyleIndex(settings.entity.healthDisplayStyle),
+      tooltip: "Choose emoji glyphs, text, or both for health and absorption."
+    }
+  ).dropdown(
+    mutedText("Hunger and Saturation"),
+    STAT_DISPLAY_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getDisplayStyleIndex(settings.entity.hungerDisplayStyle),
+      tooltip: "Choose emoji glyphs, text, or both for hunger and saturation."
+    }
+  ).dropdown(
+    mutedText("Armor and Air"),
+    STAT_DISPLAY_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getDisplayStyleIndex(settings.entity.armorAirDisplayStyle),
+      tooltip: "Choose emoji glyphs, text, or both for armor and air supply."
+    }
+  ).dropdown(
+    mutedText("Effects"),
+    STAT_DISPLAY_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getDisplayStyleIndex(settings.entity.effectsDisplayStyle),
+      tooltip: "Choose emoji glyphs, effect names, or both for mapped effects."
+    }
+  ).dropdown(
+    mutedText("Attributes and Speed"),
+    STAT_DISPLAY_STYLES.map((style) => style.label),
+    {
+      defaultValueIndex: getDisplayStyleIndex(settings.entity.attributesDisplayStyle),
+      tooltip: "Choose emoji glyphs, values in text, or both for damage and speed."
+    }
+  );
+  const result = await form.show(player);
+  if (result.canceled) {
+    return;
+  }
+  const [
+    panelStyleIndex,
+    fontScaleIndex,
+    healthDisplayStyleIndex,
+    hungerDisplayStyleIndex,
+    armorAirDisplayStyleIndex,
+    effectsDisplayStyleIndex,
+    attributesDisplayStyleIndex
+  ] = result.formValues;
+  const panelStyle = PANEL_STYLES[Number(panelStyleIndex)] ?? PANEL_STYLES[0];
+  const fontScale = WAILA_FONT_SCALE_OPTIONS[Number(fontScaleIndex)]?.scale ?? 1;
+  const styleAt = (index) => STAT_DISPLAY_STYLES[Number(index)]?.id ?? "glyphs";
+  setCoreSettings(player, {
+    main: {
+      panelStyleId: panelStyle.id,
+      fontScale
+    },
+    entity: {
+      healthDisplayStyle: styleAt(healthDisplayStyleIndex),
+      hungerDisplayStyle: styleAt(hungerDisplayStyleIndex),
+      armorAirDisplayStyle: styleAt(armorAirDisplayStyleIndex),
+      effectsDisplayStyle: styleAt(effectsDisplayStyleIndex),
+      attributesDisplayStyle: styleAt(attributesDisplayStyleIndex)
+    }
+  });
+  sendMessage(player, `\xA7aStyle settings updated: ${getPanelStyleLabel(panelStyle.id)}.`);
+}
+async function openBlockSettingsMenu(player) {
+  const settings = getCoreSettings(player);
+  const form = new ModalFormData().title(`${UI.info}Block Settings${UI.reset}`).toggle(mutedText("Energy Containers"), {
+    defaultValue: settings.block.energyContainers,
+    tooltip: "Shows stored energy for blocks tagged dorios:energy."
+  }).toggle(mutedText("Fluid Containers"), {
+    defaultValue: settings.block.fluidContainers,
+    tooltip: "Shows stored fluids for blocks tagged dorios:fluid."
+  }).toggle(mutedText("Gas Containers"), {
+    defaultValue: settings.block.gasContainers,
+    tooltip: "Shows stored gases for blocks tagged dorios:gas."
+  }).toggle(mutedText("Overclock Level"), {
+    defaultValue: settings.block.overclockLevel,
+    tooltip: "Shows the UtilityCraft machine overclock level."
+  }).toggle(mutedText("Block Render"), {
+    defaultValue: settings.block.blockRender,
+    tooltip: "Shows the targeted block item render next to the WAILA text when Insight can resolve its aux id."
+  }).toggle(mutedText("Preferred Tool"), {
+    defaultValue: settings.block.preferredTool,
+    tooltip: "Shows the tool type associated with block destructible tags, such as Pickaxe or Shovel."
+  }).toggle(mutedText("Tool Tier"), {
+    defaultValue: settings.block.toolTier,
+    tooltip: "Shows the destructible tier tag. Blocks without a tier show Hand."
+  }).toggle(mutedText("Location"), {
+    defaultValue: settings.block.location,
+    tooltip: "Shows the targeted block coordinates as X Y Z."
+  }).toggle(mutedText("Identifier"), {
+    defaultValue: settings.block.identifier,
+    tooltip: "Shows the full block type identifier."
+  }).toggle(mutedText("Block Tags"), {
+    defaultValue: settings.block.blockTags,
+    tooltip: "Shows all tags found on the targeted block."
+  }).toggle(mutedText("States"), {
+    defaultValue: settings.block.states,
+    tooltip: "Shows every state on the targeted block, one per line."
+  }).toggle(mutedText("Separators"), {
+    defaultValue: settings.block.separators,
+    tooltip: "Shows divider lines between WAILA information sections."
+  });
+  const result = await form.show(player);
+  if (result.canceled) {
+    return;
+  }
+  const [
+    energyContainers,
+    fluidContainers,
+    gasContainers,
+    overclockLevel,
+    blockRender,
+    preferredTool,
+    toolTier,
+    location,
+    identifier,
+    blockTags,
+    states,
+    separators
+  ] = result.formValues;
+  setCoreSettings(player, {
+    block: {
+      energyContainers: Boolean(energyContainers),
+      fluidContainers: Boolean(fluidContainers),
+      gasContainers: Boolean(gasContainers),
+      overclockLevel: Boolean(overclockLevel),
+      blockRender: Boolean(blockRender),
+      preferredTool: Boolean(preferredTool),
+      toolTier: Boolean(toolTier),
+      location: Boolean(location),
+      identifier: Boolean(identifier),
+      blockTags: Boolean(blockTags),
+      states: Boolean(states),
+      separators: Boolean(separators)
+    }
+  });
+  sendMessage(player, "\xA7aBlock settings updated.");
+}
+async function openEntitySettingsMenu(player) {
+  const settings = getCoreSettings(player);
+  const form = new ModalFormData().title(`${UI.info}Entity Settings${UI.reset}`).toggle(infoLabel("Entity Render"), {
+    defaultValue: settings.entity.entityRender,
+    tooltip: "Shows the targeted entity render next to the WAILA text."
+  }).toggle(mutedText("Health"), {
+    defaultValue: settings.entity.health,
+    tooltip: "Shows health with full, half, empty, and condition-aware heart glyphs."
+  }).slider(mutedText("Heart Bar Limit"), 20, 200, {
+    defaultValue: settings.entity.maxHeartDisplayHealth,
+    valueStep: 2,
+    tooltip: "Maximum health points rendered as a full heart bar. Above it, Insight uses one heart plus current/max values."
+  }).toggle(mutedText("Effect Hearts"), {
+    defaultValue: settings.entity.effectHearts,
+    tooltip: "Changes hearts for fire, poison, wither, and freezing when the matching state is available."
+  }).toggle(mutedText("Tamed Hearts"), {
+    defaultValue: settings.entity.tamedHearts,
+    tooltip: "Uses tamed hearts only after taming is detected. Horses, mules, and donkeys are supported as explicit mount exceptions."
+  }).toggle(mutedText("Absorption"), {
+    defaultValue: settings.entity.absorption,
+    tooltip: "Shows absorption hearts when the target exposes a positive absorption value."
+  }).toggle(mutedText("Hunger"), {
+    defaultValue: settings.entity.hunger,
+    tooltip: "Shows the hunger bar for targeted players."
+  }).toggle(mutedText("Saturation Overlay"), {
+    defaultValue: settings.entity.saturation,
+    tooltip: "Composes available saturation into the targeted player's hunger glyphs."
+  }).toggle(mutedText("Armor"), {
+    defaultValue: settings.entity.armor,
+    tooltip: "Shows armor glyphs when the target exposes armor through its equippable or armor component."
+  }).toggle(mutedText("Air Supply"), {
+    defaultValue: settings.entity.air,
+    tooltip: "Shows bubble glyphs while a breathable target has less than its maximum air supply."
+  }).toggle(mutedText("Attack Damage"), {
+    defaultValue: settings.entity.attackDamage,
+    tooltip: "Shows attack damage when the matching API component and glyph exist."
+  }).toggle(mutedText("Movement Speed"), {
+    defaultValue: settings.entity.movementSpeed,
+    tooltip: "Shows walking and swimming speed. Hidden by default."
+  }).toggle(mutedText("Glyph Effects"), {
+    defaultValue: settings.entity.effects,
+    tooltip: "Shows active effects only when emojis.txt defines a matching glyph."
+  }).slider(mutedText("Visible Effects"), 1, 10, {
+    defaultValue: settings.entity.maxVisibleEffects,
+    valueStep: 1,
+    tooltip: "Maximum number of mapped effect glyphs shown at once."
+  }).toggle(mutedText("Hostile"), {
+    defaultValue: settings.entity.hostile,
+    tooltip: "Shows whether Insight detects the entity as hostile from type families or attack components."
+  }).toggle(mutedText("Special Info"), {
+    defaultValue: settings.entity.specialInfo,
+    tooltip: "Shows extra data for supported entity types, such as villager jobs."
+  }).toggle(mutedText("Identifier"), {
+    defaultValue: settings.entity.identifier,
+    tooltip: "Shows the full entity type identifier."
+  }).toggle(mutedText("Type Families"), {
+    defaultValue: settings.entity.typeFamilies,
+    tooltip: "Shows all type families found on the targeted entity."
+  }).toggle(mutedText("Tags"), {
+    defaultValue: settings.entity.tags,
+    tooltip: "Shows all runtime tags found on the targeted entity."
+  }).toggle(mutedText("Properties"), {
+    defaultValue: settings.entity.properties,
+    tooltip: "Shows normal entity properties, not dynamic properties."
+  }).toggle(mutedText("Separators"), {
+    defaultValue: settings.entity.separators,
+    tooltip: "Shows divider lines between WAILA information sections."
+  });
+  const result = await form.show(player);
+  if (result.canceled) {
+    return;
+  }
+  const [
+    entityRender,
+    health,
+    maxHeartDisplayHealth,
+    effectHearts,
+    tamedHearts,
+    absorption,
+    hunger,
+    saturation,
+    armor,
+    air,
+    attackDamage,
+    movementSpeed,
+    effects,
+    maxVisibleEffects,
+    hostile,
+    specialInfo,
+    identifier,
+    typeFamilies,
+    tags,
+    properties,
+    separators
+  ] = result.formValues;
+  setCoreSettings(player, {
+    entity: {
+      entityRender: Boolean(entityRender),
+      health: Boolean(health),
+      maxHeartDisplayHealth: Number(maxHeartDisplayHealth),
+      effectHearts: Boolean(effectHearts),
+      tamedHearts: Boolean(tamedHearts),
+      absorption: Boolean(absorption),
+      hunger: Boolean(hunger),
+      saturation: Boolean(saturation),
+      armor: Boolean(armor),
+      air: Boolean(air),
+      attackDamage: Boolean(attackDamage),
+      movementSpeed: Boolean(movementSpeed),
+      effects: Boolean(effects),
+      maxVisibleEffects: Number(maxVisibleEffects),
+      hostile: Boolean(hostile),
+      specialInfo: Boolean(specialInfo),
+      identifier: Boolean(identifier),
+      typeFamilies: Boolean(typeFamilies),
+      tags: Boolean(tags),
+      properties: Boolean(properties),
+      separators: Boolean(separators)
+    }
+  });
+  sendMessage(player, "\xA7aEntity settings updated.");
+}
+async function openCoreMenu(player) {
+  const form = new ActionFormData().title(`${UI.info}Dorios Insight Core${UI.reset}`).body(mutedText("Choose the personal settings group to edit.")).button(
+    `Main Settings
+${infoLabel("Core behavior and HUD toggles")}`,
+    "textures/ui/icon_setting"
+  ).button(
+    `Block Settings
+${infoLabel("Tools, tiers, and tags")}`,
+    "textures/ui/category_icon_blocks"
+  ).button(
+    `Entity Settings
+${infoLabel("Health, families, and tags")}`,
+    "textures/ui/icon_staffpicks"
+  ).button(
+    `Style Settings
+${infoLabel("Panel, glyph, and text formats")}`,
+    "textures/ui/color_picker"
+  );
+  const result = await form.show(player);
+  if (result.canceled) {
+    return;
+  }
+  if (result.selection === 0) {
+    await openMainSettingsMenu(player);
+    return;
+  }
+  if (result.selection === 1) {
+    await openBlockSettingsMenu(player);
+    return;
+  }
+  if (result.selection === 2) {
+    await openEntitySettingsMenu(player);
+    return;
+  }
+  if (result.selection === 3) {
+    await openStyleSettingsMenu(player);
+  }
+}
+function registerCommand(definition) {
+  try {
+    registry_exports.customCommand(definition);
+  } catch (error) {
+    console.warn(
+      `[Dorios Insight Core] Failed to register command ${definition?.name}: ${error}`
+    );
+  }
+}
+function initializeCoreMenu() {
+  if (initialized4) {
+    return;
+  }
+  initialized4 = true;
+  system10.beforeEvents.startup.subscribe((event) => {
+    event.itemComponentRegistry.registerCustomComponent(
+      INSIGHT_SETTINGS_COMPONENT,
+      {
+        onUse(useEvent) {
+          const player = useEvent.source;
+          if (player?.typeId !== "minecraft:player") {
+            return;
+          }
+          system10.run(async () => {
+            await openCoreMenu(player);
+          });
+        }
+      }
+    );
+  });
+  world12.afterEvents.playerSpawn.subscribe((event) => {
+    if (!event.initialSpawn || event.player.hasTag(INSIGHT_SETTINGS_GRANTED_TAG)) {
+      return;
+    }
+    event.player.addTag(INSIGHT_SETTINGS_GRANTED_TAG);
+    try {
+      event.player.getComponent("minecraft:inventory")?.container?.addItem(
+        new ItemStack4(INSIGHT_SETTINGS_ITEM)
+      );
+    } catch {
+    }
+  });
+  registerCommand({
+    name: "utilitycraft:insightmenu",
+    description: "Open Dorios Insight Core settings",
+    permissionLevel: "any",
+    parameters: [],
+    callback(origin) {
+      const player = getPlayerFromOrigin(origin);
+      if (!player) {
+        return;
+      }
+      system10.run(async () => {
+        await openCoreMenu(player);
+      });
+    }
+  });
+  registerCommand({
+    name: "utilitycraft:insightcore",
+    description: "Open Dorios Insight Core settings",
+    permissionLevel: "any",
+    parameters: [],
+    callback(origin) {
+      const player = getPlayerFromOrigin(origin);
+      if (!player) {
+        return;
+      }
+      system10.run(async () => {
+        await openCoreMenu(player);
+      });
+    }
+  });
+  registerCommand({
+    name: "utilitycraft:insightbridge",
+    description: "Enables or disables the StatsCore Insight bridge",
+    permissionLevel: "any",
+    parameters: [
+      { name: "mode", type: "enum", values: ["on", "off"], optional: true }
+    ],
+    callback(origin, mode) {
+      const player = getPlayerFromOrigin(origin);
+      if (!player) {
+        return;
+      }
+      if (mode === void 0) {
+        sendMessage(
+          player,
+          `\xA77StatsCore Insight bridge: \xA7f${getStatsCoreInsightBridgeEnabled(player) ? "on" : "off"}`
+        );
+        return;
+      }
+      const normalized = String(mode).trim().toLowerCase();
+      if (normalized !== "on" && normalized !== "off") {
+        sendMessage(player, "\xA7cUse on or off.");
+        return;
+      }
+      const enabled = normalized === "on";
+      if (!setStatsCoreInsightBridgeEnabled(player, enabled)) {
+        sendMessage(player, "\xA7cCould not save the StatsCore Insight bridge setting.");
+        return;
+      }
+      sendMessage(player, `\xA7aStatsCore Insight bridge ${enabled ? "enabled" : "disabled"}.`);
+    }
+  });
+}
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\core\index.js
+initializeGlobalPlayerInterval();
+initializeCoreMenu();
+
+// utilitysky-file:C:\Users\chave\Documents\GitHub\Dorios Studios\Dorios-Insight\BP\scripts\main.js
+dependencies_exports.initialize(
+  INSIGHT_METADATA,
+  INSIGHT_DEPENDENCY_OPTIONS
+);
+registry_exports.install();

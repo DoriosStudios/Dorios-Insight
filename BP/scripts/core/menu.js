@@ -1,5 +1,6 @@
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { ItemStack, system, world } from "@minecraft/server";
+import * as DoriosLib from "../DoriosLib/index.js";
 import {
   PANEL_STYLES,
   STAT_DISPLAY_STYLES,
@@ -558,7 +559,7 @@ export async function openCoreMenu(player) {
 
 function registerCommand(definition) {
   try {
-    globalThis.DoriosAPI?.register?.command?.(definition);
+    DoriosLib.registry.customCommand(definition);
   } catch (error) {
     console.warn(
       `[Dorios Insight Core] Failed to register command ${definition?.name}: ${error}`,
@@ -607,7 +608,7 @@ export function initializeCoreMenu() {
   });
 
   registerCommand({
-    name: "insightmenu",
+    name: "utilitycraft:insightmenu",
     description: "Open Dorios Insight Core settings",
     permissionLevel: "any",
     parameters: [],
@@ -624,7 +625,7 @@ export function initializeCoreMenu() {
   });
 
   registerCommand({
-    name: "insightcore",
+    name: "utilitycraft:insightcore",
     description: "Open Dorios Insight Core settings",
     permissionLevel: "any",
     parameters: [],
@@ -641,11 +642,11 @@ export function initializeCoreMenu() {
   });
 
   registerCommand({
-    name: "insightbridge",
+    name: "utilitycraft:insightbridge",
     description: "Enables or disables the StatsCore Insight bridge",
     permissionLevel: "any",
     parameters: [
-      { name: "mode", type: "enum", enum: ["on", "off"], optional: true },
+      { name: "mode", type: "enum", values: ["on", "off"], optional: true },
     ],
     callback(origin, mode) {
       const player = getPlayerFromOrigin(origin);

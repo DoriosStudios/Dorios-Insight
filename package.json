@@ -3,7 +3,8 @@
     "generate:block-render-aux": "node scripts/tools/generateBlockRenderAux.js"
   },
   "dependencies": {
-    "@minecraft/server": "^2.7.0"
+    "@minecraft/server": "^2.8.0",
+    "@minecraft/server-ui": "^2.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.0"

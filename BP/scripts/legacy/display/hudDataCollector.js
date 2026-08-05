@@ -24,6 +24,7 @@
  */
 
 import { HudElement, HudVisibility } from "@minecraft/server";
+import { getInfo as getDoriosLibDurabilityInfo } from "../../DoriosLib/item/durability.js";
 import * as uiQueue from "./uiQueue.js";
 import {
     getHudElementOrientationNumericId,
@@ -294,8 +295,8 @@ function getSelectedInventoryStackSummary(player) {
 /**
  * Resolve durability information for an item stack.
  *
- * Prefers the DoriosAPI helper already loaded into the project and falls back
- * to direct component reads for compatibility with different runtime builds.
+ * Prefers DoriosLib's explicit durability helper and falls back to direct
+ * component reads for compatibility with different runtime builds.
  *
  * @param {import("@minecraft/server").ItemStack|undefined} itemStack
  * @returns {{max: number, current: number, damage: number, hasDurability: boolean}}
@@ -306,16 +307,11 @@ function getItemDurabilityInfo(itemStack) {
     }
 
     try {
-        const durabilityApi = itemStack.durability;
-        if (
-            durabilityApi
-            && typeof durabilityApi.getMax === "function"
-            && typeof durabilityApi.getDamage === "function"
-            && typeof durabilityApi.getRemaining === "function"
-        ) {
-            const max = Math.max(0, Math.round(Number(durabilityApi.getMax()) || 0));
-            const damage = Math.max(0, Math.round(Number(durabilityApi.getDamage()) || 0));
-            const current = Math.max(0, Math.round(Number(durabilityApi.getRemaining()) || (max - damage)));
+        const durabilityInfo = getDoriosLibDurabilityInfo(itemStack);
+        if (durabilityInfo) {
+            const max = Math.max(0, Math.round(Number(durabilityInfo.max) || 0));
+            const damage = Math.max(0, Math.round(Number(durabilityInfo.damage) || 0));
+            const current = Math.max(0, Math.round(Number(durabilityInfo.remaining) || (max - damage)));
 
             if (max > 0) {
                 return {
