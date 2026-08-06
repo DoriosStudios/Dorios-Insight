@@ -1,4 +1,5 @@
-import { HIDDEN_NAMESPACE_LINE_NAMESPACES, NAMESPACE_LABELS } from "./const.js";
+import { HIDDEN_NAMESPACE_LINE_NAMESPACES } from "./const.js";
+import { getNamespaceName } from "./namespaceRegistry.js";
 
 export function splitTypeId(typeId) {
     const raw = String(typeId || "").trim();
@@ -37,7 +38,7 @@ export function formatTypeIdToText(typeId) {
 
 export function resolveNamespaceLabel(typeId) {
     const { namespace } = splitTypeId(typeId);
-    return NAMESPACE_LABELS[namespace] || toTitleWords(namespace);
+    return getNamespaceName(namespace) || toTitleWords(namespace);
 }
 
 export function resolveNamespaceId(typeId) {

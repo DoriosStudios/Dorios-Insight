@@ -19,6 +19,8 @@ import { composeEntityTarget } from "./entities/index.js";
 import { getBlockRenderAux } from "./render/blockRender.js";
 import { updateDurabilityIndicator } from "./hud/durabilityIndicator.js";
 import { initializeStatsCoreActivityHud } from "./hud/statsCoreActivity.js";
+import { initializeActionbarQueue } from "./actionbarQueue.js";
+import { initializeActionbarQueueBridge } from "./actionbarQueueBridge.js";
 import {
   clearLatched,
   initializeTitleBus,
@@ -507,6 +509,8 @@ export function initializeGlobalPlayerInterval() {
 
   initialized = true;
 
+  initializeActionbarQueue();
+  initializeActionbarQueueBridge();
   initializeTitleBus();
   initializeStatsCoreActivityHud();
   world.afterEvents.playerSpawn.subscribe((event) => {

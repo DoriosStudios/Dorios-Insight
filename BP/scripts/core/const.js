@@ -4,6 +4,7 @@ export const CHANNEL_BLOCK_WAILA = CHANNEL_WAILA;
 export const CHANNEL_DEFAULT_WAILA = CHANNEL_WAILA;
 export const CHANNEL_HUD = "insight_hud:";
 export const CHANNEL_STATSCORE_ACTIVITY = "insight_statscore:";
+export const CHANNEL_ACTIONBAR_SECONDARY = "insight_actionbar_secondary:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 

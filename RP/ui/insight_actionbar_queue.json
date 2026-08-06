@@ -1,0 +1,88 @@
+{
+  "namespace": "insight_actionbar_queue",
+  "root_panel": {
+    "$update_string": "insight_actionbar_secondary:",
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 20,
+    "controls": [
+      {
+        "secondary_data": {
+          "type": "panel",
+          "size": [0, 0],
+          "property_bag": {
+            "#stored_secondary_text": ""
+          },
+          "bindings": [
+            {
+              "binding_name": "#hud_title_text_string"
+            },
+            {
+              "binding_name": "#hud_title_text_string",
+              "binding_name_override": "#stored_secondary_text",
+              "binding_condition": "visibility_changed"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not (#hud_title_text_string = #stored_secondary_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      },
+      {
+        "secondary_actionbar": {
+          "type": "image",
+          "size": ["100%c + 12px", "100%c + 5px"],
+          "offset": [0, "50%-82px"],
+          "texture": "textures/ui/hud_tip_text_background",
+          "alpha": 0.01,
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "layer": 21,
+          "property_bag": {
+            "#secondary_text": ""
+          },
+          "controls": [
+            {
+              "secondary_message": {
+                "type": "label",
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "color": "$tool_tip_text",
+                "enable_profanity_filter": true,
+                "layer": 31,
+                "text": "#text",
+                "shadow": true,
+                "localize": false,
+                "font_size": "normal",
+                "font_scale_factor": 0.85,
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "secondary_actionbar",
+                    "source_property_name": "#secondary_text",
+                    "target_property_name": "#text"
+                  }
+                ]
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "secondary_data",
+              "source_property_name": "(#stored_secondary_text - $update_string)",
+              "target_property_name": "#secondary_text"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not (#secondary_text = ''))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

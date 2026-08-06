@@ -1588,6 +1588,29 @@ globalThis.DoriosAPI = {
      */
     insight: {
         /**
+         * Cooperative native-actionbar + secondary JSON UI queue.
+         * Initialized by the Insight core at runtime.
+         *
+         * Available methods:
+         * - send(player, namespace, payload, { lifetimeTicks?, slot? })
+         * - clear(player, namespace?)
+         *
+         * `supportsSlots` is true when fixed primary/secondary placement is
+         * supported by the active Insight core.
+         *
+         * @type {Object|null}
+         */
+        actionbarQueue: null,
+
+        /**
+         * Registers a user-facing name for a content namespace.
+         * Initialized by the Insight core at runtime.
+         *
+         * @type {Function|null}
+         */
+        setNamespaceName: null,
+
+        /**
          * UI Queue module reference.
          * Set at runtime by the display controller initialization.
          * 
