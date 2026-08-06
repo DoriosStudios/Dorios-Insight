@@ -1,4 +1,5 @@
 import { world } from "@minecraft/server";
+import { isCreative as isCreativeWithDoriosLib } from "../../DoriosLib/player/index.js";
 
 const WORLD_MODE_DYNAMIC_PROPERTY = "insight:mode";
 const WORLD_ENABLED_DYNAMIC_PROPERTY = "insight:enabled";
@@ -1367,15 +1368,9 @@ export function setPlayerActivation(player, isActive) {
 
 function isCreativePlayer(player) {
     try {
-        if (typeof player.isInCreative === "function") {
-            return Boolean(player.isInCreative());
-        }
-
-        if (typeof player.isInCreative === "boolean") {
-            return player.isInCreative;
-        }
+        return isCreativeWithDoriosLib(player);
     } catch {
-        // Ignore extension errors.
+        // Fall back for runtimes with a different GameMode representation.
     }
 
     try {

@@ -99,7 +99,7 @@ If the overlay feels too “busy” or you want to reduce update cost:
 ## Known limitations
 - Insight writes to the **action bar**. If another add-on also uses the action bar, they can visually compete.
 - Some components may be marked as deprecated/non-functional and will be ignored.
-- The command is registered via DoriosAPI with a fixed namespace: **`utilitycraft:`**.
+- The command is registered via DoriosLib with a fixed namespace: **`utilitycraft:`**.
 
 ## Technical notes (persistence)
 Settings and aliases are stored using **dynamic properties**.
@@ -113,7 +113,7 @@ Main identifiers used by Insight include:
 
 ## Credits
 - Dorios Studios
-- DoriosAPI (command + utility foundation)
+- DoriosLib (dependency, command, and utility foundation)
 
 ---
 

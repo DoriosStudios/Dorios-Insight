@@ -1,4 +1,5 @@
 import { system, world } from "@minecraft/server";
+import * as DoriosLib from "../../DoriosLib/index.js";
 import {
     InsightComponentDefinitions,
     InsightModePresets,
@@ -107,7 +108,7 @@ function getPlayerFromOrigin(origin) {
 
 function registerInsightCommand(definition) {
     try {
-        DoriosAPI.register.command(definition);
+        DoriosLib.registry.customCommand(definition);
     } catch (error) {
         console.warn(`[Dorios' Insight] Failed to register command ${definition?.name}: ${error}`);
     }
@@ -321,14 +322,14 @@ export function initializeInsightCommands() {
     commandsRegistered = true;
 
     registerInsightCommand({
-        name: "insight",
+        name: "utilitycraft:insight",
         description: "Dorios Insight runtime controls",
         permissionLevel: "any",
         parameters: [
             {
                 name: "action",
                 type: "enum",
-                enum: ["menu", "mode", "activate", "global", "namespace", "reset"]
+                values: ["menu", "mode", "activate", "global", "namespace", "reset"]
             },
             {
                 name: "value",
@@ -357,7 +358,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightmenu",
+        name: "utilitycraft:insightmenu",
         description: "Open Dorios Insight menu",
         permissionLevel: "any",
         parameters: [],
@@ -372,7 +373,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightmode",
+        name: "utilitycraft:insightmode",
         description: "Set Dorios Insight mode",
         permissionLevel: "any",
         parameters: [
@@ -393,7 +394,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightactivate",
+        name: "utilitycraft:insightactivate",
         description: "Activate Dorios Insight or set component policy",
         permissionLevel: "any",
         parameters: [
@@ -419,7 +420,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightglobal",
+        name: "utilitycraft:insightglobal",
         description: "Set Dorios Insight global status",
         permissionLevel: "any",
         parameters: [
@@ -440,7 +441,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightnamespace",
+        name: "utilitycraft:insightnamespace",
         description: "Register namespace alias for Dorios Insight",
         permissionLevel: "any",
         parameters: [
@@ -471,7 +472,7 @@ export function initializeInsightCommands() {
     });
 
     registerInsightCommand({
-        name: "insightreset",
+        name: "utilitycraft:insightreset",
         description: "Reset vanilla HUD for all players (fallback)",
         permissionLevel: "any",
         parameters: [],
