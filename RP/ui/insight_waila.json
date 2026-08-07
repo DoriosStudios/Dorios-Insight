@@ -1,7 +1,7 @@
 {
     "namespace": "insight_waila",
     "root_panel": {
-        "$update_string": "insight_waila:",
+        "$update_string": "ds:insight:waila:",
         "type": "panel",
         "size": [
             "100%",
@@ -423,7 +423,7 @@
                                     {
                                         "binding_type": "view",
                                         "source_control_name": "data_control_waila",
-                                        "source_property_name": "(#preserved_waila_text - 'insight_waila:')",
+                                        "source_property_name": "(#preserved_waila_text - 'ds:insight:waila:')",
                                         "target_property_name": "#waila_payload"
                                     },
                                     {
@@ -458,7 +458,7 @@
                                     },
                                     {
                                         "binding_type": "view",
-                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'insight_waila:')) and not (#waila_mobile_layout = 'm'))",
+                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'ds:insight:waila:')) and not (#waila_mobile_layout = 'm'))",
                                         "target_property_name": "#visible"
                                     }
                                 ]
@@ -849,7 +849,7 @@
                                     {
                                         "binding_type": "view",
                                         "source_control_name": "data_control_waila",
-                                        "source_property_name": "(#preserved_waila_text - 'insight_waila:')",
+                                        "source_property_name": "(#preserved_waila_text - 'ds:insight:waila:')",
                                         "target_property_name": "#waila_payload"
                                     },
                                     {
@@ -884,7 +884,7 @@
                                     },
                                     {
                                         "binding_type": "view",
-                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'insight_waila:')) and (#waila_mobile_layout = 'm'))",
+                                        "source_property_name": "(((not (#waila_text = '')) and not (#preserved_waila_text = 'ds:insight:waila:')) and (#waila_mobile_layout = 'm'))",
                                         "target_property_name": "#visible"
                                     }
                                 ]

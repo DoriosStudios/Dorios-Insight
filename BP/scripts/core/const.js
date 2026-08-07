@@ -1,10 +1,10 @@
-export const CHANNEL_WAILA = "insight_waila:";
+export const CHANNEL_WAILA = "ds:insight:waila:";
 export const CHANNEL_ENTITY_WAILA = CHANNEL_WAILA;
 export const CHANNEL_BLOCK_WAILA = CHANNEL_WAILA;
 export const CHANNEL_DEFAULT_WAILA = CHANNEL_WAILA;
-export const CHANNEL_HUD = "insight_hud:";
-export const CHANNEL_STATSCORE_ACTIVITY = "insight_statscore:";
-export const CHANNEL_ACTIONBAR_SECONDARY = "insight_actionbar_secondary:";
+export const CHANNEL_HUD = "ds:insight:hud:";
+export const CHANNEL_STATSCORE_ACTIVITY = "ds:insight:statscore:";
+export const CHANNEL_ACTIONBAR_SECONDARY = "ds:insight:actionbar_secondary:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 

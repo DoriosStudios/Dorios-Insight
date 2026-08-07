@@ -35,23 +35,20 @@
     },
 
     "hud_title_text": {
-        "$update_string": "insight_waila:",
-        "$hud_update_string": "insight_hud:",
-        "$statscore_update_string": "insight_statscore:",
-        "$actionbar_secondary_update_string": "insight_actionbar_secondary:",
+        "$pb_namespace": "pb:",
+        "$ds_namespace": "ds:",
         "$title_txt": "$title_text",
-        "visible": "((($title_txt - $update_string) = $title_txt) and (($title_txt - $hud_update_string) = $title_txt) and (($title_txt - $statscore_update_string) = $title_txt) and (($title_txt - $actionbar_secondary_update_string) = $title_txt))",
+        "visible": "((($title_txt - $pb_namespace) = $title_txt) and (($title_txt - $ds_namespace) = $title_txt))",
         "type": "stack_panel",
         "orientation": "vertical",
         "offset": [0, -19],
         "layer": 1,
-        "alpha": 0.0,
+        "alpha": "@hud.anim_title_text_alpha_in",
         "propagate_alpha": true,
         "controls": [
             {
                 "title_frame": {
                     "type": "panel",
-                    "visible": "(1=2)",
                     "size": ["100%", "100%cm"],
                     "controls": [
                         {
@@ -65,7 +62,6 @@
                                 "layer": 31,
                                 "localize": false,
                                 "font_size": "extra_large",
-                                "visible": "(1=2)",
                                 "shadow": true,
                                 "text_alignment": "center",
                                 "offset": [0, 6],
@@ -77,7 +73,7 @@
                                     },
                                     {
                                         "binding_type": "view",
-                                        "source_property_name": "(((#text - $update_string) = #text) and ((#text - $hud_update_string) = #text) and ((#text - $statscore_update_string) = #text) and ((#text - $actionbar_secondary_update_string) = #text))",
+                                        "source_property_name": "(((#text - $pb_namespace) = #text) and ((#text - $ds_namespace) = #text))",
                                         "target_property_name": "#visible"
                                     }
                                 ]
@@ -89,7 +85,6 @@
             {
                 "subtitle_frame": {
                     "type": "panel",
-                    "visible": "(1=2)",
                     "size": ["100%", "100%cm"],
                     "controls": [
                         {
@@ -103,7 +98,6 @@
                                 "layer": 31,
                                 "localize": false,
                                 "font_size": "large",
-                                "visible": "(1=2)",
                                 "shadow": true,
                                 "text_alignment": "center",
                                 "offset": [0, 6],
