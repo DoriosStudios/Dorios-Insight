@@ -476,6 +476,7 @@
             "100%c",
             "100%c"
         ],
+        "offset": [0, -3],
         "controls": [
             {
                 "content": {
@@ -830,7 +831,7 @@
         "anchor_to": "bottom_middle",
         "offset": [
             124,
-            "-1.25%"
+            "-1.75%"
         ],
         "layer": 28,
         "size": [
@@ -1959,7 +1960,7 @@
         "anchor_to": "bottom_middle",
         "offset": [
             -108,
-            4.5
+            1.0
         ],
         "layer": 28,
         "size": [
