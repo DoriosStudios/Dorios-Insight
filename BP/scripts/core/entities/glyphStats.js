@@ -1,3 +1,5 @@
+import { getInsightEntityEffects } from "../effects/entityEffects.js";
+
 const GLYPHS = Object.freeze({
   armorFull: "\uF5B9",
   armorHalf: "\uF5BA",
@@ -33,6 +35,7 @@ const GLYPHS = Object.freeze({
   bubblePopping: "\uF5BD",
   bubbleEmpty: "\uF5BE",
   attackDamage: "\uF517",
+  effectUnknown: "\uF5FF",
   walkingSpeed: "\uF518",
   swimmingSpeed: "\uF519",
   fire: "\uF54D",
@@ -672,16 +675,33 @@ function buildEffectsDisplay(stats, settings) {
     );
   }
 
+  for (const effect of stats.customEffects ?? []) {
+    if (entries.length >= maxVisible) {
+      break;
+    }
+
+    const level = Math.max(1, Math.floor(Number(effect?.level) || 1));
+    const chargeDisplay = effect?.displayMode === "charges" && Number(effect?.maxCharges) > 0;
+    const levelSuffix = !chargeDisplay && level > 1 ? ` ${toRomanNumeral(level)}` : "";
+    const value = chargeDisplay
+      ? `${Math.max(0, Number(effect?.currentCharges) || 0)}/${Math.max(1, Number(effect?.maxCharges) || 1)}`
+      : formatEffectDuration(effect?.remainingTicks);
+    entries.push(
+      formatStyledStat(
+        style,
+        `${effect?.glyph || GLYPHS.effectUnknown}§r`,
+        `${effect?.name || formatEffectLabel(effect?.id)}${levelSuffix} §7(${value})§r`,
+      ),
+    );
+  }
+
   for (const effect of stats.effects) {
     if (entries.length >= maxVisible) {
       break;
     }
 
     const typeId = normalizeEffectTypeId(effect);
-    const glyph = EFFECT_GLYPHS[typeId];
-    if (!glyph) {
-      continue;
-    }
+    const glyph = EFFECT_GLYPHS[typeId] ?? GLYPHS.effectUnknown;
 
     const level = Math.max(1, Math.floor(Number(effect?.amplifier) || 0) + 1);
     const levelSuffix = level > 1 ? ` ${toRomanNumeral(level)}` : "";
@@ -741,6 +761,7 @@ function buildAttributeDisplay(attributes, settings) {
 export function collectEntityGlyphStats(entity) {
   const isPlayer = String(entity?.typeId || "") === "minecraft:player";
   const effects = getEffects(entity);
+  const customEffects = getInsightEntityEffects(entity);
   const onFire = isEntityOnFire(entity);
 
   return {
@@ -755,6 +776,7 @@ export function collectEntityGlyphStats(entity) {
     armor: getArmorInfo(entity),
     air: getAirSupplyInfo(entity),
     effects,
+    customEffects,
     effectFlags: getEffectFlags(effects),
     onFire,
     frozen: isEntityFrozen(entity),

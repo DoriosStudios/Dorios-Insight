@@ -19,6 +19,7 @@ import { composeEntityTarget } from "./entities/index.js";
 import { getBlockRenderAux } from "./render/blockRender.js";
 import { updateDurabilityIndicator } from "./hud/durabilityIndicator.js";
 import { initializeStatsCoreActivityHud } from "./hud/statsCoreActivity.js";
+import { initializeCustomEffectsHud } from "./effects/titleHandler.js";
 import { initializeActionbarQueue } from "./actionbarQueue.js";
 import { initializeActionbarQueueBridge } from "./actionbarQueueBridge.js";
 import {
@@ -513,6 +514,7 @@ export function initializeGlobalPlayerInterval() {
   initializeActionbarQueueBridge();
   initializeTitleBus();
   initializeStatsCoreActivityHud();
+  initializeCustomEffectsHud();
   world.afterEvents.playerSpawn.subscribe((event) => {
     if (!event.initialSpawn) {
       return;

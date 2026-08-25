@@ -4,6 +4,9 @@ export const CHANNEL_BLOCK_WAILA = CHANNEL_WAILA;
 export const CHANNEL_DEFAULT_WAILA = CHANNEL_WAILA;
 export const CHANNEL_HUD = "ds:insight:hud:";
 export const CHANNEL_STATSCORE_ACTIVITY = "ds:insight:statscore:";
+export const CHANNEL_EFFECTS = "ds:insight:effects:v1:";
+// Compatibility alias for integrations built against the first public draft.
+export const CHANNEL_CUSTOM_EFFECTS = CHANNEL_EFFECTS;
 export const CHANNEL_ACTIONBAR_SECONDARY = "ds:insight:actionbar_secondary:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";

@@ -8,6 +8,14 @@ import {
   getNamespaceNames,
   setNamespaceName,
 } from "./namespaceRegistry.js";
+import {
+  CUSTOM_EFFECTS_MAX_VISIBLE,
+  clearCustomEffects,
+  removeCustomEffect,
+  replaceCustomEffects,
+  upsertCustomEffect,
+} from "./effects/titleHandler.js";
+import { getStoredInsightEntityEffects } from "./effects/store.js";
 
 export function exposeInsightApi() {
   globalThis.DoriosAPI ??= {};
@@ -20,8 +28,22 @@ export function exposeInsightApi() {
       send: sendQueuedActionbar,
       clear: clearQueuedActionbar,
     },
+    effects: {
+      version: 2,
+      entityScoped: true,
+      maxVisibleEffects: CUSTOM_EFFECTS_MAX_VISIBLE,
+      getActive: getStoredInsightEntityEffects,
+      upsert: upsertCustomEffect,
+      remove: removeCustomEffect,
+      replace: replaceCustomEffects,
+      clear: clearCustomEffects,
+    },
     setNamespaceName,
     getNamespaceName,
     getNamespaceNames,
   });
+
+  // Keep the first draft's API name working while integrations migrate.
+  globalThis.DoriosAPI.insight.customEffects =
+    globalThis.DoriosAPI.insight.effects;
 }

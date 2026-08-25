@@ -1,0 +1,135 @@
+{
+  "namespace": "insight_custom_effects",
+  "root_panel": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 19,
+    "controls": [
+      { "effect_0_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:0:duration:" } },
+      { "effect_0_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:0:name:" } },
+      { "effect_0_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:0:glyph:" } },
+      { "effect_1_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:1:duration:" } },
+      { "effect_1_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:1:name:" } },
+      { "effect_1_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:1:glyph:" } },
+      { "effect_2_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:2:duration:" } },
+      { "effect_2_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:2:name:" } },
+      { "effect_2_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:2:glyph:" } },
+      { "effect_3_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:3:duration:" } },
+      { "effect_3_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:3:name:" } },
+      { "effect_3_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:3:glyph:" } },
+      { "effect_4_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:4:duration:" } },
+      { "effect_4_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:4:name:" } },
+      { "effect_4_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:4:glyph:" } },
+      { "effect_5_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:5:duration:" } },
+      { "effect_5_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:5:name:" } },
+      { "effect_5_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:5:glyph:" } },
+      { "effect_6_duration_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:6:duration:" } },
+      { "effect_6_name_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:6:name:" } },
+      { "effect_6_glyph_data@insight_custom_effects.effect_field_data": { "$update_string": "ds:insight:effects:v1:6:glyph:" } },
+      {
+        "effects_stack": {
+          "type": "stack_panel",
+          "orientation": "vertical",
+          "anchor_from": "top_right",
+          "anchor_to": "top_right",
+          "offset": [-34, 26],
+          "size": [150, "100%c"],
+          "layer": 20,
+          "controls": [
+            { "effect_0@insight_custom_effects.effect_row": { "$duration_control": "effect_0_duration_data", "$duration_update": "ds:insight:effects:v1:0:duration:", "$name_control": "effect_0_name_data", "$name_update": "ds:insight:effects:v1:0:name:", "$glyph_control": "effect_0_glyph_data", "$glyph_update": "ds:insight:effects:v1:0:glyph:" } },
+            { "effect_1@insight_custom_effects.effect_row": { "$duration_control": "effect_1_duration_data", "$duration_update": "ds:insight:effects:v1:1:duration:", "$name_control": "effect_1_name_data", "$name_update": "ds:insight:effects:v1:1:name:", "$glyph_control": "effect_1_glyph_data", "$glyph_update": "ds:insight:effects:v1:1:glyph:" } },
+            { "effect_2@insight_custom_effects.effect_row": { "$duration_control": "effect_2_duration_data", "$duration_update": "ds:insight:effects:v1:2:duration:", "$name_control": "effect_2_name_data", "$name_update": "ds:insight:effects:v1:2:name:", "$glyph_control": "effect_2_glyph_data", "$glyph_update": "ds:insight:effects:v1:2:glyph:" } },
+            { "effect_3@insight_custom_effects.effect_row": { "$duration_control": "effect_3_duration_data", "$duration_update": "ds:insight:effects:v1:3:duration:", "$name_control": "effect_3_name_data", "$name_update": "ds:insight:effects:v1:3:name:", "$glyph_control": "effect_3_glyph_data", "$glyph_update": "ds:insight:effects:v1:3:glyph:" } },
+            { "effect_4@insight_custom_effects.effect_row": { "$duration_control": "effect_4_duration_data", "$duration_update": "ds:insight:effects:v1:4:duration:", "$name_control": "effect_4_name_data", "$name_update": "ds:insight:effects:v1:4:name:", "$glyph_control": "effect_4_glyph_data", "$glyph_update": "ds:insight:effects:v1:4:glyph:" } },
+            { "effect_5@insight_custom_effects.effect_row": { "$duration_control": "effect_5_duration_data", "$duration_update": "ds:insight:effects:v1:5:duration:", "$name_control": "effect_5_name_data", "$name_update": "ds:insight:effects:v1:5:name:", "$glyph_control": "effect_5_glyph_data", "$glyph_update": "ds:insight:effects:v1:5:glyph:" } },
+            { "effect_6@insight_custom_effects.effect_row": { "$duration_control": "effect_6_duration_data", "$duration_update": "ds:insight:effects:v1:6:duration:", "$name_control": "effect_6_name_data", "$name_update": "ds:insight:effects:v1:6:name:", "$glyph_control": "effect_6_glyph_data", "$glyph_update": "ds:insight:effects:v1:6:glyph:" } }
+          ]
+        }
+      }
+    ]
+  },
+  "effect_field_data": {
+    "$update_string|default": "ds:insight:effects:v1:unused:",
+    "type": "panel",
+    "size": [0, 0],
+    "property_bag": {
+      "#stored_field_text": ""
+    },
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_name": "#hud_title_text_string",
+        "binding_name_override": "#stored_field_text",
+        "binding_condition": "visibility_changed"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#hud_title_text_string = #stored_field_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+  "effect_row": {
+    "$duration_control|default": "effect_0_duration_data",
+    "$duration_update|default": "ds:insight:effects:v1:0:duration:",
+    "$name_control|default": "effect_0_name_data",
+    "$name_update|default": "ds:insight:effects:v1:0:name:",
+    "$glyph_control|default": "effect_0_glyph_data",
+    "$glyph_update|default": "ds:insight:effects:v1:0:glyph:",
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": [150, 19],
+    "controls": [
+      {
+        "duration": {
+          "type": "label",
+          "size": [38, 18],
+          "text": "#text",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.85,
+          "text_alignment": "right",
+          "color": [0.78, 0.78, 0.78],
+          "bindings": [
+            { "binding_type": "view", "source_control_name": "$duration_control", "source_property_name": "(#stored_field_text - $duration_update)", "target_property_name": "#text" }
+          ]
+        }
+      },
+      {
+        "name": {
+          "type": "label",
+          "size": [88, 18],
+          "text": "#text",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.85,
+          "text_alignment": "right",
+          "color": "$tool_tip_text",
+          "bindings": [
+            { "binding_type": "view", "source_control_name": "$name_control", "source_property_name": "(#stored_field_text - $name_update)", "target_property_name": "#text" }
+          ]
+        }
+      },
+      {
+        "glyph": {
+          "type": "label",
+          "size": [24, 18],
+          "text": "#text",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 1.05,
+          "text_alignment": "center",
+          "color": "$tool_tip_text",
+          "bindings": [
+            { "binding_type": "view", "source_control_name": "$glyph_control", "source_property_name": "(#stored_field_text - $glyph_update)", "target_property_name": "#text" }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      { "binding_type": "view", "source_control_name": "$name_control", "source_property_name": "(not ((#stored_field_text - $name_update) = ''))", "target_property_name": "#visible" }
+    ]
+  }
+}

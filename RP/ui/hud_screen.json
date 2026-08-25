@@ -28,7 +28,100 @@
                 "array_name": "controls",
                 "operation": "insert_back",
                 "value": {
+                    "insight_custom_effects_panel@insight_custom_effects.root_panel": {}
+                }
+            },
+            {
+                "array_name": "controls",
+                "operation": "insert_back",
+                "value": {
                     "insight_actionbar_queue_panel@insight_actionbar_queue.root_panel": {}
+                }
+            }
+        ]
+    },
+
+    // The selected-item HUD string contains the item name followed by its
+    // enchantments. Limit its label to one line so only the name is shown.
+    "item_name_text_root": {
+        "type": "panel",
+        "size": ["100%cm", "100%cm"],
+        "$show_interact_padding|default": false,
+        "$show_survival_padding|default": false,
+        "$show_text_background|default": false,
+        "$text_color|default": "$tool_tip_text",
+        "$text_binding|default": "#item_text",
+        "anchor_from": "bottom_middle",
+        "anchor_to": "bottom_middle",
+        "$wait_duration|default": 1,
+        "$destroy_id|default": "item_name_text",
+        "controls": [
+            {
+                "item_text_aligner": {
+                    "type": "stack_panel",
+                    "size": ["100%cm", "100%c"],
+                    "controls": [
+                        {
+                            "item_text_control": {
+                                "type": "panel",
+                                "size": ["100%cm", "100%cm"],
+                                "controls": [
+                                    {
+                                        "item_text_background": {
+                                            "ignored": "(not $show_text_background)",
+                                            "type": "image",
+                                            "size": ["100%sm + 12px", "100%sm + 5px"],
+                                            "texture": "textures/ui/hud_tip_text_background",
+                                            "alpha": "@hud.anim_item_name_background_alpha_in"
+                                        }
+                                    },
+                                    {
+                                        "item_text_label": {
+                                            "type": "label",
+                                            "max_size": [200, 11],
+                                            "text_alignment": "center",
+                                            "layer": 31,
+                                            "color": "$text_color",
+                                            "text": "#text",
+                                            "alpha": "@hud.anim_item_name_text_alpha_in",
+                                            "shadow": true,
+                                            "bindings": [
+                                                {
+                                                    "binding_name": "$text_binding",
+                                                    "binding_name_override": "#text"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "interact_padding@common.empty_panel": {
+                                "visible": "$show_interact_padding",
+                                "size": ["100%sm", 18],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#interact_visible",
+                                        "binding_name_override": "#visible",
+                                        "binding_condition": "always"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "survival_buffer@common.empty_panel": {
+                                "visible": "$show_survival_padding",
+                                "size": ["100%sm", 17],
+                                "bindings": [
+                                    {
+                                        "binding_name": "#show_survival_ui",
+                                        "binding_name_override": "#visible"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
                 }
             }
         ]

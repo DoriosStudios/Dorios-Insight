@@ -85,11 +85,6 @@ export function sendLatchedPair(player, namespace, title, subtitle, options = {}
         return;
     }
 
-    lastForPlayer.set(namespace, {
-        titleKey: nextTitleKey,
-        subtitleKey: nextSubtitleKey,
-        tick: now
-    });
     enqueue(player, namespace, title, subtitle);
 }
 
@@ -117,6 +112,7 @@ export function initializeTitleBus() {
             }
 
             const entry = queue.shift();
+            /** @type {import("@minecraft/server").TitleDisplayOptions} */
             const options = { ...TITLE_OPTIONS };
             if (entry.subtitle !== undefined) {
                 options.subtitle = entry.subtitle ?? "";
@@ -124,8 +120,20 @@ export function initializeTitleBus() {
 
             try {
                 entry.player.onScreenDisplay.setTitle(entry.title, options);
+                lastByPlayer.get(entry.player.id)?.set(entry.namespace, {
+                    titleKey: titleKey(entry.title),
+                    subtitleKey: subtitleKey(entry.subtitle),
+                    tick: system.currentTick
+                });
             } catch {
-                // UI may not be available on this tick.
+                // UI may not be available on this tick. Keep the frame queued;
+                // it must not be treated as delivered until setTitle succeeds.
+                enqueue(
+                    entry.player,
+                    entry.namespace,
+                    entry.title,
+                    entry.subtitle
+                );
             }
         }
     }, 1);
