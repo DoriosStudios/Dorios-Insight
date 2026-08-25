@@ -64,6 +64,9 @@
         "$destroy_id|default": "item_name_text",
         "controls": [
             {
+                "tooltip_status_c@insight_player_status.status_section_c": {}
+            },
+            {
                 "item_text_aligner": {
                     "type": "stack_panel",
                     "size": ["100%cm", "100%c"],
@@ -127,11 +130,71 @@
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "armor_overflow_reserver@hud.armor_overflow_reserver": {}
                         }
                     ]
                 }
             }
         ]
+    },
+
+    // Extra armor rows are drawn above the vanilla armor row. Reserve their
+    // measured stack height below the tooltip so the tooltip follows them.
+    "armor_overflow_reserver": {
+        "type": "stack_panel",
+        "orientation": "vertical",
+        "size": ["100%cm", "100%c"],
+        "controls": [
+            {
+                "rows@hud.armor_overflow_reserver_factory": {}
+            }
+        ],
+        "bindings": [
+            {
+                "binding_name": "#show_survival_ui",
+                "binding_condition": "always"
+            },
+            {
+                "binding_type": "view",
+                "source_control_name": "tooltip_status_c",
+                "source_property_name": "(#armor_overflow_rows > 0)",
+                "target_property_name": "#has_armor_overflow",
+                "binding_condition": "always"
+            },
+            {
+                "binding_type": "view",
+                "source_property_name": "(#show_survival_ui and #has_armor_overflow)",
+                "target_property_name": "#visible",
+                "binding_condition": "always"
+            }
+        ]
+    },
+
+    "armor_overflow_reserver_factory": {
+        "type": "stack_panel",
+        "orientation": "vertical",
+        "size": ["100%cm", "100%c"],
+        "collection_name": "item_tooltip_armor_overflow_factory",
+        "factory": {
+            "name": "bar_factory",
+            "control_name": "hud.armor_overflow_reserver_row"
+        },
+        "bindings": [
+            {
+                "binding_type": "view",
+                "source_control_name": "tooltip_status_c",
+                "source_property_name": "#armor_overflow_rows",
+                "target_property_name": "#collection_length",
+                "binding_condition": "always"
+            }
+        ]
+    },
+
+    "armor_overflow_reserver_row": {
+        "type": "panel",
+        "size": ["100%sm", 10]
     },
 
     "hud_title_text": {
