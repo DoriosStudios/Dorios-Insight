@@ -34,7 +34,6 @@
       { "status_a@insight_player_status.status_section_a": {} },
       { "status_b@insight_player_status.status_section_b": {} },
       { "status_c@insight_player_status.status_section_c": {} },
-      { "mana_data@insight_resource_hud.mana_data": {} },
       { "secondary_layout@insight_actionbar_queue.secondary_layout": {} }
     ]
   },
@@ -55,7 +54,7 @@
       },
       { "dynamic_collision_area@insight_actionbar_queue.dynamic_collision_area": {} },
       {
-        "resource_and_hotbar_reserver": {
+        "hotbar_reserver": {
           "type": "panel",
           "size": [182, 22]
         }
@@ -154,44 +153,13 @@
     "orientation": "vertical",
     "size": [81, "100%c"],
     "controls": [
-      { "hunger_and_saturation@insight_actionbar_queue.collision_row": {} },
-      { "locator_mana@insight_actionbar_queue.mana_collision_row": {} }
+      { "hunger_and_saturation@insight_actionbar_queue.collision_row": {} }
     ]
   },
 
   "collision_row": {
     "type": "panel",
     "size": [81, 10]
-  },
-
-  "mana_collision_row@insight_actionbar_queue.collision_row": {
-    "bindings": [
-      {
-        "binding_name": "#hotbar_with_locator_bar",
-        "binding_name_override": "#locator_visible"
-      },
-      {
-        "binding_name": "#hud_visible_centered",
-        "binding_name_override": "#centered_visible",
-        "binding_type": "global"
-      },
-      {
-        "binding_name": "#hud_visible_centered_touch",
-        "binding_name_override": "#centered_touch_visible",
-        "binding_type": "global"
-      },
-      {
-        "binding_type": "view",
-        "source_control_name": "mana_data",
-        "source_property_name": "(#mana_visible > 0)",
-        "target_property_name": "#mana_available"
-      },
-      {
-        "binding_type": "view",
-        "source_property_name": "(#locator_visible and #mana_available and (#centered_visible or #centered_touch_visible))",
-        "target_property_name": "#visible"
-      }
-    ]
   },
 
   "health_collision_factory": {
