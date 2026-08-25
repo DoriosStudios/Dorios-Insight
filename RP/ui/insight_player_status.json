@@ -1,0 +1,587 @@
+{
+  "namespace": "insight_player_status",
+
+  "root_panel": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 18,
+    "controls": [
+      { "status_a@insight_player_status.status_section_a": {} },
+      { "status_b@insight_player_status.status_section_b": {} },
+      { "status_c@insight_player_status.status_section_c": {} },
+      {
+        "centered_status@insight_player_status.centered_status": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_centered",
+              "binding_name_override": "#visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      },
+      {
+        "touch_status@insight_player_status.touch_status": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_centered_touch",
+              "binding_name_override": "#visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      },
+      {
+        "not_centered_status@insight_player_status.not_centered_status": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_not_centered",
+              "binding_name_override": "#visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "status_section_a": {
+    "type": "panel",
+    "size": [0, 0],
+    "property_bag": {
+      "#stored_text": ""
+    },
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_name": "#hud_title_text_string",
+        "binding_name_override": "#stored_text",
+        "binding_condition": "visibility_changed"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#stored_text - 'ds:insight:hud:')",
+        "target_property_name": "#hud_payload"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(('%.11s' * #hud_payload) - 'a')",
+        "target_property_name": "#data_a"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_a / 10000000)",
+        "target_property_name": "#health"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_a / 10000) - (#health * 1000)",
+        "target_property_name": "#max_health"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_a / 100) - (#health * 100000) - (#max_health * 100)",
+        "target_property_name": "#absorption"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_a / 1) - (#health * 10000000) - (#max_health * 10000) - (#absorption * 100)",
+        "target_property_name": "#health_gap"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'ds:insight:hud:') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "status_section_b": {
+    "type": "panel",
+    "size": [0, 0],
+    "property_bag": {
+      "#stored_text": ""
+    },
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_name": "#hud_title_text_string",
+        "binding_name_override": "#stored_text",
+        "binding_condition": "visibility_changed"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#stored_text - 'ds:insight:hud:')",
+        "target_property_name": "#hud_payload"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(('%.20s' * (#hud_payload - ('%.11s' * #hud_payload))) - 'b')",
+        "target_property_name": "#data_b"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_b / 1000000)",
+        "target_property_name": "#air"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_b / 10000) - (#air * 100)",
+        "target_property_name": "#air_max"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_b / 100) - (#air * 10000) - (#air_max * 100)",
+        "target_property_name": "#hunger"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_b / 1) - (#air * 1000000) - (#air_max * 10000) - (#hunger * 100)",
+        "target_property_name": "#saturation"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'ds:insight:hud:') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "status_section_c": {
+    "type": "panel",
+    "size": [0, 0],
+    "property_bag": {
+      "#stored_text": ""
+    },
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_name": "#hud_title_text_string",
+        "binding_name_override": "#stored_text",
+        "binding_condition": "visibility_changed"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#stored_text - 'ds:insight:hud:')",
+        "target_property_name": "#hud_payload"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(('%.29s' * (#hud_payload - ('%.20s' * #hud_payload))) - 'c')",
+        "target_property_name": "#data_c"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_c / 1000000)",
+        "target_property_name": "#armor"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_c / 10000) - (#armor * 100)",
+        "target_property_name": "#extra_armor"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_c / 100) - (#armor * 10000) - (#extra_armor * 100)",
+        "target_property_name": "#extra_armor_full"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_c / 1) - (#armor * 1000000) - (#extra_armor * 10000) - (#extra_armor_full * 100)",
+        "target_property_name": "#armor_overflow_rows"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'ds:insight:hud:') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "centered_status": {
+    "type": "panel",
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "size": [182, 60],
+    "controls": [
+      {
+        "armor_overflow@insight_player_status.armor_overflow_bottom_up": {
+          "anchor_from": "bottom_left",
+          "anchor_to": "bottom_left",
+          "offset": [0, -51]
+        }
+      },
+      {
+        "saturation@insight_player_status.saturation_overlay": {
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [0, -32]
+        }
+      }
+    ]
+  },
+
+  "touch_status": {
+    "type": "panel",
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "size": [182, 60],
+    "controls": [
+      {
+        "armor_overflow@insight_player_status.armor_overflow_bottom_up": {
+          "anchor_from": "bottom_left",
+          "anchor_to": "bottom_left",
+          "offset": [-11, -41]
+        }
+      },
+      {
+        "saturation@insight_player_status.saturation_overlay": {
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [10, -32]
+        }
+      }
+    ]
+  },
+
+  "not_centered_status": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "controls": [
+      {
+        "armor_overflow@insight_player_status.armor_overflow_top_down": {
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "offset": [2, 12]
+        }
+      },
+      {
+        "saturation@insight_player_status.saturation_overlay": {
+          "anchor_from": "top_right",
+          "anchor_to": "top_right",
+          "offset": [-3, 2]
+        }
+      }
+    ]
+  },
+
+  "armor_overflow_bottom_up": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": ["100%cm", "100%c"],
+    "controls": [
+      { "partial@insight_player_status.partial_armor_row": {} },
+      { "full_rows@insight_player_status.full_armor_row_factory": {} },
+      { "health_rows@insight_player_status.health_gap_factory": {} }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#show_survival_ui",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "status_c",
+        "source_property_name": "(#armor_overflow_rows > 0)",
+        "target_property_name": "#has_overflow",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#show_survival_ui and #has_overflow)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+
+  "armor_overflow_top_down": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": ["100%cm", "100%c"],
+    "controls": [
+      { "health_rows@insight_player_status.health_gap_factory": {} },
+      { "full_rows@insight_player_status.full_armor_row_factory": {} },
+      { "partial@insight_player_status.partial_armor_row": {} }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#show_survival_ui",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "status_c",
+        "source_property_name": "(#armor_overflow_rows > 0)",
+        "target_property_name": "#has_overflow",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#show_survival_ui and #has_overflow)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+
+  "point_factory": {
+    "$factory_name|default": "unused_point_factory",
+    "$control_name|default": "insight_player_status.full_armor_icon",
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": ["100%c", "100%cm"],
+    "collection_name": "$factory_name",
+    "factory": {
+      "name": "bar_factory",
+      "control_name": "$control_name"
+    }
+  },
+
+  "full_armor_icon": {
+    "type": "image",
+    "texture": "textures/gui/icons",
+    "size": [8, 9],
+    "uv": [34, 9],
+    "uv_size": [8, 9]
+  },
+
+  "half_armor_icon": {
+    "type": "image",
+    "texture": "textures/gui/icons",
+    "size": [8, 9],
+    "uv": [25, 9],
+    "uv_size": [8, 9]
+  },
+
+  "armor_row_end": {
+    "type": "image",
+    "texture": "textures/gui/icons",
+    "size": [1, 9],
+    "uv": [33, 9],
+    "uv_size": [1, 9]
+  },
+
+  "partial_armor_row": {
+    "type": "panel",
+    "size": [81, 10],
+    "controls": [
+      {
+        "empty": {
+          "type": "image",
+          "texture": "textures/gui/icons",
+          "tiled": true,
+          "size": [81, 9],
+          "uv": [16, 9],
+          "uv_size": [8, 9]
+        }
+      },
+      {
+        "filled": {
+          "type": "stack_panel",
+          "orientation": "horizontal",
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "size": ["100%c", "100%cm"],
+          "controls": [
+            {
+              "full@insight_player_status.point_factory": {
+                "$factory_name": "extra_armor_point_factory",
+                "$control_name": "insight_player_status.full_armor_icon",
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "status_c",
+                    "source_property_name": "(#extra_armor / 2)",
+                    "target_property_name": "#collection_length"
+                  }
+                ]
+              }
+            },
+            {
+              "half@insight_player_status.half_armor_icon": {
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "status_c",
+                    "source_property_name": "((#extra_armor + 1) / 2)",
+                    "target_property_name": "#odd"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "status_c",
+                    "source_property_name": "(#extra_armor / 2)",
+                    "target_property_name": "#even"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(#odd > #even)",
+                    "target_property_name": "#visible"
+                  }
+                ]
+              }
+            },
+            { "end@insight_player_status.armor_row_end": {} }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "status_c",
+        "source_property_name": "(#extra_armor > 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "full_armor_row": {
+    "type": "panel",
+    "size": [81, 10],
+    "controls": [
+      {
+        "full": {
+          "type": "image",
+          "texture": "textures/gui/icons",
+          "tiled": true,
+          "size": [81, 9],
+          "uv": [34, 9],
+          "uv_size": [8, 9]
+        }
+      }
+    ]
+  },
+
+  "full_armor_row_factory": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": ["100%cm", "100%c"],
+    "collection_name": "extra_armor_full_factory",
+    "factory": {
+      "name": "bar_factory",
+      "control_name": "insight_player_status.full_armor_row"
+    },
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "status_c",
+        "source_property_name": "#extra_armor_full",
+        "target_property_name": "#collection_length",
+        "binding_condition": "always"
+      }
+    ]
+  },
+
+  "health_gap": {
+    "type": "panel",
+    "size": [81, 10]
+  },
+
+  "health_gap_factory": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": ["100%cm", "100%c"],
+    "collection_name": "health_gap_factory",
+    "factory": {
+      "name": "bar_factory",
+      "control_name": "insight_player_status.health_gap"
+    },
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "status_a",
+        "source_property_name": "#health_gap",
+        "target_property_name": "#collection_length",
+        "binding_condition": "always"
+      }
+    ]
+  },
+
+  "full_saturation_icon": {
+    "type": "image",
+    "texture": "textures/gui/saturation",
+    "size": [8, 9],
+    "uv": [1, 0],
+    "uv_size": [8, 9]
+  },
+
+  "half_saturation_icon": {
+    "type": "image",
+    "texture": "textures/gui/saturation",
+    "size": [8, 9],
+    "uv": [10, 0],
+    "uv_size": [8, 9]
+  },
+
+  "saturation_overlay": {
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": ["100%c", "100%cm"],
+    "layer": 19,
+    "controls": [
+      {
+        "half@insight_player_status.half_saturation_icon": {
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "status_b",
+              "source_property_name": "((#saturation + 1) / 2)",
+              "target_property_name": "#odd"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "status_b",
+              "source_property_name": "(#saturation / 2)",
+              "target_property_name": "#even"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#odd > #even)",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      },
+      {
+        "full@insight_player_status.point_factory": {
+          "$factory_name": "saturation_point_factory",
+          "$control_name": "insight_player_status.full_saturation_icon",
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "status_b",
+              "source_property_name": "(#saturation / 2)",
+              "target_property_name": "#collection_length"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#show_survival_ui",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "status_b",
+        "source_property_name": "(#saturation > 0)",
+        "target_property_name": "#has_saturation",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#show_survival_ui and #has_saturation)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  }
+}
