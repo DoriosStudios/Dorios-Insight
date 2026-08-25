@@ -1,7 +1,6 @@
 import { CHANNEL_HUD } from "../const.js";
-import { defineSchema, encodePayload, encodeSection } from "../uiDataEncoder.js";
+import { defineSchema, encodePayload } from "../uiDataEncoder.js";
 import { sendLatchedTitle } from "../titleBus.js";
-import { collectManaHudData } from "./manaProvider.js";
 import { collectPlayerStatusData } from "./playerStatus.js";
 
 const EMPTY_DURABILITY_DATA = {
@@ -107,17 +106,6 @@ const HUD_SCHEMAS = [
         { name: "durReserved", digits: 2 }
     ])
 ];
-
-const MANA_DISPLAY_SCHEMA = defineSchema("o", [
-    { name: "manaVisible", digits: 1 },
-    { name: "manaPercent", digits: 3 },
-    { name: "manaTextScale", digits: 3 }
-]);
-
-const MANA_VALUE_SCHEMA = defineSchema("p", [
-    { name: "manaCurrent", digits: 4 },
-    { name: "manaMax", digits: 4 }
-]);
 
 function splitTwoDigitPairs(value) {
     const safeValue = Math.max(0, Math.min(9999, Math.round(Number(value) || 0)));
@@ -301,7 +289,6 @@ function encodeDurabilityData(data) {
 }
 
 export function updateDurabilityIndicator(player, settings = {}) {
-    const manaData = collectManaHudData(player);
     const mainhandData = {
         ...collectPlayerStatusData(player),
         ...(settings.mainhandDurability === false
@@ -310,13 +297,5 @@ export function updateDurabilityIndicator(player, settings = {}) {
         durReserved: settings.durabilityMobileLayout ? 1 : 0
     };
 
-    sendLatchedTitle(
-        player,
-        CHANNEL_HUD,
-        `${encodeDurabilityData(mainhandData)}`
-            + `${encodeEquipmentData(player, settings)}`
-            + `${encodeSection(MANA_DISPLAY_SCHEMA, manaData)}`
-            + `${encodeSection(MANA_VALUE_SCHEMA, manaData)}`
-            + manaData.manaText
-    );
+    sendLatchedTitle(player, CHANNEL_HUD, `${encodeDurabilityData(mainhandData)}${encodeEquipmentData(player, settings)}`);
 }
