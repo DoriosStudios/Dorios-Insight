@@ -19,23 +19,35 @@ function getComponent(player, componentId) {
 }
 
 function readCurrentValue(player, componentId, max, fallback = 0) {
-    const component = getComponent(player, componentId);
-    return clampInteger(component?.currentValue, 0, max, fallback);
+    try {
+        const component = getComponent(player, componentId);
+        return clampInteger(component?.currentValue, 0, max, fallback);
+    } catch {
+        return fallback;
+    }
 }
 
 function readMaxHealth(player) {
-    const health = getComponent(player, "minecraft:health");
-    return clampInteger(
-        health?.effectiveMax ?? health?.defaultValue,
-        1,
-        MAX_HUD_HEALTH,
-        20
-    );
+    try {
+        const health = getComponent(player, "minecraft:health");
+        return clampInteger(
+            health?.effectiveMax ?? health?.defaultValue,
+            1,
+            MAX_HUD_HEALTH,
+            20
+        );
+    } catch {
+        return 20;
+    }
 }
 
 function readTotalArmor(player) {
-    const equippable = getComponent(player, "minecraft:equippable");
-    return clampInteger(equippable?.totalArmor, 0, MAX_HUD_ARMOR);
+    try {
+        const equippable = getComponent(player, "minecraft:equippable");
+        return clampInteger(equippable?.totalArmor, 0, MAX_HUD_ARMOR);
+    } catch {
+        return 0;
+    }
 }
 
 function calculateArmorOverflow(totalArmor) {
