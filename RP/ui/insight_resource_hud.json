@@ -1,0 +1,828 @@
+{
+  "namespace": "insight_resource_hud",
+
+  "root_panel": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 18,
+    "controls": [
+      { "mana_data@insight_resource_hud.mana_data": {} },
+      {
+        "centered_right_mana@insight_resource_hud.centered_right_mana": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_centered",
+              "binding_name_override": "#layout_visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      },
+      {
+        "touch_right_mana@insight_resource_hud.touch_right_mana": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_centered_touch",
+              "binding_name_override": "#layout_visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      },
+      {
+        "not_centered_right_mana@insight_resource_hud.not_centered_right_mana": {
+          "bindings": [
+            {
+              "binding_name": "#hud_visible_not_centered",
+              "binding_name_override": "#layout_visible",
+              "binding_type": "global"
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "mana_data": {
+    "type": "panel",
+    "size": [0, 0],
+    "property_bag": {
+      "#stored_text": ""
+    },
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_name": "#hud_title_text_string",
+        "binding_name_override": "#stored_text",
+        "binding_condition": "visibility_changed"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#stored_text - 'ds:insight:hud:')",
+        "target_property_name": "#hud_payload"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(('%.136s' * (#hud_payload - ('%.128s' * #hud_payload))) - 'o')",
+        "target_property_name": "#data_o"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_o / 1000000)",
+        "target_property_name": "#mana_visible"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_o / 1000) - (#mana_visible * 1000)",
+        "target_property_name": "#mana_percent"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_o / 1) - (#mana_visible * 1000000) - (#mana_percent * 1000)",
+        "target_property_name": "#mana_text_scale"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(('%.145s' * (#hud_payload - ('%.136s' * #hud_payload))) - 'p')",
+        "target_property_name": "#data_p"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_p / 10000)",
+        "target_property_name": "#mana_current"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#data_p / 1) - (#mana_current * 10000)",
+        "target_property_name": "#mana_max"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#hud_payload - ('%.145s' * #hud_payload))",
+        "target_property_name": "#mana_text"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (#hud_title_text_string = #stored_text) and not ((#hud_title_text_string - 'ds:insight:hud:') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "mana_label": {
+    "$mana_scale|default": 100,
+    "$font_scale|default": 1,
+    "type": "label",
+    "size": [80, 10],
+    "anchor_from": "center",
+    "anchor_to": "center",
+    "text": "#text",
+    "text_alignment": "center",
+    "localize": false,
+    "shadow": false,
+    "layer": 4,
+    "font_scale_factor": "$font_scale",
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "#mana_text",
+        "target_property_name": "#text"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0 and #mana_text_scale = $mana_scale)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "mana_bar": {
+    "type": "panel",
+    "size": [80, 10],
+    "controls": [
+      {
+        "scale_50@insight_resource_hud.mana_label": {
+          "$mana_scale": 50,
+          "$font_scale": 0.5
+        }
+      },
+      {
+        "scale_75@insight_resource_hud.mana_label": {
+          "$mana_scale": 75,
+          "$font_scale": 0.75
+        }
+      },
+      {
+        "scale_100@insight_resource_hud.mana_label": {
+          "$mana_scale": 100,
+          "$font_scale": 1
+        }
+      },
+      {
+        "scale_125@insight_resource_hud.mana_label": {
+          "$mana_scale": 125,
+          "$font_scale": 1.25
+        }
+      },
+      {
+        "scale_150@insight_resource_hud.mana_label": {
+          "$mana_scale": 150,
+          "$font_scale": 1.5
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "xp_bar": {
+    "type": "panel",
+    "size": ["100%", 5],
+    "controls": [
+      {
+        "empty@hud.empty_progress_bar": {
+          "size": ["100%", 5],
+          "layer": 1,
+          "controls": [
+            {
+              "full@hud.full_progress_bar": {
+                "size": ["100% + 10px", 5],
+                "layer": 2,
+                "controls": [
+                  {
+                    "nub@hud.progress_bar_nub": {
+                      "size": ["100% - 10px", 5],
+                      "layer": 3
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "level_slot": {
+    "type": "panel",
+    "size": [32, 10],
+    "controls": [
+      {
+        "level@hud.progress_text_label": {
+          "size": [32, 10],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "text_alignment": "center",
+          "offset": [0, 0],
+          "layer": 7
+        }
+      }
+    ]
+  },
+
+  "full_xp_surface": {
+    "type": "panel",
+    "size": [190, 10],
+    "controls": [
+      {
+        "xp@insight_resource_hud.xp_bar": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      },
+      {
+        "level@insight_resource_hud.level_slot": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible = 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "split_xp_surface": {
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": [190, "100%cm"],
+    "controls": [
+      {
+        "xp_slot": {
+          "type": "panel",
+          "size": [79, 10],
+          "controls": [
+            {
+              "xp@insight_resource_hud.xp_bar": {
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle"
+              }
+            }
+          ]
+        }
+      },
+      { "level@insight_resource_hud.level_slot": {} },
+      {
+        "mana_slot": {
+          "type": "panel",
+          "size": [79, 10],
+          "controls": [
+            { "mana@insight_resource_hud.mana_bar": {} }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "xp_resource_surface": {
+    "type": "panel",
+    "size": [190, 10],
+    "controls": [
+      { "vanilla@insight_resource_hud.full_xp_surface": {} },
+      { "split@insight_resource_hud.split_xp_surface": {} }
+    ]
+  },
+
+  "fluid_full_xp_surface": {
+    "type": "panel",
+    "size": ["100%", 10],
+    "controls": [
+      {
+        "xp@insight_resource_hud.xp_bar": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      },
+      {
+        "level@insight_resource_hud.level_slot": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible = 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "fluid_split_xp_surface": {
+    "type": "stack_panel",
+    "orientation": "horizontal",
+    "size": ["100%", "100%cm"],
+    "controls": [
+      {
+        "xp_slot": {
+          "type": "panel",
+          "size": ["50% - 16px", 10],
+          "controls": [
+            {
+              "xp@insight_resource_hud.xp_bar": {
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle"
+              }
+            }
+          ]
+        }
+      },
+      { "level@insight_resource_hud.level_slot": {} },
+      {
+        "mana_slot": {
+          "type": "panel",
+          "size": ["50% - 16px", 10],
+          "controls": [
+            { "mana@insight_resource_hud.mana_bar": {} }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "fluid_xp_resource_surface": {
+    "type": "panel",
+    "size": ["100%", 10],
+    "controls": [
+      { "vanilla@insight_resource_hud.fluid_full_xp_surface": {} },
+      { "split@insight_resource_hud.fluid_split_xp_surface": {} }
+    ]
+  },
+
+  "classic_xp_mode": {
+    "type": "panel",
+    "size": [190, 5],
+    "controls": [
+      {
+        "resource@insight_resource_hud.xp_resource_surface": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      },
+      {
+        "horse_jump_rend@hud.horse_jump_renderer": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "size": [190, 5],
+          "layer": 7,
+          "controls": [
+            {
+              "dash_rend@hud.dash_renderer": {
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle",
+                "size": [190, 5],
+                "layer": 7,
+                "controls": [
+                  {
+                    "hotbar@hud.hotbar_chooser": {
+                      "offset": [4, 16]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_with_xp_bar",
+        "binding_name_override": "#visible"
+      }
+    ]
+  },
+
+  "classic_no_xp_mode": {
+    "type": "panel",
+    "size": [190, 5],
+    "controls": [
+      {
+        "mana@insight_resource_hud.mana_bar": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      },
+      {
+        "horse_jump_rend@hud.horse_jump_renderer": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "size": [190, 5],
+          "layer": 7,
+          "controls": [
+            {
+              "dash_rend@hud.dash_renderer": {
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle",
+                "size": [190, 5],
+                "layer": 7,
+                "controls": [
+                  {
+                    "hotbar@hud.hotbar_chooser": {
+                      "offset": [4, 16]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_no_xp_bar",
+        "binding_name_override": "#visible"
+      }
+    ]
+  },
+
+  "classic_locator_mode": {
+    "type": "panel",
+    "size": [190, 5],
+    "controls": [
+      {
+        "size_owner": {
+          "type": "panel",
+          "size": [190, 5],
+          "controls": [
+            {
+              "hotbar@hud.hotbar_chooser": {
+                "offset": [4, 16],
+                "bindings": [
+                  {
+                    "binding_name": "(not #is_spectator_mode)",
+                    "binding_name_override": "#visible"
+                  }
+                ]
+              }
+            },
+            {
+              "size_without_hotbar": {
+                "type": "panel",
+                "size": [180, 5],
+                "bindings": [
+                  {
+                    "binding_name": "#is_spectator_mode",
+                    "binding_name_override": "#visible"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "horse_jump_rend@hud.horse_jump_renderer": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "size": [180, 5],
+          "replaced_while_inactive": true
+        }
+      },
+      {
+        "dash_rend@hud.dash_renderer": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "size": [180, 5],
+          "replaced_while_inactive": true
+        }
+      },
+      {
+        "locator_bar@hud.locator_bar": {
+          "size": [180, 5],
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle",
+          "layer": 10
+        }
+      },
+      { "level@hud.progress_text_label": {} }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_with_locator_bar",
+        "binding_name_override": "#visible"
+      }
+    ]
+  },
+
+  "classic_resource_modes": {
+    "type": "panel",
+    "size": [190, 31],
+    "controls": [
+      { "mana_data@insight_resource_hud.mana_data": {} },
+      { "xp_mode@insight_resource_hud.classic_xp_mode": {} },
+      { "no_xp_mode@insight_resource_hud.classic_no_xp_mode": {} },
+      { "locator_mode@insight_resource_hud.classic_locator_mode": {} }
+    ]
+  },
+
+  "pocket_xp_mode": {
+    "type": "panel",
+    "size": ["100%", 5],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "use_anchored_offset": true,
+    "property_bag": {
+      "#anchored_offset_value_y": 0.0,
+      "#size_binding_x": 0.0,
+      "#size_binding_y": 0.0
+    },
+    "controls": [
+      {
+        "resource@insight_resource_hud.fluid_xp_resource_surface": {
+          "anchor_from": "top_middle",
+          "anchor_to": "top_middle"
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_with_xp_bar",
+        "binding_name_override": "#visible"
+      },
+      {
+        "binding_name": "#exp_bar_and_text_offset_y",
+        "binding_name_override": "#anchored_offset_value_y"
+      },
+      {
+        "binding_name": "#exp_bar_size_x",
+        "binding_name_override": "#size_binding_x"
+      },
+      {
+        "binding_name": "#exp_bar_size_y",
+        "binding_name_override": "#size_binding_y"
+      }
+    ]
+  },
+
+  "pocket_locator_mode": {
+    "type": "panel",
+    "size": ["100%", 5],
+    "controls": [
+      {
+        "locator_bar@hud.locator_bar": {
+          "size": ["100%", 5],
+          "anchor_from": "bottom_middle",
+          "anchor_to": "bottom_middle",
+          "layer": 10
+        }
+      },
+      { "level@hud.progress_text_label": {} }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_with_locator_bar",
+        "binding_name_override": "#visible"
+      },
+      {
+        "binding_name": "#exp_bar_and_text_offset_y",
+        "binding_name_override": "#anchored_offset_value_y"
+      },
+      {
+        "binding_name": "#exp_bar_size_x",
+        "binding_name_override": "#size_binding_x"
+      },
+      {
+        "binding_name": "#exp_bar_size_y",
+        "binding_name_override": "#size_binding_y"
+      }
+    ]
+  },
+
+  "pocket_no_xp_mana": {
+    "type": "panel",
+    "size": ["100%", 10],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "use_anchored_offset": true,
+    "property_bag": {
+      "#anchored_offset_value_y": 0.0
+    },
+    "controls": [
+      { "mana@insight_resource_hud.mana_bar": {} }
+    ],
+    "bindings": [
+      {
+        "binding_name": "#hotbar_no_xp_bar",
+        "binding_name_override": "#no_xp_visible"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0)",
+        "target_property_name": "#mana_available"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#no_xp_visible and #mana_available)",
+        "target_property_name": "#visible"
+      },
+      {
+        "binding_name": "#exp_bar_and_text_offset_y",
+        "binding_name_override": "#anchored_offset_value_y"
+      }
+    ]
+  },
+
+  "pocket_resource_modes": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "controls": [
+      { "mana_data@insight_resource_hud.mana_data": {} },
+      { "xp_mode@insight_resource_hud.pocket_xp_mode": {} },
+      { "locator_mode@insight_resource_hud.pocket_locator_mode": {} },
+      { "no_xp_mode@insight_resource_hud.pocket_no_xp_mana": {} },
+      { "hotbar_panel@hud.hotbar_panel_pocket": {} },
+      {
+        "item_text": {
+          "type": "panel",
+          "offset": [0, 0],
+          "anchor_from": "bottom_middle",
+          "anchor_to": "bottom_middle",
+          "use_anchored_offset": true,
+          "property_bag": {
+            "#anchored_offset_value_y": 0.0
+          },
+          "bindings": [
+            {
+              "binding_name": "#exp_bar_and_text_offset_y",
+              "binding_name_override": "#anchored_offset_value_y"
+            }
+          ],
+          "controls": [
+            {
+              "item_text_factory": {
+                "size": [100, 10],
+                "type": "factory",
+                "control_ids": {
+                  "item_text": "@hud.item_name_text_root",
+                  "jukebox_text": "@hud.jukebox_popup_text"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "horse_jump_rend@hud.horse_jump_renderer": {
+          "layer": 7,
+          "size": ["100%", 5],
+          "anchor_from": "bottom_middle",
+          "anchor_to": "bottom_middle",
+          "use_anchored_offset": true,
+          "property_bag": {
+            "#anchored_offset_value_y": 0.0,
+            "#size_binding_x": 0.0,
+            "#size_binding_y": 0.0
+          },
+          "bindings": [
+            {
+              "binding_name": "#exp_bar_and_text_offset_y",
+              "binding_name_override": "#anchored_offset_value_y"
+            },
+            {
+              "binding_name": "#exp_bar_size_x",
+              "binding_name_override": "#size_binding_x"
+            },
+            {
+              "binding_name": "#exp_bar_size_y",
+              "binding_name_override": "#size_binding_y"
+            }
+          ]
+        }
+      },
+      {
+        "dash_rend@hud.dash_renderer": {
+          "layer": 7,
+          "size": ["100%", 5],
+          "anchor_from": "bottom_middle",
+          "anchor_to": "bottom_middle",
+          "use_anchored_offset": true,
+          "property_bag": {
+            "#anchored_offset_value_y": 0.0,
+            "#size_binding_x": 0.0,
+            "#size_binding_y": 0.0
+          },
+          "bindings": [
+            {
+              "binding_name": "#exp_bar_and_text_offset_y",
+              "binding_name_override": "#anchored_offset_value_y"
+            },
+            {
+              "binding_name": "#exp_bar_size_x",
+              "binding_name_override": "#size_binding_x"
+            },
+            {
+              "binding_name": "#exp_bar_size_y",
+              "binding_name_override": "#size_binding_y"
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "right_mana_visibility": {
+    "type": "panel",
+    "bindings": [
+      {
+        "binding_name": "#hotbar_with_locator_bar",
+        "binding_name_override": "#locator_visible"
+      },
+      {
+        "binding_type": "view",
+        "source_control_name": "mana_data",
+        "source_property_name": "(#mana_visible > 0)",
+        "target_property_name": "#mana_available"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#layout_visible and #locator_visible and #mana_available)",
+        "target_property_name": "#visible"
+      }
+    ]
+  },
+
+  "centered_right_mana@insight_resource_hud.right_mana_visibility": {
+    "type": "panel",
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "size": [182, 60],
+    "controls": [
+      {
+        "mana@insight_resource_hud.mana_bar": {
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [0, -22]
+        }
+      }
+    ]
+  },
+
+  "touch_right_mana@insight_resource_hud.right_mana_visibility": {
+    "type": "panel",
+    "anchor_from": "bottom_middle",
+    "anchor_to": "bottom_middle",
+    "size": [200, 60],
+    "controls": [
+      {
+        "mana@insight_resource_hud.mana_bar": {
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [10, -22]
+        }
+      }
+    ]
+  },
+
+  "not_centered_right_mana@insight_resource_hud.right_mana_visibility": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "controls": [
+      {
+        "mana@insight_resource_hud.mana_bar": {
+          "anchor_from": "top_right",
+          "anchor_to": "top_right",
+          "offset": [-3, 12]
+        }
+      }
+    ]
+  }
+}
