@@ -16,10 +16,6 @@ import {
   upsertCustomEffect,
 } from "./effects/titleHandler.js";
 import { getStoredInsightEntityEffects } from "./effects/store.js";
-import {
-  clearManaHudData,
-  publishManaHudData,
-} from "./hud/manaProvider.js";
 
 export function exposeInsightApi() {
   globalThis.DoriosAPI ??= {};
@@ -41,11 +37,6 @@ export function exposeInsightApi() {
       remove: removeCustomEffect,
       replace: replaceCustomEffects,
       clear: clearCustomEffects,
-    },
-    manaHud: {
-      version: 1,
-      publish: publishManaHudData,
-      clear: clearManaHudData,
     },
     setNamespaceName,
     getNamespaceName,

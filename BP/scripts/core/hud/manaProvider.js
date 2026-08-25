@@ -1,12 +1,12 @@
-import { system } from "@minecraft/server";
+import { world } from "@minecraft/server";
 
+const MANA_HUD_PROPERTY = "dorios:mana_hud";
+const LEGACY_STATS_PROPERTY = "dorios:playerData.stats";
+const LEGACY_MANA_OBJECTIVE = "dorios:mana";
 const MAX_MANA_VALUE = 9999;
 const MANA_FRAME_COUNT = 76;
 const EMPTY_FRAME_CODE_POINT = 0xe84b;
 const FONT_SCALE_OPTIONS = [50, 75, 100, 125, 150];
-const PROVIDER_TIMEOUT_TICKS = 40;
-
-const runtimeManaByPlayer = new Map();
 
 const HIDDEN_MANA_DATA = Object.freeze({
     manaVisible: 0,
@@ -24,6 +24,31 @@ function clampInteger(value, min, max, fallback = 0) {
     }
 
     return Math.min(max, Math.max(min, Math.round(number)));
+}
+
+function readDynamicProperty(player, propertyId) {
+    try {
+        return player?.getDynamicProperty?.(propertyId);
+    } catch {
+        return undefined;
+    }
+}
+
+function parseObject(raw) {
+    if (raw && typeof raw === "object") {
+        return raw;
+    }
+
+    if (typeof raw !== "string" || raw.length === 0) {
+        return undefined;
+    }
+
+    try {
+        const value = JSON.parse(raw);
+        return value && typeof value === "object" ? value : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 function normalizeManaText(value) {
@@ -103,75 +128,54 @@ function normalizeSnapshot(snapshot) {
     };
 }
 
-function getPlayerId(playerOrId) {
-    if (typeof playerOrId === "string") {
-        return playerOrId;
-    }
-
-    return typeof playerOrId?.id === "string" ? playerOrId.id : undefined;
+function readPublishedSnapshot(player) {
+    return normalizeSnapshot(parseObject(
+        readDynamicProperty(player, MANA_HUD_PROPERTY)
+    ));
 }
 
-function readRuntimeSnapshot(player) {
-    const playerId = getPlayerId(player);
-    if (!playerId) {
+function readLegacySnapshot(player) {
+    const stats = parseObject(readDynamicProperty(player, LEGACY_STATS_PROPERTY));
+    const manaMax = clampInteger(stats?.mana, 0, MAX_MANA_VALUE);
+    if (manaMax <= 0) {
         return undefined;
     }
 
-    const entry = runtimeManaByPlayer.get(playerId);
-    if (!entry) {
+    let objective;
+    try {
+        objective = world.scoreboard.getObjective(LEGACY_MANA_OBJECTIVE);
+    } catch {
+        return undefined;
+    }
+    if (!objective) {
         return undefined;
     }
 
-    const age = system.currentTick - entry.updatedTick;
-    if (age < 0 || age > PROVIDER_TIMEOUT_TICKS) {
-        runtimeManaByPlayer.delete(playerId);
-        return undefined;
+    let current = 0;
+    try {
+        current = objective.getScore(player?.scoreboardIdentity) ?? 0;
+    } catch {
+        current = 0;
     }
 
-    return entry.data;
-}
-
-/**
- * Accepts an optional Mana snapshot from another add-on in the shared script
- * runtime. Nothing is persisted, so removing or reloading the provider cannot
- * leave a stale Mana bar behind.
- *
- * @param {import("@minecraft/server").Player | string} playerOrId
- * @param {object} snapshot
- */
-export function publishManaHudData(playerOrId, snapshot) {
-    const playerId = getPlayerId(playerOrId);
-    const data = normalizeSnapshot(snapshot);
-    if (!playerId || !data) {
-        if (playerId) runtimeManaByPlayer.delete(playerId);
-        return false;
-    }
-
-    runtimeManaByPlayer.set(playerId, {
-        data,
-        updatedTick: system.currentTick
+    return normalizeSnapshot({
+        currentMana: current,
+        maxMana: manaMax
     });
-    return true;
-}
-
-/**
- * @param {import("@minecraft/server").Player | string} playerOrId
- */
-export function clearManaHudData(playerOrId) {
-    const playerId = getPlayerId(playerOrId);
-    return playerId ? runtimeManaByPlayer.delete(playerId) : false;
 }
 
 /**
  * Reads the optional Mana presentation contract without importing Trinkets.
  *
- * Preferred providers call DoriosAPI.insight.manaHud.publish with currentMana,
- * maxMana and optional text/textScale fields. Missing, expired or malformed
- * provider state produces a hidden, zero-sized HUD entry.
+ * Preferred providers publish `dorios:mana_hud` as JSON with currentMana,
+ * maxMana and optional text/textScale fields. The current Trinkets build is
+ * supported through its scoreboard + stats dynamic-property pair. Missing or
+ * malformed provider state always produces a hidden, zero-sized HUD entry.
  *
  * @param {import("@minecraft/server").Player} player
  */
 export function collectManaHudData(player) {
-    return readRuntimeSnapshot(player)
+    return readPublishedSnapshot(player)
+        ?? readLegacySnapshot(player)
         ?? HIDDEN_MANA_DATA;
 }
