@@ -390,19 +390,34 @@
                                                     }
                                                 },
                                                 {
-                                                    "text_display_50@insight_waila.text_display_50": {}
-                                                },
-                                                {
-                                                    "text_display_75@insight_waila.text_display_75": {}
-                                                },
-                                                {
-                                                    "text_display_100@insight_waila.text_display_100": {}
-                                                },
-                                                {
-                                                    "text_display_125@insight_waila.text_display_125": {}
-                                                },
-                                                {
-                                                    "text_display_150@insight_waila.text_display_150": {}
+                                                    "details_column": {
+                                                        "type": "stack_panel",
+                                                        "orientation": "vertical",
+                                                        "size": [
+                                                            "100%c",
+                                                            "100%c"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "text_display_50@insight_waila.text_display_50": {}
+                                                            },
+                                                            {
+                                                                "text_display_75@insight_waila.text_display_75": {}
+                                                            },
+                                                            {
+                                                                "text_display_100@insight_waila.text_display_100": {}
+                                                            },
+                                                            {
+                                                                "text_display_125@insight_waila.text_display_125": {}
+                                                            },
+                                                            {
+                                                                "text_display_150@insight_waila.text_display_150": {}
+                                                            },
+                                                            {
+                                                                "visual_sections@insight_waila_visuals.visual_sections": {}
+                                                            }
+                                                        ]
+                                                    }
                                                 }
                                             ]
                                         }
@@ -816,19 +831,34 @@
                                                     }
                                                 },
                                                 {
-                                                    "text_display_50@insight_waila.text_display_50": {}
-                                                },
-                                                {
-                                                    "text_display_75@insight_waila.text_display_75": {}
-                                                },
-                                                {
-                                                    "text_display_100@insight_waila.text_display_100": {}
-                                                },
-                                                {
-                                                    "text_display_125@insight_waila.text_display_125": {}
-                                                },
-                                                {
-                                                    "text_display_150@insight_waila.text_display_150": {}
+                                                    "details_column": {
+                                                        "type": "stack_panel",
+                                                        "orientation": "vertical",
+                                                        "size": [
+                                                            "100%c",
+                                                            "100%c"
+                                                        ],
+                                                        "controls": [
+                                                            {
+                                                                "text_display_50@insight_waila.text_display_50": {}
+                                                            },
+                                                            {
+                                                                "text_display_75@insight_waila.text_display_75": {}
+                                                            },
+                                                            {
+                                                                "text_display_100@insight_waila.text_display_100": {}
+                                                            },
+                                                            {
+                                                                "text_display_125@insight_waila.text_display_125": {}
+                                                            },
+                                                            {
+                                                                "text_display_150@insight_waila.text_display_150": {}
+                                                            },
+                                                            {
+                                                                "visual_sections@insight_waila_visuals.visual_sections": {}
+                                                            }
+                                                        ]
+                                                    }
                                                 }
                                             ]
                                         }

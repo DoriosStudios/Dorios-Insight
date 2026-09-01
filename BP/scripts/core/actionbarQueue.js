@@ -8,6 +8,7 @@ const ACTIONBAR_KEEPALIVE_TICKS = 40;
 const MAX_VISIBLE_MESSAGES = 2;
 
 const stateByPlayer = new Map();
+const secondaryEnabledByPlayer = new Map();
 let initialized = false;
 
 function normalizeNamespace(namespace) {
@@ -52,7 +53,16 @@ function toRawtextParts(payload) {
   return payload && typeof payload === "object" ? [payload] : [];
 }
 
-function selectDisplays(entries) {
+function selectDisplays(entries, secondaryEnabled = true) {
+  if (!secondaryEnabled) {
+    return {
+      primary: [...entries]
+        .reverse()
+        .find((entry) => entry.slot !== "secondary"),
+      secondary: undefined,
+    };
+  }
+
   if (entries.length === 1) {
     return entries[0].slot === "secondary"
       ? { primary: undefined, secondary: entries[0] }
@@ -148,7 +158,11 @@ function renderState(state, currentTick, force = false) {
     return;
   }
 
-  const { primary, secondary } = selectDisplays(state.entries);
+  const secondaryEnabled = secondaryEnabledByPlayer.get(state.player.id) !== false;
+  const { primary, secondary } = selectDisplays(
+    state.entries,
+    secondaryEnabled,
+  );
   let rendered = true;
 
   try {
@@ -290,6 +304,25 @@ export function clearQueuedActionbar(player, namespace) {
   return true;
 }
 
+export function setSecondaryActionbarEnabled(player, enabled) {
+  const playerId = String(player?.id ?? "");
+  if (!playerId) return false;
+
+  const next = enabled !== false;
+  const previous = secondaryEnabledByPlayer.get(playerId) !== false;
+  secondaryEnabledByPlayer.set(playerId, next);
+  if (previous === next) return true;
+
+  const state = stateByPlayer.get(playerId);
+  if (state) {
+    renderState(state, system.currentTick, true);
+  } else if (!next) {
+    clearLatched(player, CHANNEL_ACTIONBAR_SECONDARY);
+  }
+
+  return true;
+}
+
 export function initializeActionbarQueue() {
   if (initialized) {
     return;
@@ -312,5 +345,6 @@ export function initializeActionbarQueue() {
 
   world.afterEvents.playerLeave.subscribe((event) => {
     stateByPlayer.delete(event.playerId);
+    secondaryEnabledByPlayer.delete(event.playerId);
   });
 }

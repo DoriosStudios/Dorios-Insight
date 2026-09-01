@@ -14,6 +14,7 @@ import {
   collectEntityGlyphStats,
   renderEntityGlyphStats,
 } from "./glyphStats.js";
+import { collectEntityInteractions } from "./interactions.js";
 
 const HOSTILE_ENTITY_FAMILIES = [
   "monster",
@@ -185,6 +186,9 @@ export function collectEntityGeneral(entity) {
   const glyphStats = isDroppedItem
     ? undefined
     : collectEntityGlyphStats(entity);
+  const interactions = isDroppedItem
+    ? undefined
+    : collectEntityInteractions(entity);
 
   return {
     typeId,
@@ -197,6 +201,7 @@ export function collectEntityGeneral(entity) {
     showNamespaceLine: shouldShowNamespaceLine(typeId),
     health: glyphStats?.health,
     glyphStats,
+    interactions,
     families,
     entity,
     itemStack,
@@ -230,6 +235,16 @@ export function renderEntityGeneral(data, settings = {}) {
 
   if (settings.hostile && !data.isDroppedItem) {
     details.push({ text: `\n§fHostile: ${data.isHostile ? "Yes" : "No"}§r` });
+  }
+
+  if (
+    settings.tameableStatus !== false &&
+    data.interactions?.isTameable &&
+    !data.isDroppedItem
+  ) {
+    details.push({
+      text: `\n§fTameable: ${data.interactions.isTamed ? "Tamed" : "Yes"}§r`,
+    });
   }
 
   const showSeparators = settings.separators !== false;

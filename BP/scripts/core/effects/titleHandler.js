@@ -337,6 +337,13 @@ function formatEffectValue(effect) {
   return formatRemainingTicks(effect?.expiresAt);
 }
 
+function formatEffectValueForTitle(effect) {
+  // JSON UI may coerce a value such as `0:59` or `3/5` while evaluating the
+  // string-subtraction binding. `§z` is the established invisible text marker
+  // used by the reference UIs to keep numeric label payloads typed as strings.
+  return `§z${sanitizeText(formatEffectValue(effect), 12)}`;
+}
+
 function buildEffectsFrame(state) {
   removeExpiredEffects(state);
   const visible = [...state.effects.values()]
@@ -350,7 +357,7 @@ function buildEffectsFrame(state) {
     const effect = visible[index];
     return effect
       ? {
-        duration: sanitizeText(formatEffectValue(effect), 12),
+        duration: formatEffectValueForTitle(effect),
         name: effect.name,
         glyph: effect.glyph,
       }

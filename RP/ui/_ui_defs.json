@@ -2,7 +2,9 @@
     "ui_defs": [
         "ui/hud_screen.json",
         "ui/insight_waila.json",
+        "ui/insight_waila_visuals.json",
         "ui/insight_hud_durability.json",
+        "ui/insight_player_status.json",
         "ui/insight_statscore_activity.json",
         "ui/insight_custom_effects.json",
         "ui/insight_actionbar_queue.json"

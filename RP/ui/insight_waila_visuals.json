@@ -1,0 +1,3566 @@
+{
+  "namespace": "insight_waila_visuals",
+  "visual_sections": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%c",
+      "100%c"
+    ],
+    "controls": [
+      {
+        "visual_data": {
+          "$update_string": "ds:insight:waila_visuals:",
+          "type": "panel",
+          "size": [
+            0,
+            0
+          ],
+          "property_bag": {
+            "#stored_visual_text": "",
+            "#visual_payload": "",
+            "#feed_count": 0,
+            "#inventory_count": 0,
+            "#feed_overflow": 0,
+            "#inventory_overflow": 0
+          },
+          "bindings": [
+            {
+              "binding_name": "#hud_title_text_string"
+            },
+            {
+              "binding_name": "#hud_title_text_string",
+              "binding_name_override": "#stored_visual_text",
+              "binding_condition": "visibility_changed"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#stored_visual_text - $update_string)",
+              "target_property_name": "#visual_payload",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(((%.2s * #visual_payload)) * 1)",
+              "target_property_name": "#feed_count",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "((((%.4s * #visual_payload) - (%.2s * #visual_payload))) * 1)",
+              "target_property_name": "#inventory_count",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "((((%.6s * #visual_payload) - (%.4s * #visual_payload))) * 1)",
+              "target_property_name": "#feed_overflow",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "((((%.8s * #visual_payload) - (%.6s * #visual_payload))) * 1)",
+              "target_property_name": "#inventory_overflow",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not (#hud_title_text_string = #stored_visual_text) and not ((#hud_title_text_string - $update_string) = #hud_title_text_string))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      },
+      {
+        "feed_section": {
+          "type": "stack_panel",
+          "orientation": "vertical",
+          "size": [
+            "100%c",
+            "100%c"
+          ],
+          "controls": [
+            {
+              "heading": {
+                "type": "label",
+                "text": "Tame / Feed",
+                "localize": false,
+                "shadow": true,
+                "font_scale_factor": 0.75,
+                "color": [
+                  0.78,
+                  0.78,
+                  0.78
+                ],
+                "size": [
+                  "default",
+                  10
+                ]
+              }
+            },
+            {
+              "feed_grid": {
+                "type": "stack_panel",
+                "orientation": "vertical",
+                "size": [
+                  "100%c",
+                  "100%c"
+                ],
+                "controls": [
+                  {
+                    "feed_row_0": {
+                      "type": "stack_panel",
+                      "orientation": "horizontal",
+                      "size": [
+                        "100%c",
+                        15
+                      ],
+                      "controls": [
+                        {
+                          "feed_slot_0@insight_waila_visuals.feed_slot_0": {}
+                        },
+                        {
+                          "feed_slot_1@insight_waila_visuals.feed_slot_1": {}
+                        },
+                        {
+                          "feed_slot_2@insight_waila_visuals.feed_slot_2": {}
+                        },
+                        {
+                          "feed_slot_3@insight_waila_visuals.feed_slot_3": {}
+                        },
+                        {
+                          "feed_slot_4@insight_waila_visuals.feed_slot_4": {}
+                        },
+                        {
+                          "feed_slot_5@insight_waila_visuals.feed_slot_5": {}
+                        },
+                        {
+                          "feed_slot_6@insight_waila_visuals.feed_slot_6": {}
+                        },
+                        {
+                          "feed_slot_7@insight_waila_visuals.feed_slot_7": {}
+                        },
+                        {
+                          "feed_slot_8@insight_waila_visuals.feed_slot_8": {}
+                        },
+                        {
+                          "feed_slot_9@insight_waila_visuals.feed_slot_9": {}
+                        },
+                        {
+                          "feed_slot_10@insight_waila_visuals.feed_slot_10": {}
+                        },
+                        {
+                          "feed_slot_11@insight_waila_visuals.feed_slot_11": {}
+                        },
+                        {
+                          "feed_slot_12@insight_waila_visuals.feed_slot_12": {}
+                        },
+                        {
+                          "feed_slot_13@insight_waila_visuals.feed_slot_13": {}
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "visual_data",
+                          "source_property_name": "(#feed_count > 0)",
+                          "target_property_name": "#visible",
+                          "binding_condition": "always"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "feed_row_1": {
+                      "type": "stack_panel",
+                      "orientation": "horizontal",
+                      "size": [
+                        "100%c",
+                        15
+                      ],
+                      "controls": [
+                        {
+                          "feed_slot_14@insight_waila_visuals.feed_slot_14": {}
+                        },
+                        {
+                          "feed_slot_15@insight_waila_visuals.feed_slot_15": {}
+                        },
+                        {
+                          "feed_slot_16@insight_waila_visuals.feed_slot_16": {}
+                        },
+                        {
+                          "feed_slot_17@insight_waila_visuals.feed_slot_17": {}
+                        },
+                        {
+                          "feed_slot_18@insight_waila_visuals.feed_slot_18": {}
+                        },
+                        {
+                          "feed_slot_19@insight_waila_visuals.feed_slot_19": {}
+                        },
+                        {
+                          "feed_slot_20@insight_waila_visuals.feed_slot_20": {}
+                        },
+                        {
+                          "feed_slot_21@insight_waila_visuals.feed_slot_21": {}
+                        },
+                        {
+                          "feed_slot_22@insight_waila_visuals.feed_slot_22": {}
+                        },
+                        {
+                          "feed_slot_23@insight_waila_visuals.feed_slot_23": {}
+                        },
+                        {
+                          "feed_slot_24@insight_waila_visuals.feed_slot_24": {}
+                        },
+                        {
+                          "feed_slot_25@insight_waila_visuals.feed_slot_25": {}
+                        },
+                        {
+                          "feed_slot_26@insight_waila_visuals.feed_slot_26": {}
+                        },
+                        {
+                          "feed_slot_27@insight_waila_visuals.feed_slot_27": {}
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "visual_data",
+                          "source_property_name": "(#feed_count > 14)",
+                          "target_property_name": "#visible",
+                          "binding_condition": "always"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(#feed_count > 0)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "inventory_section": {
+          "type": "stack_panel",
+          "orientation": "vertical",
+          "size": [
+            "100%c",
+            "100%c"
+          ],
+          "controls": [
+            {
+              "heading": {
+                "type": "label",
+                "text": "Contents",
+                "localize": false,
+                "shadow": true,
+                "font_scale_factor": 0.75,
+                "color": [
+                  0.78,
+                  0.78,
+                  0.78
+                ],
+                "size": [
+                  "default",
+                  10
+                ]
+              }
+            },
+            {
+              "inventory_grid": {
+                "type": "stack_panel",
+                "orientation": "vertical",
+                "size": [
+                  "100%c",
+                  "100%c"
+                ],
+                "controls": [
+                  {
+                    "inventory_row_0": {
+                      "type": "stack_panel",
+                      "orientation": "horizontal",
+                      "size": [
+                        "100%c",
+                        15
+                      ],
+                      "controls": [
+                        {
+                          "inventory_slot_0@insight_waila_visuals.inventory_slot_0": {}
+                        },
+                        {
+                          "inventory_slot_1@insight_waila_visuals.inventory_slot_1": {}
+                        },
+                        {
+                          "inventory_slot_2@insight_waila_visuals.inventory_slot_2": {}
+                        },
+                        {
+                          "inventory_slot_3@insight_waila_visuals.inventory_slot_3": {}
+                        },
+                        {
+                          "inventory_slot_4@insight_waila_visuals.inventory_slot_4": {}
+                        },
+                        {
+                          "inventory_slot_5@insight_waila_visuals.inventory_slot_5": {}
+                        },
+                        {
+                          "inventory_slot_6@insight_waila_visuals.inventory_slot_6": {}
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "visual_data",
+                          "source_property_name": "(#inventory_count > 0)",
+                          "target_property_name": "#visible",
+                          "binding_condition": "always"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "inventory_row_1": {
+                      "type": "stack_panel",
+                      "orientation": "horizontal",
+                      "size": [
+                        "100%c",
+                        15
+                      ],
+                      "controls": [
+                        {
+                          "inventory_slot_7@insight_waila_visuals.inventory_slot_7": {}
+                        },
+                        {
+                          "inventory_slot_8@insight_waila_visuals.inventory_slot_8": {}
+                        },
+                        {
+                          "inventory_slot_9@insight_waila_visuals.inventory_slot_9": {}
+                        },
+                        {
+                          "inventory_slot_10@insight_waila_visuals.inventory_slot_10": {}
+                        },
+                        {
+                          "inventory_slot_11@insight_waila_visuals.inventory_slot_11": {}
+                        },
+                        {
+                          "inventory_slot_12@insight_waila_visuals.inventory_slot_12": {}
+                        },
+                        {
+                          "inventory_slot_13@insight_waila_visuals.inventory_slot_13": {}
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "visual_data",
+                          "source_property_name": "(#inventory_count > 7)",
+                          "target_property_name": "#visible",
+                          "binding_condition": "always"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(#inventory_count > 0)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "feed_slot_0": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.73s * #visual_payload) - (%.9s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.9s * #visual_payload) - (%.8s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.9s * #visual_payload) - (%.8s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_1": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.138s * #visual_payload) - (%.74s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.74s * #visual_payload) - (%.73s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.74s * #visual_payload) - (%.73s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_2": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.203s * #visual_payload) - (%.139s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.139s * #visual_payload) - (%.138s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.139s * #visual_payload) - (%.138s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_3": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.268s * #visual_payload) - (%.204s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.204s * #visual_payload) - (%.203s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.204s * #visual_payload) - (%.203s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_4": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.333s * #visual_payload) - (%.269s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.269s * #visual_payload) - (%.268s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.269s * #visual_payload) - (%.268s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_5": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.398s * #visual_payload) - (%.334s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.334s * #visual_payload) - (%.333s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.334s * #visual_payload) - (%.333s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_6": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.463s * #visual_payload) - (%.399s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.399s * #visual_payload) - (%.398s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.399s * #visual_payload) - (%.398s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_7": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.528s * #visual_payload) - (%.464s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.464s * #visual_payload) - (%.463s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.464s * #visual_payload) - (%.463s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_8": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.593s * #visual_payload) - (%.529s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.529s * #visual_payload) - (%.528s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.529s * #visual_payload) - (%.528s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_9": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.658s * #visual_payload) - (%.594s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.594s * #visual_payload) - (%.593s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.594s * #visual_payload) - (%.593s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_10": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.723s * #visual_payload) - (%.659s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.659s * #visual_payload) - (%.658s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.659s * #visual_payload) - (%.658s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_11": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.788s * #visual_payload) - (%.724s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.724s * #visual_payload) - (%.723s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.724s * #visual_payload) - (%.723s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_12": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.853s * #visual_payload) - (%.789s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.789s * #visual_payload) - (%.788s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.789s * #visual_payload) - (%.788s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_13": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.918s * #visual_payload) - (%.854s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.854s * #visual_payload) - (%.853s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.854s * #visual_payload) - (%.853s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_14": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.983s * #visual_payload) - (%.919s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.919s * #visual_payload) - (%.918s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.919s * #visual_payload) - (%.918s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_15": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1048s * #visual_payload) - (%.984s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.984s * #visual_payload) - (%.983s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.984s * #visual_payload) - (%.983s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_16": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1113s * #visual_payload) - (%.1049s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1049s * #visual_payload) - (%.1048s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1049s * #visual_payload) - (%.1048s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_17": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1178s * #visual_payload) - (%.1114s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1114s * #visual_payload) - (%.1113s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1114s * #visual_payload) - (%.1113s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_18": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1243s * #visual_payload) - (%.1179s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1179s * #visual_payload) - (%.1178s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1179s * #visual_payload) - (%.1178s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_19": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1308s * #visual_payload) - (%.1244s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1244s * #visual_payload) - (%.1243s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1244s * #visual_payload) - (%.1243s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_20": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1373s * #visual_payload) - (%.1309s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1309s * #visual_payload) - (%.1308s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1309s * #visual_payload) - (%.1308s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_21": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1438s * #visual_payload) - (%.1374s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1374s * #visual_payload) - (%.1373s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1374s * #visual_payload) - (%.1373s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_22": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1503s * #visual_payload) - (%.1439s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1439s * #visual_payload) - (%.1438s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1439s * #visual_payload) - (%.1438s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_23": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1568s * #visual_payload) - (%.1504s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1504s * #visual_payload) - (%.1503s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1504s * #visual_payload) - (%.1503s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_24": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1633s * #visual_payload) - (%.1569s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1569s * #visual_payload) - (%.1568s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1569s * #visual_payload) - (%.1568s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_25": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1698s * #visual_payload) - (%.1634s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1634s * #visual_payload) - (%.1633s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1634s * #visual_payload) - (%.1633s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_26": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1763s * #visual_payload) - (%.1699s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1699s * #visual_payload) - (%.1698s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1699s * #visual_payload) - (%.1698s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "feed_slot_27": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1828s * #visual_payload) - (%.1764s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1764s * #visual_payload) - (%.1763s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1764s * #visual_payload) - (%.1763s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_0": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1839s * #visual_payload) - (%.1829s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1829s * #visual_payload) - (%.1828s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1903s * #visual_payload) - (%.1839s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1829s * #visual_payload) - (%.1828s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1906s * #visual_payload) - (%.1903s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1906s * #visual_payload) - (%.1903s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1829s * #visual_payload) - (%.1828s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_1": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1917s * #visual_payload) - (%.1907s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1907s * #visual_payload) - (%.1906s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1981s * #visual_payload) - (%.1917s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1907s * #visual_payload) - (%.1906s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.1984s * #visual_payload) - (%.1981s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1984s * #visual_payload) - (%.1981s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1907s * #visual_payload) - (%.1906s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_2": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1995s * #visual_payload) - (%.1985s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1985s * #visual_payload) - (%.1984s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2059s * #visual_payload) - (%.1995s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.1985s * #visual_payload) - (%.1984s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2062s * #visual_payload) - (%.2059s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2062s * #visual_payload) - (%.2059s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.1985s * #visual_payload) - (%.1984s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_3": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2073s * #visual_payload) - (%.2063s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2063s * #visual_payload) - (%.2062s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2137s * #visual_payload) - (%.2073s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2063s * #visual_payload) - (%.2062s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2140s * #visual_payload) - (%.2137s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2140s * #visual_payload) - (%.2137s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2063s * #visual_payload) - (%.2062s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_4": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2151s * #visual_payload) - (%.2141s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2141s * #visual_payload) - (%.2140s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2215s * #visual_payload) - (%.2151s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2141s * #visual_payload) - (%.2140s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2218s * #visual_payload) - (%.2215s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2218s * #visual_payload) - (%.2215s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2141s * #visual_payload) - (%.2140s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_5": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2229s * #visual_payload) - (%.2219s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2219s * #visual_payload) - (%.2218s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2293s * #visual_payload) - (%.2229s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2219s * #visual_payload) - (%.2218s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2296s * #visual_payload) - (%.2293s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2296s * #visual_payload) - (%.2293s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2219s * #visual_payload) - (%.2218s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_6": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2307s * #visual_payload) - (%.2297s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2297s * #visual_payload) - (%.2296s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2371s * #visual_payload) - (%.2307s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2297s * #visual_payload) - (%.2296s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2374s * #visual_payload) - (%.2371s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2374s * #visual_payload) - (%.2371s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2297s * #visual_payload) - (%.2296s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_7": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2385s * #visual_payload) - (%.2375s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2375s * #visual_payload) - (%.2374s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2449s * #visual_payload) - (%.2385s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2375s * #visual_payload) - (%.2374s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2452s * #visual_payload) - (%.2449s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2452s * #visual_payload) - (%.2449s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2375s * #visual_payload) - (%.2374s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_8": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2463s * #visual_payload) - (%.2453s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2453s * #visual_payload) - (%.2452s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2527s * #visual_payload) - (%.2463s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2453s * #visual_payload) - (%.2452s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2530s * #visual_payload) - (%.2527s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2530s * #visual_payload) - (%.2527s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2453s * #visual_payload) - (%.2452s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_9": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2541s * #visual_payload) - (%.2531s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2531s * #visual_payload) - (%.2530s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2605s * #visual_payload) - (%.2541s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2531s * #visual_payload) - (%.2530s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2608s * #visual_payload) - (%.2605s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2608s * #visual_payload) - (%.2605s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2531s * #visual_payload) - (%.2530s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_10": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2619s * #visual_payload) - (%.2609s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2609s * #visual_payload) - (%.2608s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2683s * #visual_payload) - (%.2619s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2609s * #visual_payload) - (%.2608s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2686s * #visual_payload) - (%.2683s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2686s * #visual_payload) - (%.2683s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2609s * #visual_payload) - (%.2608s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_11": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2697s * #visual_payload) - (%.2687s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2687s * #visual_payload) - (%.2686s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2761s * #visual_payload) - (%.2697s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2687s * #visual_payload) - (%.2686s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2764s * #visual_payload) - (%.2761s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2764s * #visual_payload) - (%.2761s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2687s * #visual_payload) - (%.2686s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_12": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2775s * #visual_payload) - (%.2765s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2765s * #visual_payload) - (%.2764s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2839s * #visual_payload) - (%.2775s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2765s * #visual_payload) - (%.2764s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2842s * #visual_payload) - (%.2839s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2842s * #visual_payload) - (%.2839s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2765s * #visual_payload) - (%.2764s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  },
+  "inventory_slot_13": {
+    "type": "panel",
+    "size": [
+      15,
+      15
+    ],
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "offset": [
+      0,
+      0
+    ],
+    "controls": [
+      {
+        "aux_item": {
+          "type": "custom",
+          "renderer": "inventory_item_renderer",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "property_bag": {
+            "#item_id_aux": 0
+          },
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2853s * #visual_payload) - (%.2843s * #visual_payload))) * 1) - 1000000000)",
+              "target_property_name": "#item_id_aux",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2843s * #visual_payload) - (%.2842s * #visual_payload))) * 1) = 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "texture_item": {
+          "type": "image",
+          "texture": "textures/items/apple",
+          "size": [
+            14,
+            14
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "keep_ratio": true,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2917s * #visual_payload) - (%.2853s * #visual_payload))) - '~')",
+              "target_property_name": "#texture",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2843s * #visual_payload) - (%.2842s * #visual_payload))) * 1) = 2)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      },
+      {
+        "amount": {
+          "type": "label",
+          "text": "#amount",
+          "localize": false,
+          "shadow": true,
+          "font_scale_factor": 0.65,
+          "text_alignment": "right",
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -1,
+            1
+          ],
+          "size": [
+            14,
+            8
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "((((%.2920s * #visual_payload) - (%.2917s * #visual_payload))) * 1)",
+              "target_property_name": "#amount",
+              "binding_condition": "always"
+            },
+            {
+              "binding_type": "view",
+              "source_control_name": "visual_data",
+              "source_property_name": "(((((%.2920s * #visual_payload) - (%.2917s * #visual_payload))) * 1) > 1)",
+              "target_property_name": "#visible",
+              "binding_condition": "always"
+            }
+          ]
+        }
+      }
+    ],
+    "bindings": [
+      {
+        "binding_type": "view",
+        "source_control_name": "visual_data",
+        "source_property_name": "(((((%.2843s * #visual_payload) - (%.2842s * #visual_payload))) * 1) > 0)",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ]
+  }
+}

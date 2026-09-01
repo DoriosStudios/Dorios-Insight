@@ -1,6 +1,7 @@
 import { CHANNEL_HUD } from "../const.js";
 import { defineSchema, encodePayload } from "../uiDataEncoder.js";
 import { sendLatchedTitle } from "../titleBus.js";
+import { collectPlayerStatusData } from "./playerStatus.js";
 
 const EMPTY_DURABILITY_DATA = {
     durPercent: 0,
@@ -64,9 +65,9 @@ const HUD_SCHEMAS = [
     ]),
     defineSchema("c", [
         { name: "armor", digits: 2 },
-        { name: "toughness", digits: 2 },
-        { name: "xpLevel", digits: 2 },
-        { name: "xpProgress", digits: 2 }
+        { name: "extraArmor", digits: 2 },
+        { name: "extraArmorFull", digits: 2 },
+        { name: "armorOverflowRows", digits: 2 }
     ]),
     defineSchema("d", [
         { name: "activeEffects", digits: 2 },
@@ -287,8 +288,13 @@ function encodeDurabilityData(data) {
     return fullPayload.slice(0, -CHANNEL_HUD.length);
 }
 
-export function updateDurabilityIndicator(player, settings = {}) {
+export function updateDurabilityIndicator(
+    player,
+    settings = {},
+    hudFeatureSettings = {}
+) {
     const mainhandData = {
+        ...collectPlayerStatusData(player, hudFeatureSettings),
         ...(settings.mainhandDurability === false
             ? EMPTY_DURABILITY_DATA
             : collectDurabilityData(player)),
