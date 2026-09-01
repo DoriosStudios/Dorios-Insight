@@ -1,6 +1,7 @@
 import { system, world } from "@minecraft/server";
 import {
   CHANNEL_WAILA,
+  CHANNEL_WAILA_VISUALS,
   CORE_LIMITS,
   CORE_SETTINGS_DYNAMIC_PROPERTY,
   DEFAULT_CORE_SETTINGS,
@@ -17,15 +18,21 @@ import { resolvePlayerTarget, TargetKinds } from "./target.js";
 import { buildBlockLabel } from "./blocks/general.js";
 import { composeEntityTarget } from "./entities/index.js";
 import { getBlockRenderAux } from "./render/blockRender.js";
+import { collectContainerPreview } from "./containerPreview.js";
+import { buildWailaVisualPayload } from "./hud/wailaVisuals.js";
 import { updateDurabilityIndicator } from "./hud/durabilityIndicator.js";
 import { initializeStatsCoreActivityHud } from "./hud/statsCoreActivity.js";
 import { initializeCustomEffectsHud } from "./effects/titleHandler.js";
-import { initializeActionbarQueue } from "./actionbarQueue.js";
+import {
+  initializeActionbarQueue,
+  setSecondaryActionbarEnabled,
+} from "./actionbarQueue.js";
 import { initializeActionbarQueueBridge } from "./actionbarQueueBridge.js";
 import {
   clearLatched,
   initializeTitleBus,
   sendLatchedPair,
+  sendLatchedTitle,
 } from "./titleBus.js";
 
 let initialized = false;
@@ -146,6 +153,19 @@ function normalizeBlockSettings(settings = {}) {
   };
 }
 
+function normalizeHudFeatureSettings(settings = {}) {
+  const hud = getSettingsSection(settings, "hud");
+
+  return {
+    extraArmorBar: hud.extraArmorBar !== false,
+    saturationBar: hud.saturationBar !== false,
+    secondaryActionbar: hud.secondaryActionbar !== false,
+    tameableStatus: hud.tameableStatus !== false,
+    tameFeedItems: hud.tameFeedItems !== false,
+    containerContents: hud.containerContents !== false,
+  };
+}
+
 function normalizeEntitySettings(settings = {}) {
   const entity = getSettingsSection(settings, "entity");
   const displayStyleIds = new Set(STAT_DISPLAY_STYLES.map((style) => style.id));
@@ -218,6 +238,7 @@ function normalizeEntitySettings(settings = {}) {
 function normalizeSettings(settings = {}, player) {
   return {
     main: normalizeMainSettings(settings, player),
+    hud: normalizeHudFeatureSettings(settings),
     block: normalizeBlockSettings(settings),
     entity: normalizeEntitySettings(settings),
   };
@@ -310,13 +331,17 @@ export function setCoreSettings(player, settings) {
 
   const current = getCoreSettings(player);
   const hasSections = Boolean(
-    settings?.main || settings?.block || settings?.entity,
+    settings?.main || settings?.hud || settings?.block || settings?.entity,
   );
 
   if (!hasSections) {
     return saveSettings(player, {
       main: {
         ...current.main,
+        ...settings,
+      },
+      hud: {
+        ...current.hud,
         ...settings,
       },
       block: {
@@ -331,6 +356,10 @@ export function setCoreSettings(player, settings) {
     main: {
       ...current.main,
       ...settings?.main,
+    },
+    hud: {
+      ...current.hud,
+      ...settings?.hud,
     },
     block: {
       ...current.block,
@@ -410,10 +439,15 @@ function buildWailaRawMessage(parts, mainSettings, meta = "default:") {
   };
 }
 
-function buildWailaPayload(title, subtitleText = "") {
+function buildWailaPayload(
+  title,
+  subtitleText = "",
+  visualPayload = CHANNEL_WAILA_VISUALS,
+) {
   return {
     title,
     subtitleText: String(subtitleText || ""),
+    visualPayload,
   };
 }
 
@@ -434,7 +468,12 @@ function composeTargetMessage(player, settings) {
   const target = resolvePlayerTarget(player, settings.main);
 
   if (target.kind === TargetKinds.Entity) {
-    const entityTarget = composeEntityTarget(target.entity, settings.entity);
+    const entityTarget = composeEntityTarget(target.entity, {
+      ...settings.entity,
+      tameableStatus: settings.hud.tameableStatus,
+    }, {
+      includeInventory: settings.hud.containerContents,
+    });
     const shouldRenderEntity = settings.entity.entityRender &&
       entityTarget.canRender;
     const renderMeta = shouldRenderEntity
@@ -447,17 +486,37 @@ function composeTargetMessage(player, settings) {
         renderMeta,
       ),
       shouldRenderEntity ? entityTarget.entityId : "",
+      buildWailaVisualPayload({
+        feedItems: settings.hud.tameFeedItems ? entityTarget.feedItems : [],
+        feedTotal: settings.hud.tameFeedItems
+          ? entityTarget.feedItems.length
+          : 0,
+        inventoryItems: settings.hud.containerContents
+          ? entityTarget.inventoryItems
+          : [],
+        inventoryTotal: settings.hud.containerContents
+          ? entityTarget.inventoryItems.length
+          : 0,
+      }),
     );
   }
 
   if (target.kind === TargetKinds.Block) {
     const renderAux = getSafeBlockRenderAux(target.block, settings.block);
+    const inventoryItems = settings.hud.containerContents
+      ? collectContainerPreview(target.block)
+      : [];
     return buildWailaPayload(
       buildWailaRawMessage(
         buildBlockLabel(target.block, settings.block),
         settings.main,
         renderAux ? `block:${renderAux}` : "default:",
       ),
+      "",
+      buildWailaVisualPayload({
+        inventoryItems,
+        inventoryTotal: inventoryItems.length,
+      }),
     );
   }
 
@@ -467,15 +526,18 @@ function composeTargetMessage(player, settings) {
 function sendWailaMessage(player, payload) {
   const title = payload?.title ?? payload;
   const subtitleText = payload?.subtitleText ?? "";
+  const visualPayload = payload?.visualPayload ?? CHANNEL_WAILA_VISUALS;
 
   try {
     const rawtext = normalizeRawtextParts(title?.rawtext);
     if (rawtext.length === 1 && rawtext[0]?.text === EMPTY_WAILA_TEXT) {
       clearLatched(player, CHANNEL_WAILA);
+      clearLatched(player, CHANNEL_WAILA_VISUALS);
       return;
     }
 
     sendLatchedPair(player, CHANNEL_WAILA, title, subtitleText);
+    sendLatchedTitle(player, CHANNEL_WAILA_VISUALS, visualPayload);
   } catch {
     // Skip players that are not ready yet.
   }
@@ -487,6 +549,10 @@ function tickPlayers() {
   for (const player of world.getAllPlayers()) {
     try {
       const settings = getCoreSettings(player);
+      setSecondaryActionbarEnabled(
+        player,
+        settings.hud.secondaryActionbar,
+      );
       if (
         !settings.main.enabled ||
         systemTick % settings.main.updateIntervalTicks !== 0
@@ -496,7 +562,7 @@ function tickPlayers() {
 
       const targetPayload = composeTargetMessage(player, settings);
       sendWailaMessage(player, targetPayload);
-      updateDurabilityIndicator(player, settings.main);
+      updateDurabilityIndicator(player, settings.main, settings.hud);
     } catch {
       sendWailaMessage(player, { rawtext: [{ text: EMPTY_WAILA_TEXT }] });
     }
@@ -522,9 +588,15 @@ export function initializeGlobalPlayerInterval() {
 
     system.runTimeout(() => {
       try {
+        const settings = getCoreSettings(event.player);
+        setSecondaryActionbarEnabled(
+          event.player,
+          settings.hud.secondaryActionbar,
+        );
         updateDurabilityIndicator(
           event.player,
-          getCoreSettings(event.player).main,
+          settings.main,
+          settings.hud,
         );
       } catch {
         // Player UI may not be ready on the first spawn tick.

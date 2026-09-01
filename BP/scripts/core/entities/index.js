@@ -1,4 +1,5 @@
 import { collectEntityGeneral, renderEntityGeneral } from "./general.js";
+import { collectContainerPreview } from "../containerPreview.js";
 
 const HIDDEN_RENDER_ENTITY_TYPE_IDS = new Set([
   "minecraft:item",
@@ -29,7 +30,7 @@ function getEntityRenderHeightClass(entity) {
   }
 }
 
-export function composeEntityTarget(entity, settings) {
+export function composeEntityTarget(entity, settings, options = {}) {
   const general = collectEntityGeneral(entity);
 
   return {
@@ -41,5 +42,9 @@ export function composeEntityTarget(entity, settings) {
     rawtext: renderEntityGeneral(general, settings),
     currentHealth: general.health?.current ?? 0,
     maxHealth: general.health?.max ?? 0,
+    feedItems: general.interactions?.itemIds ?? [],
+    inventoryItems: options.includeInventory === false
+      ? []
+      : collectContainerPreview(entity),
   };
 }

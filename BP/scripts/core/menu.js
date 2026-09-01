@@ -160,6 +160,65 @@ async function openMainSettingsMenu(player) {
   );
 }
 
+async function openHudFeaturesMenu(player) {
+  const settings = getCoreSettings(player);
+  const hud = settings.hud;
+  const form = new ModalFormData()
+    .title(`${UI.info}HUD Features${UI.reset}`)
+    .toggle(mutedText("Extra Armor Bar"), {
+      defaultValue: hud.extraArmorBar,
+      tooltip: "Shows armor points above the vanilla twenty-point armor row.",
+    })
+    .toggle(mutedText("Saturation Bar"), {
+      defaultValue: hud.saturationBar,
+      tooltip: "Shows the saturation overlay above the vanilla hunger bar.",
+    })
+    .toggle(mutedText("Secondary Actionbar"), {
+      defaultValue: hud.secondaryActionbar,
+      tooltip:
+        "Shows the cooperative secondary actionbar above the native actionbar.",
+    })
+    .toggle(mutedText("Tameable Status"), {
+      defaultValue: hud.tameableStatus,
+      tooltip: "Shows whether the targeted entity is tameable or already tamed.",
+    })
+    .toggle(mutedText("Tame / Feed Items"), {
+      defaultValue: hud.tameFeedItems,
+      tooltip:
+        "Shows item textures that can tame, breed, heal, or feed the targeted entity.",
+    })
+    .toggle(mutedText("Container Contents"), {
+      defaultValue: hud.containerContents,
+      tooltip:
+        "Shows the first fourteen non-technical items from block and entity inventories.",
+    });
+
+  const result = await form.show(player);
+  if (result.canceled) return;
+
+  const [
+    extraArmorBar,
+    saturationBar,
+    secondaryActionbar,
+    tameableStatus,
+    tameFeedItems,
+    containerContents,
+  ] = result.formValues;
+
+  setCoreSettings(player, {
+    hud: {
+      extraArmorBar: Boolean(extraArmorBar),
+      saturationBar: Boolean(saturationBar),
+      secondaryActionbar: Boolean(secondaryActionbar),
+      tameableStatus: Boolean(tameableStatus),
+      tameFeedItems: Boolean(tameFeedItems),
+      containerContents: Boolean(containerContents),
+    },
+  });
+
+  sendMessage(player, "§aHUD feature settings updated.");
+}
+
 async function openStyleSettingsMenu(player) {
   const settings = getCoreSettings(player);
   const form = new ModalFormData()
@@ -520,6 +579,10 @@ export async function openCoreMenu(player) {
       "textures/ui/icon_setting",
     )
     .button(
+      `HUD Features\n${infoLabel("Bars, actionbar, and visual previews")}`,
+      "textures/ui/icon_recipe_item",
+    )
+    .button(
       `Block Settings\n${infoLabel("Tools, tiers, and tags")}`,
       "textures/ui/category_icon_blocks",
     )
@@ -543,16 +606,21 @@ export async function openCoreMenu(player) {
   }
 
   if (result.selection === 1) {
-    await openBlockSettingsMenu(player);
+    await openHudFeaturesMenu(player);
     return;
   }
 
   if (result.selection === 2) {
-    await openEntitySettingsMenu(player);
+    await openBlockSettingsMenu(player);
     return;
   }
 
   if (result.selection === 3) {
+    await openEntitySettingsMenu(player);
+    return;
+  }
+
+  if (result.selection === 4) {
     await openStyleSettingsMenu(player);
   }
 }

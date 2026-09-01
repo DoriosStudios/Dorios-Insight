@@ -70,9 +70,16 @@ function calculateArmorOverflow(totalArmor) {
  *
  * @param {import("@minecraft/server").Player} player
  */
-export function collectPlayerStatusData(player) {
+export function collectPlayerStatusData(player, settings = {}) {
     const maxHealth = readMaxHealth(player);
     const totalArmor = readTotalArmor(player);
+    const armorData = calculateArmorOverflow(totalArmor);
+
+    if (settings.extraArmorBar === false) {
+        armorData.extraArmor = 0;
+        armorData.extraArmorFull = 0;
+        armorData.armorOverflowRows = 0;
+    }
 
     return {
         health: readCurrentValue(player, "minecraft:health", MAX_HUD_HEALTH),
@@ -80,11 +87,13 @@ export function collectPlayerStatusData(player) {
         absorption: readCurrentValue(player, "minecraft:absorption", 99),
         healthGap: Math.max(0, Math.ceil(maxHealth / 20) - 1),
         hunger: readCurrentValue(player, "minecraft:player.hunger", 20),
-        saturation: readCurrentValue(
-            player,
-            "minecraft:player.saturation",
-            20
-        ),
-        ...calculateArmorOverflow(totalArmor)
+        saturation: settings.saturationBar === false
+            ? 0
+            : readCurrentValue(
+                player,
+                "minecraft:player.saturation",
+                20
+            ),
+        ...armorData
     };
 }

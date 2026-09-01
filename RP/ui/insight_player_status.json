@@ -63,32 +63,38 @@
       {
         "binding_type": "view",
         "source_property_name": "(#stored_text - 'ds:insight:hud:')",
-        "target_property_name": "#hud_payload"
+        "target_property_name": "#hud_payload",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(('%.11s' * #hud_payload) - 'a')",
-        "target_property_name": "#data_a"
+        "target_property_name": "#data_a",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_a / 10000000)",
-        "target_property_name": "#health"
+        "target_property_name": "#health",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_a / 10000) - (#health * 1000)",
-        "target_property_name": "#max_health"
+        "target_property_name": "#max_health",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_a / 100) - (#health * 100000) - (#max_health * 100)",
-        "target_property_name": "#absorption"
+        "target_property_name": "#absorption",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_a / 1) - (#health * 10000000) - (#max_health * 10000) - (#absorption * 100)",
-        "target_property_name": "#health_gap"
+        "target_property_name": "#health_gap",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
@@ -116,32 +122,38 @@
       {
         "binding_type": "view",
         "source_property_name": "(#stored_text - 'ds:insight:hud:')",
-        "target_property_name": "#hud_payload"
+        "target_property_name": "#hud_payload",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(('%.20s' * (#hud_payload - ('%.11s' * #hud_payload))) - 'b')",
-        "target_property_name": "#data_b"
+        "target_property_name": "#data_b",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_b / 1000000)",
-        "target_property_name": "#air"
+        "target_property_name": "#air",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_b / 10000) - (#air * 100)",
-        "target_property_name": "#air_max"
+        "target_property_name": "#air_max",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_b / 100) - (#air * 10000) - (#air_max * 100)",
-        "target_property_name": "#hunger"
+        "target_property_name": "#hunger",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_b / 1) - (#air * 1000000) - (#air_max * 10000) - (#hunger * 100)",
-        "target_property_name": "#saturation"
+        "target_property_name": "#saturation",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
@@ -169,32 +181,38 @@
       {
         "binding_type": "view",
         "source_property_name": "(#stored_text - 'ds:insight:hud:')",
-        "target_property_name": "#hud_payload"
+        "target_property_name": "#hud_payload",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(('%.29s' * (#hud_payload - ('%.20s' * #hud_payload))) - 'c')",
-        "target_property_name": "#data_c"
+        "target_property_name": "#data_c",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_c / 1000000)",
-        "target_property_name": "#armor"
+        "target_property_name": "#armor",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_c / 10000) - (#armor * 100)",
-        "target_property_name": "#extra_armor"
+        "target_property_name": "#extra_armor",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_c / 100) - (#armor * 10000) - (#extra_armor * 100)",
-        "target_property_name": "#extra_armor_full"
+        "target_property_name": "#extra_armor_full",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",
         "source_property_name": "(#data_c / 1) - (#armor * 1000000) - (#extra_armor * 10000) - (#extra_armor_full * 100)",
-        "target_property_name": "#armor_overflow_rows"
+        "target_property_name": "#armor_overflow_rows",
+        "binding_condition": "always"
       },
       {
         "binding_type": "view",

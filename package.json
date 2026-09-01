@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "generate:block-render-aux": "node scripts/tools/generateBlockRenderAux.js"
+    "generate:block-render-aux": "node scripts/tools/generateBlockRenderAux.js",
+    "generate:item-textures": "node scripts/tools/generateItemTexturePaths.js",
+    "generate:waila-visual-ui": "node scripts/tools/generateWailaVisualUi.js"
   },
   "dependencies": {
     "@minecraft/server": "^2.8.0",

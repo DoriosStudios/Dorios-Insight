@@ -8,6 +8,7 @@ export const CHANNEL_EFFECTS = "ds:insight:effects:v1:";
 // Compatibility alias for integrations built against the first public draft.
 export const CHANNEL_CUSTOM_EFFECTS = CHANNEL_EFFECTS;
 export const CHANNEL_ACTIONBAR_SECONDARY = "ds:insight:actionbar_secondary:";
+export const CHANNEL_WAILA_VISUALS = "ds:insight:waila_visuals:";
 
 export const CORE_SETTINGS_DYNAMIC_PROPERTY = "insight:core_settings";
 
@@ -29,6 +30,16 @@ export const STAT_DISPLAY_STYLES = [
  * @property {boolean} armorDurability
  * @property {boolean} wailaMobileLayout
  * @property {boolean} durabilityMobileLayout
+ */
+
+/**
+ * @typedef {object} HudFeatureSettings
+ * @property {boolean} extraArmorBar
+ * @property {boolean} saturationBar
+ * @property {boolean} secondaryActionbar
+ * @property {boolean} tameableStatus
+ * @property {boolean} tameFeedItems
+ * @property {boolean} containerContents
  */
 
 /**
@@ -80,6 +91,7 @@ export const STAT_DISPLAY_STYLES = [
 /**
  * @typedef {object} CoreSettings
  * @property {MainSettings} main
+ * @property {HudFeatureSettings} hud
  * @property {BlockSettings} block
  * @property {EntitySettings} entity
  */
@@ -97,6 +109,14 @@ export const DEFAULT_CORE_SETTINGS = {
     armorDurability: true,
     wailaMobileLayout: false,
     durabilityMobileLayout: false,
+  },
+  hud: {
+    extraArmorBar: true,
+    saturationBar: true,
+    secondaryActionbar: true,
+    tameableStatus: true,
+    tameFeedItems: true,
+    containerContents: true,
   },
   block: {
     energyContainers: false,

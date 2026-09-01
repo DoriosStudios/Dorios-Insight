@@ -62,6 +62,20 @@ function resolveVanillaAux(typeId) {
 }
 
 /**
+ * Resolves an item or block type id for Minecraft UI's inventory renderer.
+ * @param {string} typeId
+ * @returns {number}
+ */
+export function getItemRenderAux(typeId) {
+  const normalizedTypeId = String(typeId || "").trim();
+  if (!normalizedTypeId) return 0;
+  if (normalizedTypeId.startsWith(VANILLA_NAMESPACE)) {
+    return resolveVanillaAux(normalizedTypeId);
+  }
+  return customBlockAuxValues[normalizedTypeId] ?? 0;
+}
+
+/**
  * Gets the numeric item aux used by Minecraft UI inventory_item_renderer.
  * @param {import("@minecraft/server").Block | undefined} block
  * @returns {number}

@@ -288,9 +288,13 @@ function encodeDurabilityData(data) {
     return fullPayload.slice(0, -CHANNEL_HUD.length);
 }
 
-export function updateDurabilityIndicator(player, settings = {}) {
+export function updateDurabilityIndicator(
+    player,
+    settings = {},
+    hudFeatureSettings = {}
+) {
     const mainhandData = {
-        ...collectPlayerStatusData(player),
+        ...collectPlayerStatusData(player, hudFeatureSettings),
         ...(settings.mainhandDurability === false
             ? EMPTY_DURABILITY_DATA
             : collectDurabilityData(player)),
